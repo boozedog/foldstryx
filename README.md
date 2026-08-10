@@ -12,8 +12,8 @@ Button.view({ label: 'Save', variant: 'primary' })
 Stack.view({
   gap: 'md',
   children: [
-    Text.view({ variant: 'heading', children: 'Overview' }),
-    Card.view({ children: […] }),
+    Text.view({ variant: 'title', children: 'Overview' }),
+    Card.section({ children: [Text.view({ children: 'Content' })] }),
   ],
 })
 
@@ -37,8 +37,14 @@ Stack.view({
 
 ## Status
 
-Token foundations are lifted from Astryx at the pinned revision in `NOTICE`. Named
-composition primitives and the kitchen-sink catalog are planned for issue #2.
+Token foundations are lifted from Astryx at the pinned revision in `NOTICE`. The first
+composition primitives and kitchen-sink catalog are available on the issue #2 branch.
+
+```ts
+Button.view({ label: 'Save', variant: 'primary', onClick: Saved() })
+Stack.view({ gap: 'md', children: [Text.view({ children: 'Body' })] })
+Card.section({ title: 'Details', children: ['Content'] })
+```
 
 ## Packages
 

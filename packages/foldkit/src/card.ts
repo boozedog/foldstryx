@@ -5,7 +5,7 @@ import { cardStyles, layoutStyles } from '@foldstryx/styles'
 
 import { elAttrs, sxAttrs } from './sx.js'
 
-/** Renders a shadcn-styled card container. */
+/** Renders a token-styled card container. */
 export const root = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
 ): Html => {

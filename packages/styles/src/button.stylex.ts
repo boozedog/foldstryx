@@ -26,6 +26,8 @@ export const buttonStyles = stylex.create({
     whiteSpace: 'nowrap',
     ':focus-visible': { boxShadow: shadowVars['--shadow-inset-selected'] },
     ':disabled': { cursor: 'not-allowed', opacity: 0.5 },
+    '[data-disabled]': { cursor: 'not-allowed', opacity: 0.5 },
+    '[aria-disabled="true"]': { cursor: 'not-allowed', opacity: 0.5 },
   },
   variantPrimary: {
     backgroundColor: colorVars['--color-accent'],

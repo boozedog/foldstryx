@@ -10,9 +10,12 @@ export const elAttrs = <Message>(
   const merged: Array<Attribute<Message> | ChildAttribute> = []
 
   for (const part of parts) {
+    if (part === undefined) continue
     if (Array.isArray(part)) {
       merged.push(
-        ...(part as ReadonlyArray<Attribute<Message> | ChildAttribute>),
+        ...(part as ReadonlyArray<Attribute<Message> | ChildAttribute>).filter(
+          item => item !== undefined,
+        ),
       )
     } else {
       merged.push(part as Attribute<Message> | ChildAttribute)

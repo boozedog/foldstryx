@@ -6,7 +6,10 @@ import * as Button from './button.js'
 type Node = Readonly<{
   sel?: string
   children?: ReadonlyArray<unknown>
-  data?: Readonly<{ attrs?: Readonly<Record<string, string>> }>
+  data?: Readonly<{
+    attrs?: Readonly<Record<string, string>>
+    on?: Readonly<Record<string, unknown>>
+  }>
 }>
 const asNode = (value: Html): Node => value as Node
 const text = (value: unknown): string => {
@@ -26,9 +29,24 @@ describe('Button', () => {
     expect(node.data?.attrs?.['aria-label']).toBe('Save changes')
   })
 
-  it('accepts disabled configuration', () => {
-    expect({ isDisabled: true } satisfies { isDisabled?: boolean }).toEqual({
-      isDisabled: true,
-    })
+  it('renders enabled click and disabled paths without throwing', () => {
+    const enabled = asNode(
+      Button.view({ label: 'Primary', onClick: { _tag: 'Clicked' } }),
+    )
+    const disabled = asNode(
+      Button.view({
+        label: 'Disabled',
+        onClick: { _tag: 'Clicked' },
+        isDisabled: true,
+      }),
+    )
+    expect(Object.keys(enabled.data?.on ?? {})).toContain('click')
+    expect(Object.keys(disabled.data?.on ?? {})).not.toContain('click')
+    expect(() =>
+      Button.view({ label: 'Primary', onClick: { _tag: 'Clicked' } }),
+    ).not.toThrow()
+
+    const node = asNode(Button.view({ label: 'Disabled', isDisabled: true }))
+    expect(node.data?.attrs?.['data-disabled']).toBe('')
   })
 })

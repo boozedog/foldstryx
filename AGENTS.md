@@ -79,5 +79,5 @@ tokens. Preserve MIT attribution in NOTICE for substantial adapted material.
 - `Button.view({ label, variant, size, onClick, isDisabled })` supports `primary`, `secondary`, `ghost`, and `danger`; sizes are `md`, `sm`, and `icon`.
 - `Stack.view` uses `xs`, `sm`, `md`, and `lg` token gaps. `Row.view` uses `between`, `baseline`, `startBetween`, `wrap`, `wrapCenter`, and `center` alignment presets.
 - `Text.view` starts with `body`, `bodySm`, `muted`, `mutedSm`, `error`, `success`, `mono`, `sectionTitle`, and `title` variants.
-- `Card.root`, `Card.header`, and `Card.body` are composable chrome slots.
+- `Card.root`, `Card.header`, and `Card.content` are composable chrome slots; `Card.section` composes them with optional title and description.
 - Interactive controls require a Foldkit Story or Scene test covering messages and disabled behavior.

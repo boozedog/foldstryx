@@ -49,7 +49,7 @@ export const view = <Message>(config: ButtonViewConfig<Message>): Html => {
       elAttrs<Message>(
         attributes.button,
         sxAttrs(h, buttonStyles.base, variantStyle(variant), sizeStyle(size)),
-        ariaLabel ? h.AriaLabel(ariaLabel) : undefined,
+        ...(ariaLabel !== undefined ? [h.AriaLabel(ariaLabel)] : []),
       ),
       [...(icon ? [icon] : []), ...(label ? [label] : [])],
     )

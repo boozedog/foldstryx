@@ -85,6 +85,9 @@ importers:
       '@effect/platform-browser':
         specifier: 4.0.0-beta.83
         version: 4.0.0-beta.83(effect@4.0.0-beta.83)
+      '@effect/vitest':
+        specifier: 4.0.0-beta.83
+        version: 4.0.0-beta.83(effect@4.0.0-beta.83)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))
       '@foldkit/ui':
         specifier: ^0.113.0
         version: 0.113.1(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83))
@@ -105,16 +108,17 @@ importers:
         version: 4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))
 
   packages/kitchen-sink:
-    devDependencies:
-      '@effect/platform-browser':
-        specifier: 4.0.0-beta.83
-        version: 4.0.0-beta.83(effect@4.0.0-beta.83)
+    dependencies:
       '@foldstryx/foldkit':
         specifier: workspace:*
         version: link:../foldkit
       '@foldstryx/styles':
         specifier: workspace:*
         version: link:../styles
+    devDependencies:
+      '@effect/platform-browser':
+        specifier: 4.0.0-beta.83
+        version: 4.0.0-beta.83(effect@4.0.0-beta.83)
       effect:
         specifier: 4.0.0-beta.83
         version: 4.0.0-beta.83
@@ -370,6 +374,12 @@ packages:
   '@effect/tsgo@0.21.0':
     resolution: {integrity: sha512-bsctKj3pcr/pz6mzGq/AGpFoa8LFkKukmpYmXKxdCRbPybC2EBJHOLag8mAKkr64ZqKpjHthgb2X4xXEKV+McA==}
     hasBin: true
+
+  '@effect/vitest@4.0.0-beta.83':
+    resolution: {integrity: sha512-HKGnBkIAPEIDWwmwQtmGTVLN5txlB3M1lVS+BBsPt6M2CeLJ53cyc/2SBUldZM/HQ/aM7s/siiBOXsB9arRdKg==}
+    peerDependencies:
+      effect: ^4.0.0-beta.83
+      vitest: ^3.0.0 || ^4.0.0
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -2200,6 +2210,11 @@ snapshots:
       '@effect/tsgo-linux-x64': 0.21.0
       '@effect/tsgo-win32-arm64': 0.21.0
       '@effect/tsgo-win32-x64': 0.21.0
+
+  '@effect/vitest@4.0.0-beta.83(effect@4.0.0-beta.83)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))':
+    dependencies:
+      effect: 4.0.0-beta.83
+      vitest: 4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true
