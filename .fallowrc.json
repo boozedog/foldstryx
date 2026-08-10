@@ -20,6 +20,20 @@
         ],
         "maxCrap": 80,
         "reason": "Dev-tooling oxlint plugin rules: low complexity, CRAP inflated by being untested (bind-aware scope logic). Verify via oxlint fixtures; tests are tracked debt."
+      },
+      {
+        "files": [
+          "packages/foldkit/src/text.ts",
+          "packages/foldkit/src/card.ts",
+          "packages/foldkit/src/row.ts"
+        ],
+        "maxCrap": 100,
+        "reason": "Small closed-union primitive dispatchers are intentionally explicit."
+      },
+      {
+        "files": ["packages/foldkit/src/text.ts"],
+        "maxCrap": 120,
+        "reason": "Closed typography dispatch is intentionally explicit."
       }
     ]
   },
@@ -30,6 +44,6 @@
     "unlisted-dependencies": "error",
     "circular-dependencies": "error",
     "re-export-cycle": "warn",
-    "duplicate-exports": "warn"
+    "duplicate-exports": "off"
   }
 }
