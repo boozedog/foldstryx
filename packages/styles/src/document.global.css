@@ -18,4 +18,5 @@ body {
 body {
   background: var(--color-background-body);
   color: var(--color-text-primary);
+  font-family: var(--font-family-body);
 }

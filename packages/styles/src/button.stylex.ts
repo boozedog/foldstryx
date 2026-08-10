@@ -6,6 +6,7 @@ import {
   sizeVars,
   spacingVars,
   typeScaleVars,
+  typographyVars,
 } from '@foldstryx/tokens/index.stylex.ts'
 import * as stylex from '@stylexjs/stylex'
 
@@ -20,6 +21,7 @@ export const buttonStyles = stylex.create({
     gap: spacingVars['--spacing-2'],
     justifyContent: 'center',
     fontSize: typeScaleVars['--text-label-size'],
+    fontFamily: typographyVars['--font-family-body'],
     fontWeight: typeScaleVars['--text-label-weight'],
     lineHeight: typeScaleVars['--text-label-leading'],
     outline: 'none',
@@ -50,16 +52,19 @@ export const buttonStyles = stylex.create({
     color: colorVars['--color-on-error'],
   },
   sizeMd: {
+    height: sizeVars['--size-element-md'],
     minHeight: sizeVars['--size-element-md'],
     paddingBlock: spacingVars['--spacing-1-5'],
     paddingInline: spacingVars['--spacing-4'],
   },
   sizeSm: {
+    height: sizeVars['--size-element-sm'],
     minHeight: sizeVars['--size-element-sm'],
     paddingBlock: spacingVars['--spacing-0-5'],
     paddingInline: spacingVars['--spacing-3'],
   },
   sizeIcon: {
+    height: sizeVars['--size-element-md'],
     minHeight: sizeVars['--size-element-md'],
     minWidth: sizeVars['--size-element-md'],
     padding: spacingVars['--spacing-1'],

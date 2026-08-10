@@ -4,6 +4,7 @@ import {
   radiusVars,
   shadowVars,
   spacingVars,
+  typographyVars,
 } from '@foldstryx/tokens/index.stylex.ts'
 import * as stylex from '@stylexjs/stylex'
 
@@ -40,8 +41,13 @@ export const cardStyles = stylex.create({
   },
   title: {
     color: colorVars['--color-text-primary'],
+    fontFamily: typographyVars['--font-family-heading'],
     fontWeight: '600',
     margin: 0,
   },
-  description: { color: colorVars['--color-text-secondary'], margin: 0 },
+  description: {
+    color: colorVars['--color-text-secondary'],
+    fontFamily: typographyVars['--font-family-body'],
+    margin: 0,
+  },
 })

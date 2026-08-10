@@ -2,6 +2,7 @@ import {
   colorVars,
   spacingVars,
   typeScaleVars,
+  typographyVars,
 } from '@foldstryx/tokens/index.stylex.ts'
 import * as stylex from '@stylexjs/stylex'
 
@@ -25,6 +26,15 @@ export const layoutStyles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: spacingVars['--spacing-6'],
+  },
+  catalogShell: {
+    boxSizing: 'border-box',
+    marginInline: 'auto',
+    maxWidth: '960px',
+    minHeight: '100vh',
+    paddingBlock: spacingVars['--spacing-6'],
+    paddingInline: spacingVars['--spacing-6'],
+    width: '100%',
   },
   panelPad: { padding: spacingVars['--spacing-4'] },
   selfStart: { alignSelf: 'flex-start' },
@@ -65,32 +75,44 @@ export const layoutStyles = stylex.create({
   },
   body: {
     color: colorVars['--color-text-primary'],
+    fontFamily: typographyVars['--font-family-body'],
     fontSize: typeScaleVars['--text-body-size'],
     fontWeight: typeScaleVars['--text-body-weight'],
     lineHeight: typeScaleVars['--text-body-leading'],
   },
   bodySm: {
     color: colorVars['--color-text-primary'],
+    fontFamily: typographyVars['--font-family-body'],
     fontSize: typeScaleVars['--text-supporting-size'],
   },
   muted: {
     color: colorVars['--color-text-secondary'],
+    fontFamily: typographyVars['--font-family-body'],
     fontSize: typeScaleVars['--text-supporting-size'],
   },
   mutedSm: {
     color: colorVars['--color-text-secondary'],
+    fontFamily: typographyVars['--font-family-body'],
     fontSize: typeScaleVars['--text-supporting-size'],
   },
-  errorText: { color: colorVars['--color-error'] },
-  successText: { color: colorVars['--color-success'] },
+  errorText: {
+    color: colorVars['--color-error'],
+    fontFamily: typographyVars['--font-family-body'],
+  },
+  successText: {
+    color: colorVars['--color-success'],
+    fontFamily: typographyVars['--font-family-body'],
+  },
   mono: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
   sectionTitle: {
     color: colorVars['--color-text-primary'],
+    fontFamily: typographyVars['--font-family-heading'],
     fontSize: typeScaleVars['--text-heading-3-size'],
     fontWeight: typeScaleVars['--text-heading-3-weight'],
   },
   title: {
     color: colorVars['--color-text-primary'],
+    fontFamily: typographyVars['--font-family-heading'],
     fontSize: typeScaleVars['--text-heading-1-size'],
     fontWeight: typeScaleVars['--text-heading-1-weight'],
   },

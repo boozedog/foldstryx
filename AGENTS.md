@@ -81,3 +81,4 @@ tokens. Preserve MIT attribution in NOTICE for substantial adapted material.
 - `Text.view` starts with `body`, `bodySm`, `muted`, `mutedSm`, `error`, `success`, `mono`, `sectionTitle`, and `title` variants.
 - `Card.root`, `Card.header`, and `Card.content` are composable chrome slots; `Card.section` composes them with optional title and description.
 - Interactive controls require a Foldkit Story or Scene test covering messages and disabled behavior.
+- Visual changes require browser verification at `http://localhost:5173/`, including computed font family, layout gaps, button states, and shell padding.

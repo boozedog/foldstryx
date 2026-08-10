@@ -69,6 +69,9 @@ mise run check       # full typecheck + tests + lint + fallow
 mise run pre-commit  # hk changed-file hooks
 ```
 
+The visual catalog runs at `http://localhost:5173/`. UI and StyleX changes require a
+browser check for computed fonts, layout spacing, button states, and page shell padding.
+
 `mise run check` is the authoritative full verifier after implementation work.
 
 ## Effect
