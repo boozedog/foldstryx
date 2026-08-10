@@ -42,6 +42,13 @@ is a later product decision, not a day-1 merge.
 
 Styles stay **public** as an escape hatch. Package exports are **consumer contracts**.
 
+## Token maintenance
+
+- Astryx-derived StyleX variables live in `packages/tokens/src/index.ts`.
+- Preserve upstream CSS variable names such as `--color-accent` and `--spacing-2`.
+- Before lifting changes, run `git -C ../astryx rev-parse HEAD` and record that SHA in
+  `NOTICE`; compare values directly with `../astryx/packages/core/src/theme/tokens.stylex.ts`.
+
 ## Role-based APIs
 
 Do **not** force every export to look like `X.view(config)`. Role determines shape

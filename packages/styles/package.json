@@ -4,7 +4,8 @@
   "description": "Astryx-inspired component styles for StyleX",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./document.global.css": "./src/document.global.css"
   },
   "dependencies": {
     "@foldstryx/tokens": "workspace:*",
