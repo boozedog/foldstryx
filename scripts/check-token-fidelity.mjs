@@ -5,7 +5,10 @@ const upstreamPath = new URL(
   '../../astryx/packages/core/src/theme/tokens.stylex.ts',
   import.meta.url,
 )
-const localPath = new URL('../packages/tokens/src/index.ts', import.meta.url)
+const localPath = new URL(
+  '../packages/tokens/src/index.stylex.ts',
+  import.meta.url,
+)
 const upstream = fs.readFileSync(upstreamPath, 'utf8')
 const local = fs.readFileSync(localPath, 'utf8')
 

@@ -1,7 +1,10 @@
-/**
- * Named Foldkit composition primitives over Astryx-faithful StyleX.
- *
- * Placeholder export surface — primitives land after tokens + styles.
- * Intentionally has no runtime imports yet (keeps fallow clean).
- */
-export {}
+export * as Button from './button.js'
+export * as Card from './card.js'
+export * as Row from './row.js'
+export * as Stack from './stack.js'
+export * as Text from './text.js'
+export { attrs, elAttrs, sxAttrs } from './sx.js'
+export type { ButtonSize, ButtonVariant, ButtonViewConfig } from './button.js'
+export type { RowAlign, RowViewConfig } from './row.js'
+export type { StackGap, StackViewConfig } from './stack.js'
+export type { TextAs, TextVariant, TextViewConfig } from './text.js'
