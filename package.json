@@ -26,7 +26,8 @@
     "version-packages": "changeset version",
     "check": "hk run check",
     "prepare": "pnpm --filter @foldstryx/oxlint-plugin build && effect-tsgo patch",
-    "pre-push": "hk run pre-push"
+    "pre-push": "hk run pre-push",
+    "check:tokens": "node scripts/check-token-fidelity.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

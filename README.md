@@ -37,8 +37,8 @@ Stack.view({
 
 ## Status
 
-Greenfield scaffold. Packages exist as placeholders; first real work is token lift from
-upstream Astryx and a small kitchen-sink catalog.
+Token foundations are lifted from Astryx at the pinned revision in `NOTICE`. Named
+composition primitives and the kitchen-sink catalog are planned for issue #2.
 
 ## Packages
 
@@ -74,5 +74,7 @@ Effect usage stays at the Foldkit boundary: `Schema` for models, `Match` for upd
 
 - Foldstryx code: MIT (see [LICENSE](./LICENSE)).
 - Design tokens and style intent are adapted from [Astryx](https://github.com/facebook/astryx)
-  (MIT, Copyright Meta Platforms, Inc.). See [NOTICE](./NOTICE).
+  (MIT, Copyright Meta Platforms, Inc.). See [NOTICE](./NOTICE) for the exact source pin.
+- Astryx CSS variable names are public contract: use names such as `--color-accent` and
+  `--spacing-2`; do not rename them to product or shadcn-style aliases.
 - This project is not affiliated with or endorsed by Meta.
