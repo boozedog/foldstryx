@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./node_modules/@foldkit/oxlint-plugin/recommended.json"],
+  "plugins": ["typescript"],
+  "jsPlugins": [
+    {
+      "name": "foldstryx",
+      "specifier": "@foldstryx/oxlint-plugin"
+    }
+  ],
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-assertions": [
+      "error",
+      {
+        "assertionStyle": "never"
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ],
+    "foldstryx/no-async-function": "error",
+    "foldstryx/no-await-expression": "error",
+    "foldstryx/no-new-promise": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "foldstryx/no-async-function": "off",
+        "foldstryx/no-await-expression": "off",
+        "foldstryx/no-new-promise": "off",
+        "typescript/consistent-type-assertions": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "**/*.d.ts",
+    "packages/oxlint-plugin-foldstryx/",
+    "**/vite.config.ts",
+    "**/vitest.config.ts",
+    "**/vite.aliases.ts"
+  ]
+}

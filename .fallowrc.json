@@ -1,0 +1,35 @@
+{
+  "$schema": "https://fallow.systems/config-schema.json",
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/*.d.ts",
+    "**/.changeset/**"
+  ],
+  "ignoreDependencies": ["@foldkit/oxlint-plugin"],
+  "duplicates": {
+    "skipLocal": true
+  },
+  "health": {
+    "thresholdOverrides": [
+      {
+        "files": [
+          "packages/oxlint-plugin-foldstryx/src/guards.ts",
+          "packages/oxlint-plugin-foldstryx/src/rules/no-await-expression.ts",
+          "packages/oxlint-plugin-foldstryx/src/rules/no-new-promise.ts"
+        ],
+        "maxCrap": 80,
+        "reason": "Dev-tooling oxlint plugin rules: low complexity, CRAP inflated by being untested (bind-aware scope logic). Verify via oxlint fixtures; tests are tracked debt."
+      }
+    ]
+  },
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "error",
+    "unresolved-imports": "error",
+    "unlisted-dependencies": "error",
+    "circular-dependencies": "error",
+    "re-export-cycle": "warn",
+    "duplicate-exports": "warn"
+  }
+}

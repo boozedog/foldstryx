@@ -1,0 +1,44 @@
+{
+  "name": "foldstryx-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "description": "Astryx-inspired styling for Foldkit, powered by StyleX",
+  "engines": {
+    "node": ">=20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter sidebar-demo dev",
+    "build": "pnpm -r --if-present build",
+    "format": "prettier -w .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm --filter @foldstryx/oxlint-plugin build && oxlint",
+    "lint:ci": "oxlint",
+    "check:async-allowlist": "node scripts/check-async-allowlist.mjs",
+    "check:fallow": "fallow",
+    "check:dead-code": "fallow dead-code",
+    "check:circular": "fallow dead-code --only circular-dependencies",
+    "check:changeset": "changeset status",
+    "check:changeset:pre-push": "changeset status --since=origin/master",
+    "test": "pnpm -r --if-present test",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "check": "hk run check",
+    "prepare": "pnpm --filter @foldstryx/oxlint-plugin build && effect-tsgo patch",
+    "pre-push": "hk run pre-push"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@effect/language-service": "^0.87.2",
+    "@effect/tsgo": "^0.21.0",
+    "@foldkit/oxlint-plugin": "0.6.0",
+    "@tsconfig/strictest": "^2.0.8",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "esbuild": "^0.28.2",
+    "fallow": "^3.14.0",
+    "oxlint": "^1.70.0",
+    "prettier": "^3.8.4",
+    "typescript": "^7.0.2"
+  }
+}

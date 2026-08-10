@@ -1,0 +1,92 @@
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+// Glob-scoped steps run on changed files for pre-commit.
+local linters = new Mapping<String, Step> {
+  ["format"] {
+    glob = List("**/*.{ts,tsx,css,mjs,json}")
+    exclude = List("**/node_modules/**", "**/dist/**", "pnpm-lock.yaml")
+    check = "pnpm format:check"
+  }
+  ["lint"] {
+    glob = List("**/*.{ts,tsx}")
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "pnpm lint:ci"
+  }
+  ["typecheck"] {
+    glob = List("**/*.{ts,tsx}")
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "pnpm typecheck"
+  }
+  ["test"] {
+    glob = List("**/*.test.ts")
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "pnpm test"
+  }
+}
+
+// The `check` task (`mise run check` / `pnpm check`) runs the full gate with
+// plain `changeset status` so it passes on uncommitted work.
+local fullGate = new Mapping<String, Step> {
+  ["format:check"] {
+    check = "pnpm format:check"
+  }
+  ["lint"] {
+    check = "pnpm lint"
+  }
+  ["typecheck"] {
+    check = "pnpm typecheck"
+  }
+  ["fallow"] {
+    check = "pnpm check:fallow"
+  }
+  ["test"] {
+    check = "pnpm test"
+  }
+  ["async-allowlist"] {
+    check = "pnpm check:async-allowlist"
+  }
+  ["changeset"] {
+    check = "pnpm check:changeset"
+  }
+}
+
+// Pre-push is the same full gate plus `changeset status --since=origin/master`,
+// which enforces that every changed package has a changeset (runs after commit).
+local prePushGate = new Mapping<String, Step> {
+  ["format:check"] {
+    check = "pnpm format:check"
+  }
+  ["lint"] {
+    check = "pnpm lint"
+  }
+  ["typecheck"] {
+    check = "pnpm typecheck"
+  }
+  ["fallow"] {
+    check = "pnpm check:fallow"
+  }
+  ["test"] {
+    check = "pnpm test"
+  }
+  ["async-allowlist"] {
+    check = "pnpm check:async-allowlist"
+  }
+  ["changeset-since"] {
+    check = "pnpm check:changeset:pre-push"
+  }
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = false
+    stash = "git"
+    steps = linters
+  }
+  ["check"] {
+    steps = fullGate
+  }
+  ["pre-push"] {
+    steps = prePushGate
+  }
+}

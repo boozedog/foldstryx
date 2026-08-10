@@ -1,0 +1,19 @@
+{
+  "name": "@foldstryx/styles",
+  "version": "0.0.1",
+  "description": "Astryx-inspired component styles for StyleX",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@foldstryx/tokens": "workspace:*",
+    "@stylexjs/stylex": "^0.19.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
