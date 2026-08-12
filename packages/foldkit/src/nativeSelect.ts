@@ -1,7 +1,7 @@
 import type { Html } from 'foldkit/html'
 import { html } from 'foldkit/html'
 
-import { formDensityStyles, inputStyles } from '@foldstryx/styles'
+import { fieldStyles, formDensityStyles, inputStyles } from '@foldstryx/styles'
 
 import type { InputDensity, InputWidth } from './input.js'
 import { elAttrs, sxAttrs } from './sx.js'
@@ -28,6 +28,7 @@ export type NativeSelectViewConfig<ParentMessage> = Readonly<{
   width?: InputWidth
   /** Accessible name when no associated label element. */
   ariaLabel?: string
+  label?: string
 }>
 
 const densityStyle = (density: InputDensity | undefined) => {
@@ -54,7 +55,7 @@ export const view = <ParentMessage>(
 ): Html => {
   const h = html<ParentMessage>()
 
-  return h.select(
+  const select = h.select(
     elAttrs<ParentMessage>(
       sxAttrs(
         h,
@@ -80,4 +81,16 @@ export const view = <ParentMessage>(
       ),
     ),
   )
+  return config.label === undefined
+    ? select
+    : h.div(elAttrs<ParentMessage>(sxAttrs(h, fieldStyles.field)), [
+        h.label(
+          elAttrs<ParentMessage>(
+            sxAttrs(h, fieldStyles.label),
+            ...(config.id !== undefined ? [h.For(config.id)] : []),
+          ),
+          [config.label],
+        ),
+        select,
+      ])
 }

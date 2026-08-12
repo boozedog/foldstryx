@@ -1,6 +1,5 @@
 import { Schema as S } from 'effect'
-import { Command, Runtime } from 'foldkit'
-import type { Html } from 'foldkit/html'
+import { Command, Runtime, Submodel } from 'foldkit'
 import { html } from 'foldkit/html'
 
 import {
@@ -87,9 +86,9 @@ export const update = (
   [],
 ]
 
-export const view = (model: Model): Html => {
+export const view = Submodel.defineView<Model, Message>(model => {
   const h = html<Message>()
-  return h.main(elAttrs<Message>(sxAttrs(h, layoutStyles.catalogShell)), [
+  return h.div(elAttrs<Message>(sxAttrs(h, layoutStyles.catalogShell)), [
     Stack.view({
       gap: 'lg',
       children: [
@@ -105,6 +104,7 @@ export const view = (model: Model): Html => {
         Card.section({
           title: 'Typography',
           description: 'Astryx-faithful type roles.',
+          padded: true,
           children: [
             Text.view({ children: 'Body text for a readable interface.' }),
             Text.view({ variant: 'body', children: 'Label text' }),
@@ -114,6 +114,7 @@ export const view = (model: Model): Html => {
         Card.section({
           title: 'Stack and Row',
           description: 'Token-based spacing and alignment.',
+          padded: true,
           children: [
             Row.view({
               align: 'wrap',
@@ -134,6 +135,7 @@ export const view = (model: Model): Html => {
         Card.section({
           title: 'Buttons',
           description: `Click count: ${model.clicks}`,
+          padded: true,
           children: [
             Row.view({
               align: 'wrap',
@@ -151,6 +153,7 @@ export const view = (model: Model): Html => {
         Card.section({
           title: 'Card',
           description: 'Root, header, and body slots compose surface chrome.',
+          padded: true,
           children: [
             Text.view({
               children:
@@ -161,6 +164,7 @@ export const view = (model: Model): Html => {
         Card.section({
           title: 'Form',
           description: 'Labeled controls with shared Astryx form styling.',
+          padded: true,
           children: [
             Input.view<Message>({
               id: 'catalog-email',
@@ -212,6 +216,7 @@ export const view = (model: Model): Html => {
         Card.section({
           title: 'Dense controls',
           description: 'Compact inputs and native select for filters.',
+          padded: true,
           children: [
             Row.view({
               align: 'wrap',
@@ -224,6 +229,7 @@ export const view = (model: Model): Html => {
                   placeholder: 'Filter…',
                   value: model.filter,
                   onInput: value => FilterChanged(value),
+                  label: 'Filter',
                 }),
                 NativeSelect.view<Message>({
                   id: 'catalog-kind',
@@ -236,6 +242,7 @@ export const view = (model: Model): Html => {
                     { value: 'active', label: 'Active' },
                   ],
                   onChange: value => KindChanged(value),
+                  label: 'Kind',
                 }),
               ],
             }),
@@ -244,6 +251,6 @@ export const view = (model: Model): Html => {
       ],
     }),
   ])
-}
+})
 
 export const Mount = { Model, init, update, view }

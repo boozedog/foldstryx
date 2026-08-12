@@ -22,6 +22,7 @@ export type InputControlConfig<M> = Readonly<{
   align?: InputAlign
   ariaLabel?: string
   name?: string
+  label?: string
 }>
 const widthStyle = (width: InputWidth | undefined) => {
   switch (width) {
@@ -56,7 +57,7 @@ const axis = (d: InputDensity, w?: InputWidth, a?: InputAlign) =>
   ] as const
 export const control = <M>(c: InputControlConfig<M>): Html => {
   const h = html<M>()
-  return h.input(
+  const input = h.input(
     elAttrs<M>(
       sxAttrs(h, ...axis(c.density ?? 'default', c.width, c.align)),
       h.Type(c.type ?? 'text'),
@@ -70,6 +71,12 @@ export const control = <M>(c: InputControlConfig<M>): Html => {
       ...(c.onBlur ? [h.OnBlur(c.onBlur)] : []),
     ),
   )
+  return c.label === undefined
+    ? input
+    : h.label(elAttrs<M>(sxAttrs(h, fieldStyles.field)), [
+        h.span(elAttrs<M>(sxAttrs(h, fieldStyles.label)), [c.label]),
+        input,
+      ])
 }
 export const view = <M>(
   c: Readonly<{

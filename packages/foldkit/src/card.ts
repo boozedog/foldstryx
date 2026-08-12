@@ -72,7 +72,7 @@ export const section = <ParentMessage>(config: CardSectionConfig): Html => {
     // One padding layer: root + panelPad. Title/description/body as direct children.
     return h.div(
       elAttrs<ParentMessage>(
-        sxAttrs(h, cardStyles.root, layoutStyles.panelPad),
+        sxAttrs(h, cardStyles.root, cardStyles.padded, layoutStyles.panelPad),
       ),
       [
         ...(config.title !== undefined

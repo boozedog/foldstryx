@@ -39,9 +39,9 @@ export const layoutStyles = stylex.create({
   catalogShell: {
     boxSizing: 'border-box',
     marginInline: 'auto',
-    maxWidth: '960px',
-    minHeight: '100vh',
-    paddingBlock: spacingVars['--spacing-6'],
+    maxWidth: '72rem',
+    minHeight: 0,
+    paddingBlock: spacingVars['--spacing-8'],
     paddingInline: spacingVars['--spacing-6'],
     width: '100%',
   },
