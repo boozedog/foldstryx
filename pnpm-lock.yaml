@@ -44,6 +44,9 @@ importers:
 
   examples/sidebar-demo:
     dependencies:
+      '@foldstryx/foldkit':
+        specifier: workspace:*
+        version: link:../../packages/foldkit
       '@foldstryx/kitchen-sink':
         specifier: workspace:*
         version: link:../../packages/kitchen-sink

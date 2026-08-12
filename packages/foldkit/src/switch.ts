@@ -61,9 +61,13 @@ export const styledViewInputs = (
       ],
     )
 
-    const fieldLabel = Field.label<SwitchMessage>(
-      config.label,
-      attributes.label,
+    const fieldLabel = h.span(
+      elAttrs<SwitchMessage>(
+        attributes.label,
+        h.Id('catalog-notifications-label'),
+        sxAttrs(h, fieldStyles.label),
+      ),
+      [config.label],
     )
     const fieldDescription =
       config.description !== undefined

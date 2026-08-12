@@ -25,19 +25,19 @@ export const cardStyles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-4'],
+    padding: spacingVars['--spacing-3'],
   },
   content: {
     display: 'flex',
     flexDirection: 'column',
-    gap: spacingVars['--spacing-4'],
-    padding: spacingVars['--spacing-4'],
+    gap: spacingVars['--spacing-2'],
+    padding: spacingVars['--spacing-3'],
   },
   body: {
     display: 'flex',
     flexDirection: 'column',
-    gap: spacingVars['--spacing-4'],
-    padding: spacingVars['--spacing-4'],
+    gap: spacingVars['--spacing-2'],
+    padding: spacingVars['--spacing-3'],
   },
   title: {
     color: colorVars['--color-text-primary'],
@@ -49,5 +49,10 @@ export const cardStyles = stylex.create({
     color: colorVars['--color-text-secondary'],
     fontFamily: typographyVars['--font-family-body'],
     margin: 0,
+  },
+  padded: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacingVars['--spacing-3'],
   },
 })

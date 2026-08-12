@@ -14,6 +14,8 @@ export * as Input from './input.js'
 export * as NativeSelect from './nativeSelect.js'
 export * as Separator from './separator.js'
 export * as Switch from './switch.js'
+export * as Icon from './icon.js'
+export * as Sidebar from './sidebar.js'
 export type {
   InputAlign,
   InputControlConfig,

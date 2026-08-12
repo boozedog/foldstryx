@@ -20,3 +20,10 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-family-body);
 }
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
