@@ -7,6 +7,15 @@ import {
 import * as stylex from '@stylexjs/stylex'
 
 export const layoutStyles = stylex.create({
+  checkbox: {
+    width: '16px',
+    height: '16px',
+  },
+  checkboxLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: spacingVars['--spacing-2'],
+  },
   stackXs: {
     display: 'flex',
     flexDirection: 'column',

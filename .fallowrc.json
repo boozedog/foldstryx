@@ -23,6 +23,19 @@
       },
       {
         "files": [
+          "packages/foldkit/src/switch.ts",
+          "packages/foldkit/src/nativeSelect.ts"
+        ],
+        "maxCrap": 100,
+        "reason": "Small closed-union form dispatchers mirror the donor API and are covered by sink/browser verification."
+      },
+      {
+        "files": ["packages/kitchen-sink/src/index.ts"],
+        "maxCrap": 100,
+        "reason": "Kitchen-sink catalog view intentionally composes all primitive demonstrations in one vertical page."
+      },
+      {
+        "files": [
           "packages/foldkit/src/text.ts",
           "packages/foldkit/src/card.ts",
           "packages/foldkit/src/row.ts"
