@@ -44,10 +44,12 @@ Styles stay **public** as an escape hatch. Package exports are **consumer contra
 
 ## Token maintenance
 
-- Astryx-derived StyleX variables live in `packages/tokens/src/index.ts`.
+- Astryx-derived StyleX variables live in `packages/tokens/src/index.stylex.ts`.
 - Preserve upstream CSS variable names such as `--color-accent` and `--spacing-2`.
-- Before lifting changes, run `git -C ../astryx rev-parse HEAD` and record that SHA in
-  `NOTICE`; compare values directly with `../astryx/packages/core/src/theme/tokens.stylex.ts`.
+- Automated gates (`pnpm check`, CI) MUST stay in-repo. `pnpm check:tokens` reads
+  `NOTICE` plus the lifted token module. It does **not** open `../astryx`.
+- When lifting tokens by hand, compare a local Astryx checkout, then record that SHA
+  in `NOTICE`. Do not add checkout paths to scripts or fallow.
 
 ## Role-based APIs
 
@@ -73,7 +75,7 @@ Consider stopping or narrowing foldstryx if:
 | Waiver ratchet         | `scripts/check-waiver-allowlist.mjs` + hk pre-commit / pre-push + `pnpm check` | Disable comments, oxlint/fallow/changeset exceptions, and `AWAIT_ALLOWLIST` cannot grow without updating the frozen baseline |
 | StyleX official        | `@stylexjs/eslint-plugin@0.19.0` via oxlint `jsPlugins` alias `stylex`         | `valid-styles`, `valid-shorthands`, unused, lookahead (error); `sort-keys` warn                                              |
 | Token / null / clobber | `@foldstryx/oxlint-plugin`                                                     | Hex/`14px` in `stylex.create()`, persist-null overrides, `sxAttrs` + raw `h.Class`/`h.Style`                                 |
-| Token fidelity         | `pnpm check:tokens`                                                            | Spot-check lifted Astryx CSS variable names/values                                                                           |
+| Token fidelity         | `pnpm check:tokens`                                                            | In-repo NOTICE pin + lifted token names/values (no `../astryx`)                                                              |
 | Demo smoke             | `pnpm check:demo`                                                              | Fresh Vite preview on `http://localhost:5173/` (no reuse of `pnpm dev`); needs `google-chrome` or `CHROME_PATH`              |
 | Still human            | Browser at `http://localhost:5173/`                                            | Astryx _feel_, optional PR screenshots — not pixel diffs                                                                     |
 
@@ -92,8 +94,9 @@ Story + Scene. Write failing tests before interactive behavior.
 
 ## Upstream
 
-Local Astryx checkout often at `../astryx`. Record the tracked commit when lifting
-tokens. Preserve MIT attribution in NOTICE for substantial adapted material.
+A local Astryx checkout may exist at `../astryx` for human lifts. Record the
+tracked commit in `NOTICE`. Preserve MIT attribution for substantial adapted
+material. Checks and CI must not require that checkout.
 
 ## First primitive APIs
 

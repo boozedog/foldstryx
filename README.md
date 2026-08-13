@@ -66,7 +66,7 @@ pnpm install
 mise run typecheck   # tsc across packages
 mise run test        # vitest
 mise run lint        # oxlint (foldkit MVU + Effect-async + StyleX jsPlugins)
-pnpm check:tokens    # Astryx token fidelity spot-check
+pnpm check:tokens    # in-repo NOTICE pin + lifted token spot-check
 pnpm check:demo      # vite preview + computed-style smoke on http://localhost:5173/
 pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
 pnpm check:waivers   # frozen disable-comment + config waiver ratchet
