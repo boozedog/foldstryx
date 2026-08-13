@@ -8,6 +8,7 @@ export { sidebarStyles } from './sidebar.stylex.js'
 export { badgeStyles } from './badge.stylex.js'
 export { alertStyles } from './alert.stylex.js'
 export { tooltipStyles } from './tooltip.stylex.js'
+export { tableStyles } from './table.stylex.js'
 export {
   checkboxStyles,
   fieldStyles,

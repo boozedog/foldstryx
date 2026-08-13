@@ -23,3 +23,4 @@ export const checkboxStyles = make
 export const switchStyles = make
 export const separatorStyles = make
 export const sidebarStyles = make
+export const tableStyles = make

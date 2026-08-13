@@ -9,15 +9,20 @@ import {
   Button,
   Card,
   Checkbox,
+  Details,
   EmptyState,
   Field,
   Input,
+  ListRow,
   LoadingPanel,
   NativeSelect,
+  Pagination,
   Row,
   Separator,
   Stack,
+  Stat,
   Switch,
+  Table,
   Text,
   Tooltip,
   elAttrs,
@@ -27,34 +32,36 @@ import { layoutStyles, tooltipStyles } from '@foldstryx/styles'
 
 export const Model = S.Struct({
   clicks: S.Finite,
+  detailsOpen: S.Boolean,
   email: S.String,
   filter: S.String,
   includeInactive: S.Boolean,
   kind: S.String,
   notifications: S.Boolean,
+  page: S.Finite,
   tooltip: Tooltip.Model,
 })
 export type Model = typeof Model.Type
 export const Clicked = () => ({ _tag: 'Clicked' as const })
-export const EmailChanged = (value: string) => ({
-  _tag: 'EmailChanged' as const,
-  value,
-})
-export const FilterChanged = (value: string) => ({
-  _tag: 'FilterChanged' as const,
-  value,
-})
+export const FieldChanged = (
+  field: 'email' | 'filter' | 'kind',
+  value: string,
+) => ({ _tag: 'FieldChanged' as const, field, value })
 export const IncludeInactiveChanged = (checked: boolean) => ({
   _tag: 'IncludeInactiveChanged' as const,
   checked,
 })
-export const KindChanged = (value: string) => ({
-  _tag: 'KindChanged' as const,
-  value,
-})
 export const NotificationsChanged = (checked: boolean) => ({
   _tag: 'NotificationsChanged' as const,
   checked,
+})
+export const DetailsToggled = (isOpen: boolean) => ({
+  _tag: 'DetailsToggled' as const,
+  isOpen,
+})
+export const PageChanged = (delta: number) => ({
+  _tag: 'PageChanged' as const,
+  delta,
 })
 export const GotTooltipMessage = (message: Tooltip.Message) => ({
   _tag: 'GotTooltipMessage' as const,
@@ -62,21 +69,23 @@ export const GotTooltipMessage = (message: Tooltip.Message) => ({
 })
 export type Message = Readonly<
   | { _tag: 'Clicked' }
-  | { _tag: 'EmailChanged'; value: string }
-  | { _tag: 'FilterChanged'; value: string }
+  | { _tag: 'FieldChanged'; field: 'email' | 'filter' | 'kind'; value: string }
   | { _tag: 'IncludeInactiveChanged'; checked: boolean }
-  | { _tag: 'KindChanged'; value: string }
   | { _tag: 'NotificationsChanged'; checked: boolean }
+  | { _tag: 'DetailsToggled'; isOpen: boolean }
+  | { _tag: 'PageChanged'; delta: number }
   | { _tag: 'GotTooltipMessage'; message: Tooltip.Message }
 >
 export const init: Runtime.ApplicationInit<Model, Message> = () => [
   {
     clicks: 0,
+    detailsOpen: false,
     email: '',
     filter: '',
     includeInactive: false,
     kind: 'all',
     notifications: false,
+    page: 1,
     tooltip: Tooltip.init('catalog-tooltip'),
   },
   [],
@@ -95,16 +104,22 @@ export const update = (
     }
     case 'Clicked':
       return [{ ...model, clicks: model.clicks + 1 }, []]
-    case 'EmailChanged':
-      return [{ ...model, email: message.value }, []]
-    case 'FilterChanged':
-      return [{ ...model, filter: message.value }, []]
+    case 'FieldChanged':
+      return [{ ...model, [message.field]: message.value }, []]
     case 'IncludeInactiveChanged':
       return [{ ...model, includeInactive: message.checked }, []]
-    case 'KindChanged':
-      return [{ ...model, kind: message.value }, []]
     case 'NotificationsChanged':
       return [{ ...model, notifications: message.checked }, []]
+    case 'DetailsToggled':
+      return [{ ...model, detailsOpen: message.isOpen }, []]
+    case 'PageChanged':
+      return [
+        {
+          ...model,
+          page: Math.min(Math.max(model.page + message.delta, 1), 5),
+        },
+        [],
+      ]
   }
 }
 
@@ -192,7 +207,7 @@ export const view = Submodel.defineView<Model, Message>(model => {
               id: 'catalog-email',
               label: 'Email',
               value: model.email,
-              onInput: value => EmailChanged(value),
+              onInput: value => FieldChanged('email', value),
               placeholder: 'name@example.com',
               description: 'We will never share your email.',
             }),
@@ -250,7 +265,7 @@ export const view = Submodel.defineView<Model, Message>(model => {
                   width: 'md',
                   placeholder: 'Filter…',
                   value: model.filter,
-                  onInput: value => FilterChanged(value),
+                  onInput: value => FieldChanged('filter', value),
                   label: 'Filter',
                 }),
                 NativeSelect.view<Message>({
@@ -263,7 +278,7 @@ export const view = Submodel.defineView<Model, Message>(model => {
                     { value: 'all', label: 'All kinds' },
                     { value: 'active', label: 'Active' },
                   ],
-                  onChange: value => KindChanged(value),
+                  onChange: value => FieldChanged('kind', value),
                   label: 'Kind',
                 }),
               ],
@@ -391,6 +406,120 @@ export const view = Submodel.defineView<Model, Message>(model => {
                   ),
               },
               toParentMessage: message => GotTooltipMessage(message),
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Data display',
+          description: 'Tables, stats, list rows, pagination, and disclosures.',
+          padded: true,
+          children: [
+            Stack.view({
+              gap: 'sm',
+              children: [
+                Table.wrap([
+                  Table.table([
+                    Table.thead([
+                      Table.tr({
+                        children: [
+                          Table.th('Project'),
+                          Table.th({ align: 'right', children: 'Value' }),
+                          Table.th({ align: 'right', children: 'Status' }),
+                        ],
+                      }),
+                    ]),
+                    Table.tbody([
+                      Table.tr({
+                        children: [
+                          Table.td('Foldstryx'),
+                          Table.td({ align: 'right', children: '1,240' }),
+                          Table.td({
+                            align: 'right',
+                            tone: 'success',
+                            children: 'Active',
+                          }),
+                        ],
+                      }),
+                      Table.tr({
+                        children: [
+                          Table.td('Sidebar'),
+                          Table.td({ align: 'right', children: '860' }),
+                          Table.td({
+                            align: 'right',
+                            tone: 'warning',
+                            children: 'Review',
+                          }),
+                        ],
+                      }),
+                      Table.tr({
+                        presentation: 'summary',
+                        children: [
+                          Table.td('Total'),
+                          Table.td({ align: 'right', children: '2,100' }),
+                          Table.td({ align: 'right', children: '' }),
+                        ],
+                      }),
+                    ]),
+                  ]),
+                ]),
+                Row.view({
+                  align: 'wrap',
+                  children: [
+                    Stat.card<Message>({
+                      label: 'Active users',
+                      state: new Stat.Ready({ value: '1,240' }),
+                    }),
+                    Stat.card<Message>({
+                      label: 'Error rate',
+                      state: new Stat.Failed({ message: 'Unavailable' }),
+                    }),
+                    Stat.card<Message>({
+                      label: 'Requests',
+                      state: new Stat.Loading(),
+                    }),
+                  ],
+                }),
+                ListRow.view<Message>({
+                  title: 'Recent activity',
+                  meta: ['Updated 2 min ago'],
+                  actions: [
+                    Button.view<Message>({
+                      label: 'View',
+                      size: 'sm',
+                      variant: 'ghost',
+                      onClick: Clicked(),
+                    }),
+                  ],
+                }),
+                Pagination.view<Message>({
+                  status: `Page ${model.page} of 5`,
+                  previous: Button.view<Message>({
+                    label: 'Previous',
+                    variant: 'secondary',
+                    size: 'sm',
+                    onClick: PageChanged(-1),
+                    isDisabled: model.page <= 1,
+                  }),
+                  next: Button.view<Message>({
+                    label: 'Next',
+                    variant: 'secondary',
+                    size: 'sm',
+                    onClick: PageChanged(1),
+                    isDisabled: model.page >= 5,
+                  }),
+                }),
+                Details.view<Message>({
+                  summary: 'More about this data',
+                  children: [
+                    Text.view({
+                      variant: 'muted',
+                      children: 'Disclosure body with supporting detail.',
+                    }),
+                  ],
+                  open: model.detailsOpen,
+                  onToggle: isOpen => DetailsToggled(isOpen),
+                }),
+              ],
             }),
           ],
         }),

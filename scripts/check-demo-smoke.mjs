@@ -322,6 +322,7 @@ const pageProbe = `(negative) => {
     'Alerts',
     'Feedback',
     'Tooltip',
+    'Data display',
   ]
   const bodyText = document.body.innerText ?? ''
   for (const heading of sectionHeadings) {
@@ -337,6 +338,12 @@ const pageProbe = `(negative) => {
   }
   if (document.querySelector('[role="tooltip"]') === null) {
     failures.push('missing role=tooltip panel')
+  }
+  if (document.querySelector('table') === null) {
+    failures.push('missing table element')
+  }
+  if (document.querySelector('[role="navigation"]') === null) {
+    failures.push('missing role=navigation pagination')
   }
   return { failures, bodyFont: bodyAfter, headingFont: headingAfter }
 }`

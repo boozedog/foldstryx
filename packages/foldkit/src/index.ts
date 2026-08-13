@@ -22,6 +22,11 @@ export * as EmptyState from './emptyState.js'
 export * as LoadingPanel from './loadingPanel.js'
 export * as Attention from './attention.js'
 export * as Tooltip from './tooltip.js'
+export * as Table from './table.js'
+export * as Stat from './stat.js'
+export * as ListRow from './listRow.js'
+export * as Pagination from './pagination.js'
+export * as Details from './details.js'
 export type {
   InputAlign,
   InputControlConfig,
@@ -34,3 +39,16 @@ export type { AlertVariant, AlertViewConfig } from './alert.js'
 export type { EmptyStateViewConfig } from './emptyState.js'
 export type { LoadingPanelViewConfig } from './loadingPanel.js'
 export type { AttentionViewConfig } from './attention.js'
+export type {
+  ThAlign,
+  ThConfig,
+  TdAlign,
+  TdTone,
+  TdConfig,
+  TrPresentation,
+  TrConfig,
+} from './table.js'
+export type { StatCardConfig, StatState } from './stat.js'
+export type { ListRowViewConfig } from './listRow.js'
+export type { PaginationViewConfig } from './pagination.js'
+export type { DetailsViewConfig } from './details.js'
