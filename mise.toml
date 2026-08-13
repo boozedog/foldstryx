@@ -28,6 +28,10 @@ run = "pnpm check:fallow"
 description = "Run vitest across workspace packages"
 run = "pnpm test"
 
+[tasks.waivers]
+description = "Frozen waiver / disable-comment ratchet"
+run = "pnpm check:waivers"
+
 [tasks.pre-commit]
 description = "Run pre-commit hooks"
 run = "hk run pre-commit"

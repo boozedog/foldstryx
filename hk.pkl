@@ -23,6 +23,18 @@ local linters = new Mapping<String, Step> {
     exclude = List("**/node_modules/**", "**/dist/**")
     check = "pnpm test"
   }
+  ["waivers"] {
+    glob = List(
+      ".oxlintrc.json",
+      ".fallowrc.json",
+      ".changeset/config.json",
+      "**/*.{ts,tsx,js,jsx,mjs,cjs,css}",
+      "scripts/check-waiver-allowlist.mjs",
+      "packages/oxlint-plugin-foldstryx/src/async-allowlist.ts"
+    )
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "pnpm check:waivers"
+  }
 }
 
 // The `check` task (`mise run check` / `pnpm check`) runs the full gate with
@@ -45,6 +57,9 @@ local fullGate = new Mapping<String, Step> {
   }
   ["async-allowlist"] {
     check = "pnpm check:async-allowlist"
+  }
+  ["waivers"] {
+    check = "pnpm check:waivers"
   }
   ["tokens"] {
     check = "pnpm check:tokens"
@@ -81,6 +96,9 @@ local prePushGate = new Mapping<String, Step> {
   }
   ["async-allowlist"] {
     check = "pnpm check:async-allowlist"
+  }
+  ["waivers"] {
+    check = "pnpm check:waivers"
   }
   ["tokens"] {
     check = "pnpm check:tokens"

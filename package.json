@@ -16,6 +16,7 @@
     "lint": "pnpm --filter @foldstryx/oxlint-plugin build && oxlint --disable-nested-config",
     "lint:ci": "oxlint --disable-nested-config",
     "check:async-allowlist": "node scripts/check-async-allowlist.mjs",
+    "check:waivers": "node scripts/check-waiver-allowlist.mjs",
     "check:lint-fixtures": "node scripts/check-lint-fixtures.mjs",
     "check:demo": "node scripts/check-demo-smoke.mjs",
     "check:fallow": "fallow",
