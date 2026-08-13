@@ -68,16 +68,16 @@ Consider stopping or narrowing foldstryx if:
 
 ## Quality gates
 
-| Gate                   | Source                                                                         | What it catches                                                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Foldkit MVU            | `@foldkit/oxlint-plugin` `recommended.json` (0.6.0, 25 rules)                  | Headless widget / message / view contracts                                                                                   |
-| Effect-async           | `@foldstryx/oxlint-plugin` + `scripts/check-async-allowlist.mjs`               | `async` / `await` / `new Promise` (allowlist must not grow)                                                                  |
-| Waiver ratchet         | `scripts/check-waiver-allowlist.mjs` + hk pre-commit / pre-push + `pnpm check` | Disable comments, oxlint/fallow/changeset exceptions, and `AWAIT_ALLOWLIST` cannot grow without updating the frozen baseline |
-| StyleX official        | `@stylexjs/eslint-plugin@0.19.0` via oxlint `jsPlugins` alias `stylex`         | `valid-styles`, `valid-shorthands`, unused, lookahead (error); `sort-keys` warn                                              |
-| Token / null / clobber | `@foldstryx/oxlint-plugin`                                                     | Hex/`14px` in `stylex.create()`, persist-null overrides, `sxAttrs` + raw `h.Class`/`h.Style`                                 |
-| Token fidelity         | `pnpm check:tokens`                                                            | In-repo NOTICE pin + lifted token names/values (no `../astryx`)                                                              |
-| Demo smoke             | `pnpm check:demo`                                                              | Fresh Vite preview on `http://localhost:5173/` (no reuse of `pnpm dev`); needs `google-chrome` or `CHROME_PATH`              |
-| Still human            | Browser at `http://localhost:5173/`                                            | Astryx _feel_, optional PR screenshots — not pixel diffs                                                                     |
+| Gate                   | Source                                                                         | What it catches                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Foldkit MVU            | `@foldkit/oxlint-plugin` `recommended.json` (0.6.0, 25 rules)                  | Headless widget / message / view contracts                                                                                                     |
+| Effect-async           | `@foldstryx/oxlint-plugin` + `scripts/check-async-allowlist.mjs`               | `async` / `await` / `new Promise` (allowlist must not grow)                                                                                    |
+| Waiver ratchet         | `scripts/check-waiver-allowlist.mjs` + hk pre-commit / pre-push + `pnpm check` | Disable comments, oxlint/fallow/changeset exceptions, and `AWAIT_ALLOWLIST` cannot grow without updating the frozen baseline                   |
+| StyleX official        | `@stylexjs/eslint-plugin@0.19.0` via oxlint `jsPlugins` alias `stylex`         | `valid-styles`, `valid-shorthands`, unused, lookahead (error); `sort-keys` warn                                                                |
+| Token / null / clobber | `@foldstryx/oxlint-plugin`                                                     | Hex/`14px` in `stylex.create()`, persist-null overrides, `sxAttrs` + raw `h.Class`/`h.Style`                                                   |
+| Token fidelity         | `pnpm check:tokens`                                                            | In-repo NOTICE pin + lifted token names/values (no `../astryx`)                                                                                |
+| Demo smoke             | `pnpm check:demo`                                                              | Fresh Vite preview on `http://localhost:5173/` (no reuse of `pnpm dev`); needs `google-chrome` or `CHROME_PATH`. CI sets `CHROME_NO_SANDBOX=1` |
+| Still human            | Browser at `http://localhost:5173/`                                            | Astryx _feel_, optional PR screenshots — not pixel diffs                                                                                       |
 
 We rely on official StyleX lint + the compiler, not a capabilities matrix. Pin oxlint (`1.78.0`) and `@stylexjs/eslint-plugin` (`0.19.0`); `jsPlugins` is alpha / not semver.
 
