@@ -88,7 +88,7 @@ Foldkit className clobber live in `@foldstryx/oxlint-plugin`.
 
 `pnpm check:waivers` freezes disable comments and oxlint/fallow/changeset exceptions.
 Install git hooks with `hk install` (or `hk install --mise` if you use mise tools).
-CI runs `hk run check`.
+hk is for pre-commit and pre-push only. CI and `mise run check` run `pnpm check`.
 
 ## Effect
 

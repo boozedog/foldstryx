@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check:
-    name: hk check
+    name: pnpm check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,11 +31,6 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Setup mise
-        uses: jdx/mise-action@v2
-        with:
-          cache: true
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -43,10 +38,7 @@ jobs:
         id: chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Waiver ratchet
-        run: pnpm check:waivers
-
-      - name: Full hk gate
-        run: hk run check
+      - name: Full gate
+        run: pnpm check
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}

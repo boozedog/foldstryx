@@ -37,47 +37,8 @@ local linters = new Mapping<String, Step> {
   }
 }
 
-// The `check` task (`mise run check` / `pnpm check`) runs the full gate with
-// plain `changeset status` so it passes on uncommitted work.
-local fullGate = new Mapping<String, Step> {
-  ["format:check"] {
-    check = "pnpm format:check"
-  }
-  ["lint"] {
-    check = "pnpm lint"
-  }
-  ["typecheck"] {
-    check = "pnpm typecheck"
-  }
-  ["fallow"] {
-    check = "pnpm check:fallow"
-  }
-  ["test"] {
-    check = "pnpm test"
-  }
-  ["async-allowlist"] {
-    check = "pnpm check:async-allowlist"
-  }
-  ["waivers"] {
-    check = "pnpm check:waivers"
-  }
-  ["tokens"] {
-    check = "pnpm check:tokens"
-  }
-  ["lint-fixtures"] {
-    depends = List("lint")
-    check = "pnpm check:lint-fixtures"
-  }
-  ["demo"] {
-    check = "pnpm check:demo"
-  }
-  ["changeset"] {
-    check = "pnpm check:changeset"
-  }
-}
-
-// Pre-push is the same full gate plus `changeset status --since=origin/master`,
-// which enforces that every changed package has a changeset (runs after commit).
+// hk is local git hooks only. `pnpm check` / CI do not evaluate this file.
+// Pre-push is the full gate plus `changeset status --since=origin/master`.
 local prePushGate = new Mapping<String, Step> {
   ["format:check"] {
     check = "pnpm format:check"
@@ -120,9 +81,6 @@ hooks {
     fix = false
     stash = "git"
     steps = linters
-  }
-  ["check"] {
-    steps = fullGate
   }
   ["pre-push"] {
     steps = prePushGate

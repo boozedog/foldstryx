@@ -27,7 +27,7 @@
     "test": "pnpm -r --if-present test",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "check": "hk run check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:fallow && pnpm test && pnpm check:async-allowlist && pnpm check:waivers && pnpm check:tokens && pnpm check:lint-fixtures && pnpm check:demo && pnpm check:changeset",
     "prepare": "pnpm --filter @foldstryx/oxlint-plugin build && effect-tsgo patch",
     "pre-push": "hk run pre-push",
     "check:tokens": "node scripts/check-token-fidelity.mjs"

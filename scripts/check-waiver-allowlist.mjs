@@ -5,7 +5,7 @@
  * Effect-async allowlist must match this baseline exactly. Growth fails.
  * Shrink also fails until EXPECTED is updated — that is the review signal.
  *
- * Wired through hk pre-commit / check / pre-push and GitHub Actions CI.
+ * Wired through hk pre-commit / pre-push, `pnpm check`, and GitHub Actions CI.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
