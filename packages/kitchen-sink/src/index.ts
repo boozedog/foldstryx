@@ -3,21 +3,27 @@ import { Command, Runtime, Submodel } from 'foldkit'
 import { html } from 'foldkit/html'
 
 import {
+  Alert,
+  Attention,
+  Badge,
   Button,
   Card,
   Checkbox,
+  EmptyState,
   Field,
   Input,
+  LoadingPanel,
   NativeSelect,
   Row,
   Separator,
   Stack,
   Switch,
   Text,
+  Tooltip,
   elAttrs,
   sxAttrs,
 } from '@foldstryx/foldkit'
-import { layoutStyles } from '@foldstryx/styles'
+import { layoutStyles, tooltipStyles } from '@foldstryx/styles'
 
 export const Model = S.Struct({
   clicks: S.Finite,
@@ -26,6 +32,7 @@ export const Model = S.Struct({
   includeInactive: S.Boolean,
   kind: S.String,
   notifications: S.Boolean,
+  tooltip: Tooltip.Model,
 })
 export type Model = typeof Model.Type
 export const Clicked = () => ({ _tag: 'Clicked' as const })
@@ -49,6 +56,10 @@ export const NotificationsChanged = (checked: boolean) => ({
   _tag: 'NotificationsChanged' as const,
   checked,
 })
+export const GotTooltipMessage = (message: Tooltip.Message) => ({
+  _tag: 'GotTooltipMessage' as const,
+  message,
+})
 export type Message = Readonly<
   | { _tag: 'Clicked' }
   | { _tag: 'EmailChanged'; value: string }
@@ -56,6 +67,7 @@ export type Message = Readonly<
   | { _tag: 'IncludeInactiveChanged'; checked: boolean }
   | { _tag: 'KindChanged'; value: string }
   | { _tag: 'NotificationsChanged'; checked: boolean }
+  | { _tag: 'GotTooltipMessage'; message: Tooltip.Message }
 >
 export const init: Runtime.ApplicationInit<Model, Message> = () => [
   {
@@ -65,26 +77,36 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => [
     includeInactive: false,
     kind: 'all',
     notifications: false,
+    tooltip: Tooltip.init('catalog-tooltip'),
   },
   [],
 ]
 export const update = (
   model: Model,
   message: Message,
-): readonly [Model, ReadonlyArray<Command.Command<Message>>] => [
-  message._tag === 'Clicked'
-    ? { ...model, clicks: model.clicks + 1 }
-    : message._tag === 'EmailChanged'
-      ? { ...model, email: message.value }
-      : message._tag === 'FilterChanged'
-        ? { ...model, filter: message.value }
-        : message._tag === 'IncludeInactiveChanged'
-          ? { ...model, includeInactive: message.checked }
-          : message._tag === 'KindChanged'
-            ? { ...model, kind: message.value }
-            : { ...model, notifications: message.checked },
-  [],
-]
+): readonly [Model, ReadonlyArray<Command.Command<Message>>] => {
+  switch (message._tag) {
+    case 'GotTooltipMessage': {
+      const [tooltip, commands] = Tooltip.update(model.tooltip, message.message)
+      return [
+        { ...model, tooltip },
+        Command.mapMessages(commands, m => GotTooltipMessage(m)),
+      ]
+    }
+    case 'Clicked':
+      return [{ ...model, clicks: model.clicks + 1 }, []]
+    case 'EmailChanged':
+      return [{ ...model, email: message.value }, []]
+    case 'FilterChanged':
+      return [{ ...model, filter: message.value }, []]
+    case 'IncludeInactiveChanged':
+      return [{ ...model, includeInactive: message.checked }, []]
+    case 'KindChanged':
+      return [{ ...model, kind: message.value }, []]
+    case 'NotificationsChanged':
+      return [{ ...model, notifications: message.checked }, []]
+  }
+}
 
 export const view = Submodel.defineView<Model, Message>(model => {
   const h = html<Message>()
@@ -245,6 +267,130 @@ export const view = Submodel.defineView<Model, Message>(model => {
                   label: 'Kind',
                 }),
               ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Badges',
+          description: 'Status and metadata chips across sentiment variants.',
+          padded: true,
+          children: [
+            Row.view({
+              align: 'wrap',
+              children: [
+                Badge.view({ label: 'Default' }),
+                Badge.view({ label: 'Secondary', variant: 'secondary' }),
+                Badge.view({ label: 'Destructive', variant: 'destructive' }),
+                Badge.view({ label: 'Outline', variant: 'outline' }),
+                Badge.view({ label: 'Success', variant: 'success' }),
+                Badge.view({ label: 'Warning', variant: 'warning' }),
+                Badge.view({ label: 'Info', variant: 'info' }),
+                Badge.view({ label: 'Large', size: 'lg' }),
+              ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Alerts',
+          description: 'Role=alert banners with optional action slots.',
+          padded: true,
+          children: [
+            Stack.view({
+              gap: 'sm',
+              children: [
+                Alert.view<Message>({
+                  title: 'Default',
+                  body: 'A neutral informational banner.',
+                }),
+                Alert.view<Message>({
+                  variant: 'destructive',
+                  title: 'Error',
+                  body: 'Something went wrong.',
+                  action: Button.view<Message>({
+                    label: 'Dismiss',
+                    variant: 'ghost',
+                    size: 'sm',
+                    onClick: Clicked(),
+                  }),
+                }),
+                Alert.view<Message>({
+                  variant: 'warning',
+                  body: 'Review required before continuing.',
+                  compact: true,
+                }),
+                Alert.view<Message>({
+                  variant: 'success',
+                  body: 'Import complete.',
+                }),
+              ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Feedback',
+          description: 'Loading, empty, and attention surfaces.',
+          padded: true,
+          children: [
+            Stack.view({
+              gap: 'sm',
+              children: [
+                LoadingPanel.view<Message>({
+                  message: 'Loading panel…',
+                  card: false,
+                }),
+                EmptyState.view<Message>({
+                  title: 'Nothing here',
+                  message: 'Empty state with an optional action.',
+                  action: Button.view<Message>({
+                    label: 'Create',
+                    size: 'sm',
+                    variant: 'ghost',
+                    onClick: Clicked(),
+                  }),
+                  card: false,
+                }),
+                Attention.view<Message>({
+                  title: 'Attention',
+                  body: 'Soft callout for inline notices (not role=alert).',
+                }),
+              ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Tooltip',
+          description: 'Hover or focus the trigger to reveal the panel.',
+          padded: true,
+          children: [
+            h.submodel({
+              slotId: 'catalog-tooltip',
+              model: model.tooltip,
+              view: Tooltip.view,
+              viewInputs: {
+                anchor: { placement: 'top', gap: 8, padding: 8 },
+                enabled: true,
+                toView: ({ trigger, panel, isVisible }) =>
+                  h.div(
+                    elAttrs<Message>(sxAttrs(h, layoutStyles.rowCenterGap2)),
+                    [
+                      h.button(elAttrs<Message>(trigger), [
+                        'Hover or focus me',
+                      ]),
+                      h.div(
+                        elAttrs<Message>(
+                          sxAttrs(
+                            h,
+                            tooltipStyles.content,
+                            isVisible ? undefined : tooltipStyles.contentHidden,
+                          ),
+                          panel,
+                        ),
+                        ['Tooltip content'],
+                      ),
+                    ],
+                  ),
+              },
+              toParentMessage: message => GotTooltipMessage(message),
             }),
           ],
         }),

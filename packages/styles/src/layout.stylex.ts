@@ -1,5 +1,8 @@
 import {
+  borderVars,
   colorVars,
+  fontWeightVars,
+  radiusVars,
   spacingVars,
   typeScaleVars,
   typographyVars,
@@ -47,6 +50,32 @@ export const layoutStyles = stylex.create({
   },
   panelPad: { padding: spacingVars['--spacing-4'] },
   selfStart: { alignSelf: 'flex-start' },
+  selfCenter: { alignSelf: 'center' },
+  loadingPanel: {
+    color: colorVars['--color-text-secondary'],
+    padding: spacingVars['--spacing-4'],
+    textAlign: 'center',
+  },
+  attentionCard: {
+    backgroundColor: colorVars['--color-warning-muted'],
+    borderColor: colorVars['--color-warning'],
+    borderRadius: radiusVars['--radius-container'],
+    borderStyle: 'solid',
+    borderWidth: borderVars['--border-width'],
+    paddingBlock: spacingVars['--spacing-3'],
+    paddingInline: spacingVars['--spacing-4'],
+  },
+  attentionTitle: {
+    color: colorVars['--color-warning'],
+    fontFamily: typographyVars['--font-family-heading'],
+    fontWeight: fontWeightVars['--font-weight-medium'],
+    margin: 0,
+  },
+  attentionBody: {
+    color: colorVars['--color-warning'],
+    fontSize: typeScaleVars['--text-body-size'],
+    margin: 0,
+  },
   mt2: { marginTop: spacingVars['--spacing-2'] },
   mt3: { marginTop: spacingVars['--spacing-3'] },
   rowBetween: {
