@@ -10,7 +10,6 @@ import {
 } from '@foldstryx/tokens/index.stylex.ts'
 import * as stylex from '@stylexjs/stylex'
 
-const focus = { boxShadow: shadowVars['--shadow-inset-selected'] } as const
 export const inputStyles = stylex.create({
   input: {
     boxSizing: 'border-box',
@@ -25,13 +24,25 @@ export const inputStyles = stylex.create({
     backgroundColor: 'transparent',
     paddingInline: spacingVars['--spacing-3'],
     paddingBlock: spacingVars['--spacing-1'],
-    color: colorVars['--color-text-primary'],
     fontFamily: typographyVars['--font-family-body'],
     fontSize: typeScaleVars['--text-body-size'],
     outline: 'none',
-    ':focus-visible': focus,
-    '::placeholder': { color: colorVars['--color-text-secondary'] },
-    ':disabled': { cursor: 'not-allowed', opacity: 0.5 },
+    boxShadow: {
+      default: 'none',
+      ':focus-visible': shadowVars['--shadow-inset-selected'],
+    },
+    color: {
+      default: colorVars['--color-text-primary'],
+      '::placeholder': colorVars['--color-text-secondary'],
+    },
+    cursor: {
+      default: 'auto',
+      ':disabled': 'not-allowed',
+    },
+    opacity: {
+      default: 1,
+      ':disabled': 0.5,
+    },
   },
 })
 export const formDensityStyles = stylex.create({
@@ -62,10 +73,10 @@ export const fieldStyles = stylex.create({
   },
   fieldContent: {
     display: 'flex',
-    flex: 1,
+    flex: '1',
     flexDirection: 'column',
     gap: spacingVars['--spacing-0-5'],
-    lineHeight: 1.375,
+    lineHeight: typeScaleVars['--text-body-leading'],
   },
   label: {
     display: 'flex',
@@ -79,7 +90,7 @@ export const fieldStyles = stylex.create({
   description: {
     color: colorVars['--color-text-secondary'],
     fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: 1.25,
+    lineHeight: typeScaleVars['--text-supporting-leading'],
   },
   error: {
     color: colorVars['--color-error'],
@@ -101,9 +112,18 @@ export const checkboxStyles = stylex.create({
     backgroundColor: 'transparent',
     padding: 0,
     color: colorVars['--color-on-accent'],
-    cursor: 'pointer',
-    ':focus-visible': focus,
-    ':disabled': { cursor: 'not-allowed', opacity: 0.5 },
+    boxShadow: {
+      default: 'none',
+      ':focus-visible': shadowVars['--shadow-inset-selected'],
+    },
+    cursor: {
+      default: 'pointer',
+      ':disabled': 'not-allowed',
+    },
+    opacity: {
+      default: 1,
+      ':disabled': 0.5,
+    },
   },
   rootChecked: {
     borderColor: colorVars['--color-accent'],
@@ -123,12 +143,19 @@ export const switchStyles = stylex.create({
     flexShrink: 0,
     alignItems: 'center',
     borderRadius: radiusVars['--radius-full'],
-    border: 0,
+    borderWidth: 0,
+    borderStyle: 'none',
     backgroundColor: colorVars['--color-track'],
     padding: 0,
+    boxShadow: {
+      default: 'none',
+      ':focus-visible': shadowVars['--shadow-inset-selected'],
+    },
     cursor: 'pointer',
-    ':focus-visible': focus,
-    ':disabled': { opacity: 0.5 },
+    opacity: {
+      default: 1,
+      ':disabled': 0.5,
+    },
   },
   rootChecked: { backgroundColor: colorVars['--color-accent'] },
   thumb: {
@@ -138,7 +165,9 @@ export const switchStyles = stylex.create({
     marginInline: spacingVars['--spacing-0-5'],
     borderRadius: radiusVars['--radius-full'],
     backgroundColor: colorVars['--color-background-surface'],
-    transition: 'transform 150ms ease',
+    transitionProperty: 'transform',
+    transitionDuration: '150ms',
+    transitionTimingFunction: 'ease',
     transform: 'translateX(0)',
   },
   thumbChecked: { transform: 'translateX(12px)' },

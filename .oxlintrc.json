@@ -6,6 +6,10 @@
     {
       "name": "foldstryx",
       "specifier": "@foldstryx/oxlint-plugin"
+    },
+    {
+      "name": "stylex",
+      "specifier": "@stylexjs/eslint-plugin"
     }
   ],
   "rules": {
@@ -27,7 +31,24 @@
     ],
     "foldstryx/no-async-function": "error",
     "foldstryx/no-await-expression": "error",
-    "foldstryx/no-new-promise": "error"
+    "foldstryx/no-new-promise": "error",
+    "foldstryx/no-hardcoded-styles": "error",
+    "foldstryx/no-stylex-null-override": "error",
+    "foldstryx/no-stylex-clobber": "error",
+    "stylex/valid-styles": "error",
+    "stylex/valid-shorthands": "error",
+    "stylex/no-unused": "warn",
+    "stylex/no-legacy-contextual-styles": "error",
+    "stylex/no-conflicting-props": "error",
+    "stylex/no-nonstandard-styles": "error",
+    "stylex/no-lookahead-selectors": "warn",
+    "stylex/sort-keys": "warn",
+    "stylex/enforce-extension": [
+      "error",
+      {
+        "legacyAllowMixedExports": true
+      }
+    ]
   },
   "overrides": [
     {
@@ -38,6 +59,12 @@
         "foldstryx/no-new-promise": "off",
         "typescript/consistent-type-assertions": "off"
       }
+    },
+    {
+      "files": ["packages/styles/**", "packages/tokens/**"],
+      "rules": {
+        "stylex/enforce-extension": "off"
+      }
     }
   ],
   "ignorePatterns": [
@@ -45,6 +72,7 @@
     "dist/",
     "**/*.d.ts",
     "packages/oxlint-plugin-foldstryx/",
+    "scripts/**",
     "**/vite.config.ts",
     "**/vitest.config.ts",
     "**/vite.aliases.ts"

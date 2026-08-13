@@ -1,6 +1,7 @@
 import {
   borderVars,
   colorVars,
+  fontWeightVars,
   radiusVars,
   shadowVars,
   spacingVars,
@@ -42,7 +43,7 @@ export const cardStyles = stylex.create({
   title: {
     color: colorVars['--color-text-primary'],
     fontFamily: typographyVars['--font-family-heading'],
-    fontWeight: '600',
+    fontWeight: fontWeightVars['--font-weight-semibold'],
     margin: 0,
   },
   description: {

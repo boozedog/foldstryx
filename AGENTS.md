@@ -64,6 +64,26 @@ Consider stopping or narrowing foldstryx if:
 - Upstream token sync is high churn with no consumer payoff.
 - The kit is only “foldstylex with different colors.”
 
+## Quality gates
+
+| Gate                   | Source                                                                 | What it catches                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Foldkit MVU            | `@foldkit/oxlint-plugin` `recommended.json` (0.6.0, 25 rules)          | Headless widget / message / view contracts                                                                      |
+| Effect-async           | `@foldstryx/oxlint-plugin` + `scripts/check-async-allowlist.mjs`       | `async` / `await` / `new Promise` (allowlist must not grow)                                                     |
+| StyleX official        | `@stylexjs/eslint-plugin@0.19.0` via oxlint `jsPlugins` alias `stylex` | `valid-styles`, `valid-shorthands` (error); unused / sort / lookahead (warn)                                    |
+| Token / null / clobber | `@foldstryx/oxlint-plugin`                                             | Hex/`14px` in `stylex.create()`, persist-null overrides, `sxAttrs` + raw `h.Class`/`h.Style`                    |
+| Token fidelity         | `pnpm check:tokens`                                                    | Spot-check lifted Astryx CSS variable names/values                                                              |
+| Demo smoke             | `pnpm check:demo`                                                      | Fresh Vite preview on `http://localhost:5173/` (no reuse of `pnpm dev`); needs `google-chrome` or `CHROME_PATH` |
+| Still human            | Browser at `http://localhost:5173/`                                    | Astryx _feel_, optional PR screenshots — not pixel diffs                                                        |
+
+We rely on official StyleX lint + the compiler, not a capabilities matrix. Pin oxlint (`1.78.0`) and `@stylexjs/eslint-plugin` (`0.19.0`); `jsPlugins` is alpha / not semver.
+
+`stylex/enforce-extension` is configured with `legacyAllowMixedExports: true`, then **off** for `packages/tokens/**` and `packages/styles/**`. Token Defaults + Vars + types stay in one `index.stylex.ts` (Astryx layout). Style modules use the `.stylex.ts` suffix for `stylex.create()`, not `defineVars`. We do **not** explode those files just to satisfy the default. Official `stylex/valid-shorthands` covers multi-value `padding`/`margin`/`font`/`border*`; we did **not** port Astryx `no-border-shorthand` (would double-report).
+
+Official `stylex/no-conflicting-props` is JSX-only. Foldkit uses `sxAttrs` + `h.Class` / `h.Style`; `foldstryx/no-stylex-clobber` is the analogue. Prefer extra styles in `sxAttrs()` — Foldkit last-write-wins on `Style`.
+
+`FOLDSTRYX_STRICT_LINT=1` / `CI=true` is reserved if token-hardcode ever needs a local-warn / CI-error split. Today `no-hardcoded-styles` is **error** in `pnpm lint` because the styles package is clean for Astryx’s property set (width/height/`boxShadow`/`fontFamily` stacks stay out of scope).
+
 ## Testing
 
 Mirror foldstylex / foldkit: vitest, `@effect/vitest`, happy-dom, `foldkit/test`

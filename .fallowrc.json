@@ -4,7 +4,9 @@
     "**/dist/**",
     "**/node_modules/**",
     "**/*.d.ts",
-    "**/.changeset/**"
+    "**/.changeset/**",
+    "scripts/fixtures/**",
+    "scripts/check-lint-fixtures.mjs"
   ],
   "ignoreDependencies": ["@foldkit/oxlint-plugin"],
   "duplicates": {
@@ -15,11 +17,23 @@
       {
         "files": [
           "packages/oxlint-plugin-foldstryx/src/guards.ts",
+          "packages/oxlint-plugin-foldstryx/src/stylex-ast.ts",
           "packages/oxlint-plugin-foldstryx/src/rules/no-await-expression.ts",
-          "packages/oxlint-plugin-foldstryx/src/rules/no-new-promise.ts"
+          "packages/oxlint-plugin-foldstryx/src/rules/no-new-promise.ts",
+          "packages/oxlint-plugin-foldstryx/src/rules/no-hardcoded-styles.ts",
+          "packages/oxlint-plugin-foldstryx/src/rules/no-stylex-clobber.ts",
+          "packages/oxlint-plugin-foldstryx/src/rules/no-stylex-null-override.ts"
         ],
-        "maxCrap": 80,
-        "reason": "Dev-tooling oxlint plugin rules: low complexity, CRAP inflated by being untested (bind-aware scope logic). Verify via oxlint fixtures; tests are tracked debt."
+        "maxCrap": 140,
+        "maxCognitive": 25,
+        "reason": "Dev-tooling oxlint plugin rules: CRAP inflated by being untested. Verify via scripts/check-lint-fixtures.mjs."
+      },
+      {
+        "files": ["scripts/check-demo-smoke.mjs"],
+        "maxCrap": 200,
+        "maxUnitSize": 140,
+        "maxCognitive": 20,
+        "reason": "Demo smoke CDP helper is a Node script verified by pnpm check:demo, not library code."
       },
       {
         "files": [

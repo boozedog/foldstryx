@@ -2,7 +2,7 @@
   "name": "@foldstryx/oxlint-plugin",
   "version": "0.0.1",
   "private": true,
-  "description": "Oxlint rules for Foldstryx: bans async/await/Promise with a pattern-based allowlist",
+  "description": "Oxlint rules for Foldstryx: Effect-async ban plus StyleX token / null-override / Foldkit clobber rules",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
