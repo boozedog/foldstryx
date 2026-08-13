@@ -66,11 +66,12 @@ pnpm install
 mise run typecheck   # tsc across packages
 mise run test        # vitest
 mise run lint        # oxlint (foldkit MVU + Effect-async + StyleX jsPlugins)
-pnpm check:tokens    # Astryx token fidelity spot-check
+pnpm check:tokens    # in-repo NOTICE pin + lifted token spot-check
 pnpm check:demo      # vite preview + computed-style smoke on http://localhost:5173/
 pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
-mise run check       # full gate (format, lint, tsc, fallow, test, tokens, fixtures, demo)
-mise run pre-commit  # hk changed-file hooks
+pnpm check:waivers   # frozen disable-comment + config waiver ratchet
+mise run check       # full gate (format, lint, tsc, fallow, test, tokens, fixtures, demo, waivers)
+mise run pre-commit  # hk changed-file hooks (includes waiver ratchet)
 ```
 
 The visual catalog runs at `http://localhost:5173/`. UI and StyleX changes require a
@@ -83,8 +84,11 @@ automated computed-style subset. Astryx _feel_ stays human.
 
 Official StyleX rules run through oxlint `jsPlugins` (`@stylexjs/eslint-plugin@0.19.0`,
 alias `stylex`) — there is no second ESLint runner. Token-hardcode / null-override /
-Foldkit className clobber live in `@foldstryx/oxlint-plugin`. If those ever need a
-local-warn / CI-error split, set `FOLDSTRYX_STRICT_LINT=1` (or rely on `CI=true`).
+Foldkit className clobber live in `@foldstryx/oxlint-plugin`.
+
+`pnpm check:waivers` freezes disable comments and oxlint/fallow/changeset exceptions.
+Install git hooks with `hk install` (or `hk install --mise` if you use mise tools).
+hk is for pre-commit and pre-push only. CI and `mise run check` run `pnpm check`.
 
 ## Effect
 

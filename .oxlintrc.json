@@ -37,18 +37,13 @@
     "foldstryx/no-stylex-clobber": "error",
     "stylex/valid-styles": "error",
     "stylex/valid-shorthands": "error",
-    "stylex/no-unused": "warn",
+    "stylex/no-unused": "error",
     "stylex/no-legacy-contextual-styles": "error",
     "stylex/no-conflicting-props": "error",
     "stylex/no-nonstandard-styles": "error",
-    "stylex/no-lookahead-selectors": "warn",
+    "stylex/no-lookahead-selectors": "error",
     "stylex/sort-keys": "warn",
-    "stylex/enforce-extension": [
-      "error",
-      {
-        "legacyAllowMixedExports": true
-      }
-    ]
+    "stylex/enforce-extension": "error"
   },
   "overrides": [
     {

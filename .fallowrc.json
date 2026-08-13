@@ -6,7 +6,8 @@
     "**/*.d.ts",
     "**/.changeset/**",
     "scripts/fixtures/**",
-    "scripts/check-lint-fixtures.mjs"
+    "scripts/check-lint-fixtures.mjs",
+    "scripts/check-waiver-allowlist.mjs"
   ],
   "ignoreDependencies": ["@foldkit/oxlint-plugin"],
   "duplicates": {

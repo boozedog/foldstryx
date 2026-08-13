@@ -4,7 +4,9 @@
  * Builds `sidebar-demo`, then boots a fresh `vite preview` on
  * http://localhost:5173/. It does not reuse an already-running `pnpm dev`.
  * Requires `google-chrome` or `CHROME_PATH`. Pass `--negative=font` or
- * `--negative=concat` to assert the gate fails.
+ * `--negative=concat` to assert the gate fails. GitHub Actions sets `CI=true`;
+ * that (or `CHROME_NO_SANDBOX=1`) adds `--no-sandbox` because ubuntu-latest
+ * cannot use Chromium's user-namespace sandbox.
  */
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
@@ -102,19 +104,29 @@ const chromePath = () => {
   return 'google-chrome'
 }
 
+const chromeNeedsNoSandbox = () =>
+  process.env.CI === 'true' || process.env.CHROME_NO_SANDBOX === '1'
+
+const chromeArgs = () => {
+  const args = [
+    '--headless=new',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+    '--no-first-run',
+    '--no-default-browser-check',
+    `--user-data-dir=/tmp/foldstryx-demo-smoke-chrome-${process.pid}-${Date.now()}`,
+    '--remote-debugging-port=0',
+  ]
+  if (chromeNeedsNoSandbox()) {
+    args.push('--no-sandbox', '--disable-setuid-sandbox')
+  }
+  return args
+}
+
 const withChrome = async (evaluate, mode) => {
-  const chrome = spawn(
-    chromePath(),
-    [
-      '--headless=new',
-      '--disable-gpu',
-      '--no-first-run',
-      '--no-default-browser-check',
-      `--user-data-dir=/tmp/foldstryx-demo-smoke-chrome-${process.pid}-${Date.now()}`,
-      '--remote-debugging-port=0',
-    ],
-    { stdio: ['ignore', 'pipe', 'pipe'] },
-  )
+  const chrome = spawn(chromePath(), chromeArgs(), {
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
   let stderr = ''
   chrome.stderr.on('data', chunk => {
     stderr += chunk.toString()

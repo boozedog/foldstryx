@@ -1,16 +1,22 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-const upstreamPath = new URL(
-  '../../astryx/packages/core/src/theme/tokens.stylex.ts',
-  import.meta.url,
-)
+const noticePath = new URL('../NOTICE', import.meta.url)
 const localPath = new URL(
   '../packages/tokens/src/index.stylex.ts',
   import.meta.url,
 )
-const upstream = fs.readFileSync(upstreamPath, 'utf8')
+const notice = fs.readFileSync(noticePath, 'utf8')
 const local = fs.readFileSync(localPath, 'utf8')
+
+const pin = notice.match(
+  /Astryx source pin used for the lifted token module:\n([0-9a-f]{40})/,
+)
+assert.ok(pin, 'NOTICE must record a 40-character Astryx source pin')
+assert.ok(
+  notice.includes('Source path: packages/core/src/theme/tokens.stylex.ts'),
+  'NOTICE must record the Astryx token source path',
+)
 
 for (const token of [
   "'--color-accent': 'light-dark(#0064E0, #2694FE)'",
@@ -22,9 +28,8 @@ for (const token of [
   "'--font-size-base': '0.875rem'",
   "'--text-heading-1-size': 'var(--font-size-2xl)'",
 ]) {
-  assert.ok(upstream.includes(token), `missing upstream token: ${token}`)
   assert.ok(local.includes(token), `missing lifted token: ${token}`)
 }
 
 assert.doesNotMatch(local, /scaffold/)
-console.log('Astryx token fidelity spot-check passed')
+console.log(`Astryx token fidelity spot-check passed (pin ${pin[1]})`)
