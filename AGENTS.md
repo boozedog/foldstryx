@@ -92,6 +92,34 @@ Waivers are frozen. `pnpm check:waivers` (hk pre-commit / pre-push, `pnpm check`
 Mirror foldstylex / foldkit: vitest, `@effect/vitest`, happy-dom, `foldkit/test`
 Story + Scene. Write failing tests before interactive behavior.
 
+### Minimum test contract for parity components
+
+Every new component that lands in `packages/foldkit` MUST ship with tests that
+cover the categories below, mapped to Foldkit APIs (no React / RTL). The
+`@foldstryx/styles` module is aliased to `packages/foldkit/src/stylesStub.ts` in
+unit tests, so StyleX selection is asserted by the stub's `sx-<key>` class names.
+
+- **Pure / render** (`*.test.ts`): render the view to a VNode and assert tag,
+  text, attributes, handlers, slots, and selected StyleX keys. Cover defaults,
+  every semantic variant and size, optional content, and omitted content.
+- **Accessibility**: assert ARIA roles and relationships (`role`, `aria-*`,
+  `aria-describedby` linkage) and that non-urgent surfaces are NOT `role="alert"`.
+- **Interactive** (`*.scene.test.ts`): a real `update` + typed message union,
+  driven through `Scene.role` / `Scene.selector` / `Scene.click` / focus /
+  keyboard. Cover one happy path and one negative/disabled path. Acknowledge
+  mounts that fire and unmount with `Scene.Mount.expectEnded`.
+- **MVU / submodel / async** (`*.story.test.ts`): state-machine transitions,
+  command lifecycle, stale-timer handling, and out-messages without a DOM.
+- **Visual slices**: browser verification at `http://localhost:5173/` plus the
+  `pnpm check:demo` smoke probe.
+
+The kitchen-sink catalog is covered by the demo smoke probe
+(`scripts/check-demo-smoke.mjs`), which asserts the Phase B section headings and
+key semantic roles (`role=alert`, `role=switch`, `role=tooltip`). Do not add a
+second Scene harness that mounts the full `Submodel.defineView` catalog as a
+top-level view — nested submodel mounting is not a supported Scene top-level
+shape; extend the smoke probe instead.
+
 ## Upstream
 
 A local Astryx checkout may exist at `../astryx` for human lifts. Record the

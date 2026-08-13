@@ -5,6 +5,7 @@ import { describe, expect, it } from '@effect/vitest'
 import {
   ElapsedShowDelay,
   EnteredTrigger,
+  PressedEscape,
   ShowAfterDelay,
   update,
 } from '@foldkit/ui/tooltip'
@@ -25,6 +26,25 @@ describe('SidebarTooltip', () => {
       Story.model(model => {
         expect(model.isOpen).toBe(true)
         expect(model.isHovered).toBe(true)
+      }),
+      Story.Command.expectNone(),
+    )
+  })
+
+  it('dismisses an open tooltip on Escape without lying about hover state', () => {
+    Story.story(
+      update,
+      Story.with(init('sidebar-tip')),
+      Story.message(EnteredTrigger()),
+      Story.Command.resolve(ShowAfterDelay, ElapsedShowDelay({ version: 1 })),
+      Story.model(model => {
+        expect(model.isOpen).toBe(true)
+      }),
+      Story.message(PressedEscape()),
+      Story.model(model => {
+        expect(model.isOpen).toBe(false)
+        expect(model.isHovered).toBe(true)
+        expect(model.isDismissed).toBe(true)
       }),
       Story.Command.expectNone(),
     )

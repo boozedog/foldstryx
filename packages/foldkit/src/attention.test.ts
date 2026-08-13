@@ -7,6 +7,7 @@ import { view } from './attention.js'
 type Node = Readonly<{
   children?: ReadonlyArray<unknown> | undefined
   text?: string | undefined
+  data?: Readonly<{ attrs?: Readonly<Record<string, string>> }>
 }>
 
 const collectText = (node: unknown): string => {
@@ -35,5 +36,23 @@ describe('Attention', () => {
     )
     expect(text).toContain('Note')
     expect(text).toContain('Review optional fields before submit.')
+  })
+
+  it('renders body without a title', () => {
+    const text = collectText(asNode(view({ body: 'Just a tip.' })))
+    expect(text).toContain('Just a tip.')
+  })
+
+  it('renders children after the body', () => {
+    const child = { sel: 'button', children: ['Learn more'] } as unknown as Html
+    const root = asNode(view({ body: 'Tip', children: [child] }))
+    const children = root.children as ReadonlyArray<Node>
+    expect(children).toHaveLength(2)
+    expect(collectText(children[1])).toContain('Learn more')
+  })
+
+  it('is not role=alert (soft callout, not urgent)', () => {
+    const root = asNode(view({ body: 'Tip' }))
+    expect(root.data?.attrs?.['role']).toBeUndefined()
   })
 })

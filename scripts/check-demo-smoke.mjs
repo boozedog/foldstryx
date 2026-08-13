@@ -310,6 +310,34 @@ const pageProbe = `(negative) => {
       failures.push('Row/Stack catalog concatenated item labels')
     }
   }
+  // Phase B catalog sections and key semantic roles (issue #15).
+  const sectionHeadings = [
+    'Typography',
+    'Stack and Row',
+    'Buttons',
+    'Card',
+    'Form',
+    'Dense controls',
+    'Badges',
+    'Alerts',
+    'Feedback',
+    'Tooltip',
+  ]
+  const bodyText = document.body.innerText ?? ''
+  for (const heading of sectionHeadings) {
+    if (!bodyText.includes(heading)) {
+      failures.push('missing catalog section heading: ' + heading)
+    }
+  }
+  if (document.querySelector('[role="alert"]') === null) {
+    failures.push('missing role=alert banner')
+  }
+  if (document.querySelector('[role="switch"]') === null) {
+    failures.push('missing role=switch control')
+  }
+  if (document.querySelector('[role="tooltip"]') === null) {
+    failures.push('missing role=tooltip panel')
+  }
   return { failures, bodyFont: bodyAfter, headingFont: headingAfter }
 }`
 
