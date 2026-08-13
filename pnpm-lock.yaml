@@ -20,6 +20,9 @@ importers:
       '@foldkit/oxlint-plugin':
         specifier: 0.6.0
         version: 0.6.0(effect@4.0.0-beta.100)
+      '@stylexjs/eslint-plugin':
+        specifier: 0.19.0
+        version: 0.19.0
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^6.0.2
         version: 6.0.2(prettier@3.9.6)
@@ -33,7 +36,7 @@ importers:
         specifier: ^3.14.0
         version: 3.14.0
       oxlint:
-        specifier: ^1.70.0
+        specifier: 1.78.0
         version: 1.78.0
       prettier:
         specifier: ^3.8.4
@@ -326,6 +329,10 @@ packages:
 
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
+
+  '@csstools/css-tokenizer@3.0.4':
+    resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
+    engines: {node: '>=18'}
 
   '@dual-bundle/import-meta-resolve@4.2.1':
     resolution: {integrity: sha512-id+7YRUgoUX6CgV0DtuhirQWodeeA7Lf4i2x71JS/vtA5pRb/hIGWlw+G6MeXvsM+MXrz0VAydTGElX1rAfgPg==}
@@ -908,6 +915,9 @@ packages:
 
   '@stylexjs/babel-plugin@0.19.0':
     resolution: {integrity: sha512-2SnVZIl047TtqKW0nRTn7Irz0kmoot1bxdGDE/HwfwfF7dJYHqwkIFg92s87v3hj7zxJobrHWwDx1p3qvQXW4g==}
+
+  '@stylexjs/eslint-plugin@0.19.0':
+    resolution: {integrity: sha512-zZ6bCYcciaj2YYO0cG2nyCfjX5rclmW+WkcW/84gx4wCtpLvfr9+zYd3oqESr48suFlr8p6hrxGwnjYSLTDD4g==}
 
   '@stylexjs/shared@0.19.0':
     resolution: {integrity: sha512-7Yym70cQH5sPzJHgzJX3FkL9ZCptbC3IbiRijN9YLYU/5OywB/3c519Xv1DOzvxqjv8urSxh98/9HxLaPG7sDg==}
@@ -2174,6 +2184,8 @@ snapshots:
       human-id: 4.2.0
       prettier: 2.8.8
 
+  '@csstools/css-tokenizer@3.0.4': {}
+
   '@dual-bundle/import-meta-resolve@4.2.1': {}
 
   '@effect/language-service@0.87.2': {}
@@ -2545,6 +2557,13 @@ snapshots:
       postcss-value-parser: 4.2.0
     transitivePeerDependencies:
       - supports-color
+
+  '@stylexjs/eslint-plugin@0.19.0':
+    dependencies:
+      '@csstools/css-tokenizer': 3.0.4
+      '@stylexjs/shared': 0.19.0
+      micromatch: 4.0.8
+      postcss-value-parser: 4.2.0
 
   '@stylexjs/shared@0.19.0': {}
 

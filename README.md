@@ -65,14 +65,26 @@ pnpm install
 
 mise run typecheck   # tsc across packages
 mise run test        # vitest
-mise run check       # full typecheck + tests + lint + fallow
+mise run lint        # oxlint (foldkit MVU + Effect-async + StyleX jsPlugins)
+pnpm check:tokens    # Astryx token fidelity spot-check
+pnpm check:demo      # vite preview + computed-style smoke on http://localhost:5173/
+pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
+mise run check       # full gate (format, lint, tsc, fallow, test, tokens, fixtures, demo)
 mise run pre-commit  # hk changed-file hooks
 ```
 
 The visual catalog runs at `http://localhost:5173/`. UI and StyleX changes require a
 browser check for computed fonts, layout spacing, button states, and page shell padding.
+`pnpm check:demo` builds the demo, starts a fresh Vite preview on that URL (it does not
+reuse `pnpm dev`), and drives headless Chrome (`google-chrome` or `CHROME_PATH`) for the
+automated computed-style subset. Astryx _feel_ stays human.
 
 `mise run check` is the authoritative full verifier after implementation work.
+
+Official StyleX rules run through oxlint `jsPlugins` (`@stylexjs/eslint-plugin@0.19.0`,
+alias `stylex`) — there is no second ESLint runner. Token-hardcode / null-override /
+Foldkit className clobber live in `@foldstryx/oxlint-plugin`. If those ever need a
+local-warn / CI-error split, set `FOLDSTRYX_STRICT_LINT=1` (or rely on `CI=true`).
 
 ## Effect
 

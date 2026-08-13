@@ -46,6 +46,16 @@ local fullGate = new Mapping<String, Step> {
   ["async-allowlist"] {
     check = "pnpm check:async-allowlist"
   }
+  ["tokens"] {
+    check = "pnpm check:tokens"
+  }
+  ["lint-fixtures"] {
+    depends = List("lint")
+    check = "pnpm check:lint-fixtures"
+  }
+  ["demo"] {
+    check = "pnpm check:demo"
+  }
   ["changeset"] {
     check = "pnpm check:changeset"
   }
@@ -71,6 +81,16 @@ local prePushGate = new Mapping<String, Step> {
   }
   ["async-allowlist"] {
     check = "pnpm check:async-allowlist"
+  }
+  ["tokens"] {
+    check = "pnpm check:tokens"
+  }
+  ["lint-fixtures"] {
+    depends = List("lint")
+    check = "pnpm check:lint-fixtures"
+  }
+  ["demo"] {
+    check = "pnpm check:demo"
   }
   ["changeset-since"] {
     check = "pnpm check:changeset:pre-push"

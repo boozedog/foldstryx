@@ -1,0 +1,21 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "jsPlugins": [
+    {
+      "name": "foldstryx",
+      "specifier": "../../packages/oxlint-plugin-foldstryx/dist/index.js"
+    },
+    {
+      "name": "stylex",
+      "specifier": "@stylexjs/eslint-plugin"
+    }
+  ],
+  "rules": {
+    "foldstryx/no-hardcoded-styles": "error",
+    "foldstryx/no-stylex-null-override": "error",
+    "foldstryx/no-stylex-clobber": "error",
+    "stylex/valid-styles": "error",
+    "stylex/valid-shorthands": "error"
+  }
+}

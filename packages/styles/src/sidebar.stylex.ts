@@ -5,6 +5,7 @@ import {
   easeVars,
   fontWeightVars,
   radiusVars,
+  shadowVars,
   sizeVars,
   spacingVars,
   typeScaleVars,
@@ -49,7 +50,7 @@ export const sidebarStyles = stylex.create({
   },
   brandText: {
     display: 'flex',
-    flex: 1,
+    flex: '1',
     flexDirection: 'column',
     minWidth: 0,
   },
@@ -73,7 +74,7 @@ export const sidebarStyles = stylex.create({
   },
   nav: {
     display: 'flex',
-    flex: 1,
+    flex: '1',
     flexDirection: 'column',
     minHeight: 0,
     overflowX: 'hidden',
@@ -120,7 +121,6 @@ export const sidebarStyles = stylex.create({
   },
   item: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
     borderRadius: radiusVars['--radius-element'],
     borderStyle: 'none',
     borderWidth: 0,
@@ -141,17 +141,23 @@ export const sidebarStyles = stylex.create({
     paddingInline: spacingVars['--spacing-2'],
     textAlign: 'start',
     width: '100%',
-    ':hover': {
-      backgroundColor: colorVars['--color-overlay-hover'],
+    backgroundColor: {
+      default: 'transparent',
+      ':hover': colorVars['--color-overlay-hover'],
+      ':active': colorVars['--color-overlay-pressed'],
     },
-    ':active': { backgroundColor: colorVars['--color-overlay-pressed'] },
-    ':focus-visible': { boxShadow: 'inset 0 0 0 2px rgba(1, 113, 227, 0.5)' },
+    boxShadow: {
+      default: 'none',
+      ':focus-visible': shadowVars['--shadow-inset-selected'],
+    },
   },
   itemActive: {
-    backgroundColor: colorVars['--color-neutral'],
     fontWeight: fontWeightVars['--font-weight-medium'],
-    ':hover': { backgroundColor: colorVars['--color-neutral'] },
-    ':active': { backgroundColor: colorVars['--color-neutral'] },
+    backgroundColor: {
+      default: colorVars['--color-neutral'],
+      ':hover': colorVars['--color-neutral'],
+      ':active': colorVars['--color-neutral'],
+    },
   },
   itemCollapsed: {
     justifyContent: 'center',
@@ -161,13 +167,13 @@ export const sidebarStyles = stylex.create({
   itemContent: {
     alignItems: 'center',
     display: 'flex',
-    flex: 1,
+    flex: '1',
     gap: spacingVars['--spacing-2'],
     minWidth: 0,
     overflow: 'hidden',
   },
   itemLabel: {
-    flex: 1,
+    flex: '1',
     minWidth: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -181,7 +187,7 @@ export const sidebarStyles = stylex.create({
     color: 'inherit',
     cursor: 'pointer',
     display: 'flex',
-    flex: 1,
+    flex: '1',
     fontFamily: 'inherit',
     fontSize: 'inherit',
     fontWeight: 'inherit',
@@ -219,7 +225,10 @@ export const sidebarStyles = stylex.create({
   itemExpandIconClosed: { transform: 'none' },
   collapseButton: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: {
+      default: 'transparent',
+      ':hover': colorVars['--color-overlay-hover'],
+    },
     borderRadius: radiusVars['--radius-element'],
     borderStyle: 'none',
     borderWidth: 0,
@@ -229,7 +238,6 @@ export const sidebarStyles = stylex.create({
     height: sizeVars['--size-element-md'],
     justifyContent: 'center',
     width: sizeVars['--size-element-md'],
-    ':hover': { backgroundColor: colorVars['--color-overlay-hover'] },
   },
   collapseIcon: {
     alignItems: 'center',
@@ -245,7 +253,7 @@ export const sidebarStyles = stylex.create({
     borderRadius: radiusVars['--radius-element'],
     borderStyle: 'solid',
     borderWidth: borderVars['--border-width'],
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+    boxShadow: shadowVars['--shadow-high'],
     left: '100%',
     marginInlineStart: spacingVars['--spacing-1'],
     minWidth: '180px',
@@ -293,7 +301,6 @@ export const sidebarStyles = stylex.create({
   },
   expandButton: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
     borderRadius: radiusVars['--radius-element'],
     borderStyle: 'none',
     borderWidth: 0,
@@ -307,9 +314,15 @@ export const sidebarStyles = stylex.create({
     outline: 'none',
     padding: 0,
     width: spacingVars['--spacing-6'],
-    ':hover': { backgroundColor: colorVars['--color-overlay-hover'] },
-    ':active': { backgroundColor: colorVars['--color-overlay-pressed'] },
-    ':focus-visible': { boxShadow: 'inset 0 0 0 2px rgba(1, 113, 227, 0.5)' },
+    backgroundColor: {
+      default: 'transparent',
+      ':hover': colorVars['--color-overlay-hover'],
+      ':active': colorVars['--color-overlay-pressed'],
+    },
+    boxShadow: {
+      default: 'none',
+      ':focus-visible': shadowVars['--shadow-inset-selected'],
+    },
   },
   icon: {
     color: colorVars['--color-icon-secondary'],
@@ -362,7 +375,10 @@ export const sidebarStyles = stylex.create({
   },
   footerIconButton: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: {
+      default: 'transparent',
+      ':hover': colorVars['--color-overlay-hover'],
+    },
     borderRadius: radiusVars['--radius-element'],
     borderStyle: 'none',
     borderWidth: 0,
@@ -372,7 +388,6 @@ export const sidebarStyles = stylex.create({
     height: sizeVars['--size-element-md'],
     justifyContent: 'center',
     width: sizeVars['--size-element-md'],
-    ':hover': { backgroundColor: colorVars['--color-overlay-hover'] },
   },
   user: {
     color: colorVars['--color-text-secondary'],
@@ -389,7 +404,7 @@ export const sidebarStyles = stylex.create({
   inset: {
     backgroundColor: colorVars['--color-background-body'],
     display: 'flex',
-    flex: 1,
+    flex: '1',
     flexDirection: 'column',
     minHeight: '100vh',
     minWidth: 0,
@@ -408,20 +423,22 @@ export const sidebarStyles = stylex.create({
     paddingBlock: spacingVars['--spacing-2'],
     paddingInline: spacingVars['--spacing-4'],
   },
-  insetMain: { flex: 1, minWidth: 0 },
+  insetMain: { flex: '1', minWidth: 0 },
   collapse: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: {
+      default: 'transparent',
+      ':hover': colorVars['--color-overlay-hover'],
+    },
     borderRadius: radiusVars['--radius-element'],
     borderStyle: 'none',
     borderWidth: 0,
-    color: colorVars['--color-text-secondary'],
+    color: {
+      default: colorVars['--color-text-secondary'],
+      ':hover': colorVars['--color-text-primary'],
+    },
     cursor: 'pointer',
     display: 'flex',
     padding: spacingVars['--spacing-2'],
-    ':hover': {
-      backgroundColor: colorVars['--color-overlay-hover'],
-      color: colorVars['--color-text-primary'],
-    },
   },
 })
