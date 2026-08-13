@@ -342,8 +342,8 @@ const pageProbe = `(negative) => {
   if (document.querySelector('table') === null) {
     failures.push('missing table element')
   }
-  if (document.querySelector('[role="navigation"]') === null) {
-    failures.push('missing role=navigation pagination')
+  if (document.querySelector('[aria-label="Pagination"]') === null) {
+    failures.push('missing aria-label=Pagination pagination')
   }
   return { failures, bodyFont: bodyAfter, headingFont: headingAfter }
 }`

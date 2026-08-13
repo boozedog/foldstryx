@@ -51,9 +51,9 @@ describe('Details', () => {
     expect(node.data?.props?.['open']).toBe(true)
   })
 
-  it('omits the open prop when closed', () => {
+  it('forces the open prop to false when closed (controlled close)', () => {
     const node = asNode(view({ summary: 'More info', children: ['Body'] }))
-    expect(node.data?.props?.['open']).toBeUndefined()
+    expect(node.data?.props?.['open']).toBe(false)
   })
 
   it('renders the summary with the detailsSummary style key', () => {

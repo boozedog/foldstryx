@@ -44,7 +44,7 @@ describe('Details scene', () => {
     Scene.scene(
       { update, view },
       Scene.with({ open: true }),
-      Scene.expect(Scene.selector('details')).toHaveAttr('open'),
+      Scene.expect(Scene.selector('details')).toHaveAttr('open', 'true'),
       Scene.expect(Scene.selector('details')).toContainText('Hidden details'),
     )
   })
@@ -53,7 +53,7 @@ describe('Details scene', () => {
     Scene.scene(
       { update, view },
       Scene.with({ open: false }),
-      Scene.expect(Scene.selector('details')).not.toHaveAttr('open'),
+      Scene.expect(Scene.selector('details')).toHaveAttr('open', 'false'),
     )
   })
 

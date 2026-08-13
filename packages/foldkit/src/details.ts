@@ -12,7 +12,7 @@ import { elAttrs, sxAttrs } from './sx.js'
 export type DetailsViewConfig<Message> = Readonly<{
   summary: string
   children: ReadonlyArray<Html | string>
-  /** When true, the disclosure starts open. */
+  /** Controlled open state. Applied on every render; the app keeps it in sync via onToggle. */
   open?: boolean
   /**
    * Emitted with the new open state when the native `<details>` toggles.
@@ -28,7 +28,7 @@ export const view = <Message>(config: DetailsViewConfig<Message>): Html => {
   return h.details(
     elAttrs<Message>(
       sxAttrs(h, layoutStyles.detailsBox),
-      ...(config.open === true ? [h.Open(true)] : []),
+      h.Open(config.open === true),
       ...(config.onToggle !== undefined ? [h.OnToggle(config.onToggle)] : []),
     ),
     [

@@ -4,7 +4,22 @@ import * as Story from 'foldkit/story'
 
 import { describe, expect, it } from '@effect/vitest'
 
-import { Failed, Loading, Ready, StatState } from './stat.js'
+import { Failed, Loading, Ready, StatState, card } from './stat.js'
+
+type Node = Readonly<{
+  sel?: string
+  children?: ReadonlyArray<unknown>
+  text?: string
+}>
+const asNode = (value: unknown): Node => value as Node
+const text = (value: unknown): string => {
+  if (typeof value === 'string') return value
+  const node = asNode(value)
+  if (node.text) return node.text
+  return node.children?.map(text).join('') ?? ''
+}
+const cardText = (state: StatState): string =>
+  text(card({ label: 'Pending', state }))
 
 // A minimal async metric reducer that drives Stat's tagged states and
 // demonstrates stale-result handling via a request id.
@@ -76,6 +91,8 @@ describe('Stat async lifecycle', () => {
         expect(model.state._tag).toBe('Ready')
         if (model.state._tag === 'Ready') {
           expect(model.state.value).toBe('42')
+          expect(cardText(model.state)).toContain('Pending')
+          expect(cardText(model.state)).toContain('42')
         }
       }),
       Story.Command.expectNone(),
@@ -95,6 +112,8 @@ describe('Stat async lifecycle', () => {
         expect(model.state._tag).toBe('Failed')
         if (model.state._tag === 'Failed') {
           expect(model.state.message).toBe('Unavailable')
+          expect(cardText(model.state)).toContain('Pending')
+          expect(cardText(model.state)).toContain('Unavailable')
         }
       }),
       Story.Command.expectNone(),

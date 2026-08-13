@@ -40,7 +40,7 @@ export const tableStyles = stylex.create({
     fontWeight: fontWeightVars['--font-weight-semibold'],
     paddingBlock: spacingVars['--spacing-3'],
     paddingInline: spacingVars['--spacing-2'],
-    width: '2rem',
+    width: spacingVars['--spacing-8'],
   },
   td: {
     paddingBlock: spacingVars['--spacing-3'],
