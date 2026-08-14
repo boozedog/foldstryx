@@ -403,6 +403,28 @@ const pageProbe = `async (negative) => {
   if (document.querySelector('[role="tab"]') === null) {
     failures.push('missing role=tab tab')
   }
+  // Phase E catalog sections and high-value selectors (issue #18).
+  const phaseESections = ['Page', 'Grid', 'Avatar']
+  for (const heading of phaseESections) {
+    if (!bodyText.includes(heading)) {
+      failures.push('missing catalog section heading: ' + heading)
+    }
+  }
+  if (!bodyText.includes('Page title')) {
+    failures.push('missing Page title')
+  }
+  const gridEl = [...document.querySelectorAll('div')].find(
+    node => getComputedStyle(node).display === 'grid',
+  )
+  if (gridEl === undefined) {
+    failures.push('missing display:grid element')
+  }
+  if (document.querySelector('[role="img"]') === null) {
+    failures.push('missing role=img avatar')
+  }
+  if (document.querySelector('img') === null) {
+    failures.push('missing avatar image')
+  }
   const openDialog = [...document.querySelectorAll('button')].find(
     button => (button.textContent ?? '').trim() === 'Open dialog',
   )

@@ -5,6 +5,7 @@ import { html } from 'foldkit/html'
 import {
   Alert,
   Attention,
+  Avatar,
   Badge,
   Button,
   Card,
@@ -14,10 +15,12 @@ import {
   DropdownMenu,
   EmptyState,
   Field,
+  Grid,
   Input,
   ListRow,
   LoadingPanel,
   NativeSelect,
+  Page,
   Pagination,
   Row,
   Separator,
@@ -251,6 +254,72 @@ export const view = Submodel.defineView<Model, Message>(model => {
               children: [
                 Text.view({ children: 'Stack item' }),
                 Text.view({ children: 'Another item' }),
+              ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Page',
+          description: 'Header, content, and footer regions compose a shell.',
+          padded: true,
+          children: [
+            Page.shell({
+              header: Page.header({
+                title: 'Page title',
+                description: 'Supporting description for the page.',
+                actions: [
+                  Button.view<Message>({
+                    label: 'Action',
+                    size: 'sm',
+                    variant: 'secondary',
+                    onClick: Clicked(),
+                  }),
+                ],
+              }),
+              content: [
+                Text.view({
+                  children: 'Page content sits between the header and footer.',
+                }),
+              ],
+              footer: Page.footer([
+                Text.view({ variant: 'mutedSm', children: 'Footer region' }),
+              ]),
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Grid',
+          description: 'Responsive columns with a token gap scale.',
+          padded: true,
+          children: [
+            Grid.view({
+              columns: 3,
+              children: [
+                Text.view({ children: 'Cell one' }),
+                Text.view({ children: 'Cell two' }),
+                Text.view({ children: 'Cell three' }),
+              ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Avatar',
+          description: 'Sizes, shapes, image, and fallback labeling.',
+          padded: true,
+          children: [
+            Row.view({
+              align: 'wrap',
+              children: [
+                Avatar.view({ fallback: 'JD', label: 'Jane Doe' }),
+                Avatar.view({ fallback: 'AB', size: 'sm' }),
+                Avatar.view({ fallback: 'CD', size: 'lg' }),
+                Avatar.view({ fallback: 'EF', shape: 'rounded' }),
+                Avatar.view({
+                  fallback: 'GH',
+                  imageSrc:
+                    'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22><rect width=%2232%22 height=%2232%22 fill=%22%230064E0%22/></svg>',
+                  label: 'With image',
+                }),
               ],
             }),
           ],

@@ -10,8 +10,11 @@ const make = new Proxy(
     }),
   },
 ) as unknown as Record<string, stylex.StyleXStyles>
+export const avatarStyles = make
 export const buttonStyles = make
+export const gridStyles = make
 export const layoutStyles = make
+export const pageStyles = make
 export const cardStyles = make
 export const badgeStyles = make
 export const alertStyles = make
