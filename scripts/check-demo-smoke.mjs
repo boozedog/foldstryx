@@ -317,6 +317,94 @@ const pageProbe = `async (negative) => {
     document.querySelector('aside') ??
     document.querySelector('[aria-label="Sidebar"]')
   if (sidebar === null) failures.push('missing sidebar landmark')
+  // Fill-mode scroll contract (issue #19): bounded viewport shell, independent
+  // nav/main scroll, sticky rail and inset header.
+  const docEl = document.documentElement
+  if (docEl.scrollHeight > docEl.clientHeight) {
+    failures.push(
+      'document-level vertical scroll detected: ' +
+        docEl.scrollHeight +
+        ' > ' +
+        docEl.clientHeight,
+    )
+  }
+  const mainEl = document.querySelector('main')
+  if (mainEl === null) {
+    failures.push('missing main element')
+  } else {
+    const scrollCandidates = [...mainEl.querySelectorAll('div')].filter(node => {
+      const style = getComputedStyle(node)
+      return (
+        style.overflowY === 'auto' &&
+        node.scrollHeight > node.clientHeight
+      )
+    })
+    if (scrollCandidates.length === 0) {
+      failures.push('main region has no internal vertical scroll container')
+    } else {
+      const scrollEl = scrollCandidates[0]
+      const header = mainEl.querySelector('header')
+      if (header === null) {
+        failures.push('missing inset header')
+      } else {
+        const headerTopBefore = header.getBoundingClientRect().top
+        scrollEl.scrollTop = scrollEl.scrollHeight
+        const headerTopAfter = header.getBoundingClientRect().top
+        if (Math.abs(headerTopAfter - headerTopBefore) > 1) {
+          failures.push('inset header moved while main content scrolled')
+        }
+        scrollEl.scrollTop = 0
+      }
+      if (sidebar !== null) {
+        const railLeftBefore = sidebar.getBoundingClientRect().left
+        const railTopBefore = sidebar.getBoundingClientRect().top
+        scrollEl.scrollTop = scrollEl.scrollHeight
+        const railLeftAfter = sidebar.getBoundingClientRect().left
+        const railTopAfter = sidebar.getBoundingClientRect().top
+        if (
+          Math.abs(railLeftAfter - railLeftBefore) > 1 ||
+          Math.abs(railTopAfter - railTopBefore) > 1
+        ) {
+          failures.push('left rail moved while main content scrolled')
+        }
+        scrollEl.scrollTop = 0
+      }
+    }
+  }
+  // Rail nav scroll contract: the nav region scrolls independently inside the
+  // rail while the brand stays pinned and the rail container stays put.
+  const navEl = document.querySelector('[role="navigation"]')
+  if (navEl === null) {
+    failures.push('missing navigation landmark')
+  } else {
+    const navStyle = getComputedStyle(navEl)
+    if (navStyle.overflowY !== 'auto') {
+      failures.push(
+        'rail nav is not a vertical scroll container: ' + navStyle.overflowY,
+      )
+    } else if (navEl.scrollHeight <= navEl.clientHeight) {
+      failures.push(
+        'rail nav does not overflow its rail: ' +
+          navEl.scrollHeight +
+          ' <= ' +
+          navEl.clientHeight,
+      )
+    } else {
+      const brand = sidebar === null ? null : sidebar.querySelector('div')
+      const brandTopBefore = brand?.getBoundingClientRect().top ?? null
+      const navTopBefore = navEl.getBoundingClientRect().top
+      navEl.scrollTop = navEl.scrollHeight
+      const brandTopAfter = brand?.getBoundingClientRect().top ?? null
+      const navTopAfter = navEl.getBoundingClientRect().top
+      if (brandTopBefore !== null && Math.abs(brandTopAfter - brandTopBefore) > 1) {
+        failures.push('rail brand moved while nav scrolled')
+      }
+      if (Math.abs(navTopAfter - navTopBefore) > 1) {
+        failures.push('rail nav container moved while nav scrolled')
+      }
+      navEl.scrollTop = 0
+    }
+  }
   const stackHeading = [...document.querySelectorAll('div,p,h1,h2,h3')].find(
     node => (node.textContent ?? '').trim() === 'Stack and Row',
   )

@@ -17,7 +17,7 @@ export const sidebarStyles = stylex.create({
   shell: {
     backgroundColor: colorVars['--color-background-body'],
     display: 'flex',
-    minHeight: '100vh',
+    height: '100dvh',
     width: '100%',
   },
   desktop: {
@@ -26,7 +26,7 @@ export const sidebarStyles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
-    minHeight: '100vh',
+    height: '100%',
     overflow: 'hidden',
     width: '260px',
   },
@@ -406,7 +406,8 @@ export const sidebarStyles = stylex.create({
     display: 'flex',
     flex: '1',
     flexDirection: 'column',
-    minHeight: '100vh',
+    height: '100%',
+    minHeight: 0,
     minWidth: 0,
     overflow: 'hidden',
   },
@@ -423,7 +424,12 @@ export const sidebarStyles = stylex.create({
     paddingBlock: spacingVars['--spacing-2'],
     paddingInline: spacingVars['--spacing-4'],
   },
-  insetMain: { flex: '1', minWidth: 0 },
+  insetMain: {
+    flex: '1',
+    minHeight: 0,
+    minWidth: 0,
+    overflowY: 'auto',
+  },
   collapse: {
     alignItems: 'center',
     backgroundColor: {
