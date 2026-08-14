@@ -1,8 +1,17 @@
+import { Option } from 'effect'
+import { Command } from 'foldkit'
 import type { Html } from 'foldkit/html'
 import { childAttributes, html } from 'foldkit/html'
+import type { View } from 'foldkit/submodel'
 
 import { Menu } from '@foldkit/ui'
-import type { AnchorConfig, ViewInputs } from '@foldkit/ui/menu'
+import type {
+  AnchorConfig,
+  Message,
+  Model,
+  OutMessage,
+  ViewInputs,
+} from '@foldkit/ui/menu'
 import { dropdownMenuStyles } from '@foldstryx/styles'
 import * as stylex from '@stylexjs/stylex'
 
@@ -179,7 +188,40 @@ export const styledViewInputs = <Item extends string, ParentMessage>(
 }
 
 /** Creates a typed dropdown menu pairing Foldkit Menu behavior with Astryx styles. */
-export const create = Menu.create
+export const create: <Item extends string = string>() => Readonly<{
+  view: View<Model, Message, ViewInputs<Item>>
+  update: (
+    model: Model,
+    message: Message,
+  ) => readonly [
+    Model,
+    ReadonlyArray<Command.Command<Message>>,
+    Option.Option<OutMessage<Item>>,
+  ]
+  selectItem: (
+    model: Model,
+    item: Item,
+    index: number,
+  ) => readonly [
+    Model,
+    ReadonlyArray<Command.Command<Message>>,
+    Option.Option<OutMessage<Item>>,
+  ]
+  open: (
+    model: Model,
+  ) => readonly [
+    Model,
+    ReadonlyArray<Command.Command<Message>>,
+    Option.Option<OutMessage<Item>>,
+  ]
+  close: (
+    model: Model,
+  ) => readonly [
+    Model,
+    ReadonlyArray<Command.Command<Message>>,
+    Option.Option<OutMessage<Item>>,
+  ]
+}> = Menu.create
 
 export const init = Menu.init
 

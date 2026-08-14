@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.build.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.scene.test.ts",
+    "src/**/*.story.test.ts",
+    "src/vitest-setup.ts",
+    "src/stylesStub.ts"
+  ]
+}

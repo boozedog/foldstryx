@@ -71,6 +71,9 @@ local prePushGate = new Mapping<String, Step> {
   ["demo"] {
     check = "pnpm check:demo"
   }
+  ["packed"] {
+    check = "pnpm check:packed"
+  }
   ["changeset-since"] {
     check = "pnpm check:changeset:pre-push"
   }

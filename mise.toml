@@ -43,3 +43,7 @@ run = "hk run pre-push"
 [tasks.check]
 description = "Full workspace quality gate"
 run = "pnpm check"
+
+[tasks.check-packed]
+description = "Pack all external-consumer packages and smoke a throwaway Vite consumer"
+run = "pnpm check:packed"

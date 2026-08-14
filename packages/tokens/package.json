@@ -7,10 +7,33 @@
     ".": "./src/index.ts",
     "./index.stylex.ts": "./src/index.stylex.ts"
   },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./index.stylex.ts": {
+        "types": "./dist/index.stylex.d.ts",
+        "import": "./dist/index.stylex.js"
+      },
+      "./index.stylex.js": {
+        "types": "./dist/index.stylex.d.ts",
+        "import": "./dist/index.stylex.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "dependencies": {
     "@stylexjs/stylex": "^0.19.0"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "node ../../scripts/check-token-fidelity.mjs"
   },

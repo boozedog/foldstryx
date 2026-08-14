@@ -38,6 +38,13 @@
         "reason": "Demo smoke CDP helper is a Node script verified by pnpm check:demo, not library code."
       },
       {
+        "files": ["scripts/check-packed-consumer.mjs"],
+        "maxCrap": 200,
+        "maxUnitSize": 140,
+        "maxCognitive": 20,
+        "reason": "Packed-consumer smoke CDP helper is a Node script verified by pnpm check:packed, not library code."
+      },
+      {
         "files": [
           "packages/foldkit/src/switch.ts",
           "packages/foldkit/src/nativeSelect.ts"

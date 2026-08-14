@@ -114,6 +114,7 @@ const EXPECTED = {
     'packages/oxlint-plugin-foldstryx/src/rules/no-stylex-null-override.ts',
     'packages/oxlint-plugin-foldstryx/src/stylex-ast.ts',
     'scripts/check-demo-smoke.mjs',
+    'scripts/check-packed-consumer.mjs',
   ],
   changesetIgnore: [
     '@foldstryx/oxlint-plugin',

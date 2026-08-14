@@ -7,11 +7,29 @@
     ".": "./src/index.ts",
     "./document.global.css": "./src/document.global.css"
   },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./document.global.css": "./src/document.global.css"
+    }
+  },
+  "files": [
+    "dist",
+    "src/document.global.css",
+    "src/fonts",
+    "LICENSE",
+    "README.md"
+  ],
   "dependencies": {
     "@foldstryx/tokens": "workspace:*",
     "@stylexjs/stylex": "^0.19.0"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

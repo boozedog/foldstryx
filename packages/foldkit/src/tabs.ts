@@ -1,10 +1,18 @@
 import { Array } from 'effect'
+import { Option } from 'effect'
+import { Command } from 'foldkit'
 import type { Html } from 'foldkit/html'
 import { html } from 'foldkit/html'
+import type { Reflect2, View } from 'foldkit/submodel'
 
 import { Tabs as UiTabs } from '@foldkit/ui'
-import type { Message as TabsMessage } from '@foldkit/ui/tabs'
-import type { ViewInputs } from '@foldkit/ui/tabs'
+import type {
+  Message,
+  Model,
+  OutMessage,
+  Message as TabsMessage,
+  ViewInputs,
+} from '@foldkit/ui/tabs'
 import { tabsStyles } from '@foldstryx/styles'
 
 import { elAttrs, sxAttrs } from './sx.js'
@@ -20,7 +28,28 @@ export type TabsStyledConfig<Value extends string> = Readonly<{
 }>
 
 /** Pairs Tabs.create with Astryx-styled view inputs. */
-export const create = <Value extends string>() => {
+export const create = <Value extends string = string>(): Readonly<{
+  view: View<Model, Message, ViewInputs<Value>>
+  update: (
+    model: Model,
+    message: Message,
+  ) => readonly [
+    Model,
+    ReadonlyArray<Command.Command<Message>>,
+    Option.Option<OutMessage<Value>>,
+  ]
+  selectTab: (
+    model: Model,
+    value: Value,
+    index: number,
+  ) => readonly [
+    Model,
+    ReadonlyArray<Command.Command<Message>>,
+    Option.Option<OutMessage<Value>>,
+  ]
+  reflectSelectedTab: Reflect2<Model, Value, ReadonlyArray<Value>>
+  styledViewInputs: (config: TabsStyledConfig<Value>) => ViewInputs<Value>
+}> => {
   const Ui = UiTabs.create<Value>()
 
   const styledViewInputs = (

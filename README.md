@@ -71,6 +71,47 @@ lookup, devtools, and URL integration.
 `@foldstryx/kitchen-sink` stays independently embeddable and is rendered as a
 dedicated docs route rather than making `Mount` itself route-aware.
 
+## Packaging / external consumption
+
+The five external-consumer packages (`@foldstryx/tokens`, `@foldstryx/styles`,
+`@foldstryx/foldkit`, `@foldstryx/kitchen-sink`, `@foldstryx/docs`) build ESM
+JavaScript plus TypeScript declarations to `dist/` (`pnpm build`). In the
+workspace, `exports` point at `src/` so tests and the demo never depend on a
+stale `dist/`; `publishConfig.exports` points at `dist/` so packed and
+published artifacts expose the built output. `prepack` rebuilds `dist/` for
+`npm publish`. Runtime dependencies live in `dependencies`; `@foldkit/ui`,
+`effect`, and `foldkit` are `peerDependencies` where a package imports them
+directly, so the host supplies the Foldkit runtime.
+
+`@foldstryx/styles` keeps the stable `@foldstryx/styles/document.global.css`
+subpath export and ships the bundled Atkinson Hyperlegible Next / Maple Mono
+NL NF font assets with working relative URLs. The `.stylex.js` modules ship
+as-is; a consumer's `@stylexjs/unplugin` compiles StyleX CSS at build time
+(it auto-discovers packages that depend on `@stylexjs/stylex` and excludes
+them from Vite pre-bundling).
+
+```bash
+# Build all packages to dist/
+pnpm build
+
+# Pack all five external-consumer packages and verify a throwaway Vite
+# consumer that installs the tarballs (no workspace links) builds, renders
+# the docs shell, transitions routes, and loads the fonts from package assets.
+pnpm check:packed
+```
+
+`pnpm check:packed` is the external-boundary gate. It packs the five packages,
+builds `dist/` first, scaffolds a temporary Vite consumer that installs the
+tarballs, builds it, and drives headless Chrome to assert the docs shell, a
+route transition, and font loading. It never uses workspace source aliases, so
+it catches missing StyleX compiler output, broken relative font URLs, and
+incorrect dependency metadata.
+
+The Taurifold desktop host is the next phase ([#25](https://github.com/boozedog/foldstryx/issues/25)):
+it will consume these packed artifacts the same way the smoke consumer does,
+adding only host-specific runtime bootstrap, container lookup, devtools, and
+URL integration.
+
 ## Develop
 
 Requires Node `>=20.19` or `>=22.12`, [pnpm](https://pnpm.io), and [mise](https://mise.jdx.dev)

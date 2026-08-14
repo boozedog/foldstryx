@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@foldstryx/tokens": ["./packages/tokens/dist/index.d.ts"],
+      "@foldstryx/tokens/index.stylex.ts": [
+        "./packages/tokens/dist/index.stylex.d.ts"
+      ],
+      "@foldstryx/styles": ["./packages/styles/dist/index.d.ts"],
+      "@foldstryx/foldkit": ["./packages/foldkit/dist/index.d.ts"],
+      "@foldstryx/kitchen-sink": ["./packages/kitchen-sink/dist/index.d.ts"],
+      "@foldstryx/docs": ["./packages/docs/dist/index.d.ts"]
+    }
+  }
+}
