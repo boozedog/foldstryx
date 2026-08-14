@@ -25,6 +25,9 @@ Stack.view({
 > instead of shadcn-inspired). May replace foldstylex later if this kit wins on real apps
 > (e.g. taurifold). Not a product/domain UI kit.
 
+> **Machine-readable index:** see [LLMS.txt](./LLMS.txt) for a concise index of the published
+> packages, the Foldkit MVU contract, and the host integration path.
+
 ## How the layers fit
 
 | Layer                       | Responsibility                                              |

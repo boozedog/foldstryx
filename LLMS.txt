@@ -1,0 +1,140 @@
+# Foldstryx
+
+> Astryx-inspired styling for [Foldkit](https://github.com/Tylian/foldkit), powered by
+> [StyleX](https://stylexjs.com). Foldstryx turns Astryx's StyleX-native design tokens and
+> component language into named composition primitives so Foldkit apps build
+> intent-shaped UI with a token-faithful Astryx look. It sits beside
+> [foldstylex](https://github.com/boozedog/foldstylex) (a shadcn-inspired kit) but keeps its
+> own visual system and lifecycle.
+
+This is a concise machine-readable index. Start with the
+[root README](https://github.com/boozedog/foldstryx/blob/master/README.md) for the full layer
+map and packaging notes.
+
+## Packages
+
+Five external-consumer packages publish together as one coordinated release. Each builds ESM
+plus TypeScript declarations to `dist/`. Runtime dependencies live in `dependencies`;
+`@foldkit/ui`, `effect`, and `foldkit` are `peerDependencies` where a package imports them
+directly, so the host supplies the Foldkit runtime.
+
+- [@foldstryx/tokens](https://github.com/boozedog/foldstryx/tree/master/packages/tokens) —
+  Astryx-faithful design tokens for StyleX. Exposes `colorVars`, `typographyVars`, and other
+  token variable groups as StyleX `defineVars` defaults, plus the `index.stylex.ts` module used
+  by `@foldstryx/styles`.
+  README: https://github.com/boozedog/foldstryx/blob/master/packages/tokens/README.md
+
+- [@foldstryx/styles](https://github.com/boozedog/foldstryx/tree/master/packages/styles) —
+  Astryx-inspired component and layout styles for StyleX. Ships typed StyleX modules
+  (`buttonStyles`, `cardStyles`, `layoutStyles`, …) plus the stable
+  `@foldstryx/styles/document.global.css` subpath export with the bundled Atkinson Hyperlegible
+  Next / Maple Mono NL NF font assets. The `.stylex.js` modules ship as-is; a consumer's
+  `@stylexjs/unplugin` compiles the StyleX CSS at build time.
+  README: https://github.com/boozedog/foldstryx/blob/master/packages/styles/README.md
+
+- [@foldstryx/foldkit](https://github.com/boozedog/foldstryx/tree/master/packages/foldkit) —
+  Named composition primitives (`Button`, `Card`, `Stack`, `Row`, `Text`, `Sidebar`, `Dialog`,
+  `Tabs`, …) that pair Foldkit headless behavior with `@foldstryx/styles` visuals.
+  README: https://github.com/boozedog/foldstryx/blob/master/packages/foldkit/README.md
+
+- [@foldstryx/kitchen-sink](https://github.com/boozedog/foldstryx/tree/master/packages/kitchen-sink) —
+  A self-contained, mountable Foldkit submodel kitchen sink. Exposes `Mount` (a
+  `Model` / `init` / `update` / `view` submodel; its `Message` is a type-only export) that
+  renders the full primitive catalog. This is the regression/catalog mount, distinct from the
+  routed docs composition.
+  README: https://github.com/boozedog/foldstryx/blob/master/packages/kitchen-sink/README.md
+
+- [@foldstryx/docs](https://github.com/boozedog/foldstryx/tree/master/packages/docs) —
+  Platform-neutral, routed documentation composition. A Foldkit
+  `Model` / `Message` / `init` / `update` / `view` application with typed routes, canonical
+  navigation metadata, and a fixed sidebar shell. No browser globals, URL history, Tauri, or
+  native APIs — hosts own runtime bootstrap. `@foldstryx/kitchen-sink` is rendered as a
+  dedicated docs route rather than making `Mount` itself route-aware.
+  README: https://github.com/boozedog/foldstryx/blob/master/packages/docs/README.md
+
+## Foldkit MVU contract
+
+The interactive packages follow Foldkit's MVU (Model / View / Update) model. A Foldkit
+application is defined by:
+
+- `Model` — an Effect `Schema` describing application state.
+- `Message` — a typed union of state transitions (also an Effect `Schema` for runtime
+  decode/dispatch).
+- `init` — the initial state (and commands).
+- `update` — a pure `(model, message) => readonly [Model, ReadonlyArray<Command>]` function
+  (the next model plus commands to run, branched on `message._tag`).
+- `view` — a pure `(model) => Document` function returning `{ title, body }` for Foldkit to
+  render.
+
+`@foldstryx/docs` exports these directly, and its `Message` is its runtime Effect Schema.
+External hosts can pass that Schema to `Runtime.makeApplication({ devTools: { Message } })` so
+the Foldkit DevTools overlay can discover and decode messages without reconstructing the union.
+The `Sink.message` payload is intentionally unconstrained (`S.Any`); `HoverNav` / `OpenNav`
+ids are JSON-friendly optional-nullable strings (use `null`, not `undefined`, for external
+dispatch). The DevTools overlay is host-owned — `@foldstryx/docs` does not depend on
+`@foldkit/devtools`.
+
+```ts
+import { Runtime } from 'foldkit'
+import { Message, Model, init, update, view } from '@foldstryx/docs'
+import '@foldstryx/styles/document.global.css'
+
+const application = Runtime.makeApplication({
+  Model,
+  init,
+  update,
+  view,
+  container: document.getElementById('root'),
+  devTools: { Message },
+})
+Runtime.run(application)
+```
+
+## Installation and host bootstrap
+
+Install the packages you consume from npm, plus the Foldkit runtime peers
+(`@foldkit/ui`, `effect`, `foldkit`):
+
+```bash
+npm install @foldstryx/tokens @foldstryx/styles @foldstryx/foldkit @foldstryx/docs @foldkit/ui effect foldkit
+```
+
+Import the global stylesheet and fonts once at host bootstrap:
+
+```ts
+import '@foldstryx/styles/document.global.css'
+```
+
+StyleX CSS is compiled by the consumer's `@stylexjs/unplugin` at build time (it auto-discovers
+packages that depend on `@stylexjs/stylex`). Hosts own runtime bootstrap: container lookup,
+DevTools, and URL integration. The browser demo (`examples/sidebar-demo`) is a thin bootstrap
+that imports the `@foldstryx/docs` composition and runs it with `Runtime.makeApplication`.
+
+## Platform-neutral boundary and external consumers
+
+The `@foldstryx/docs` composition is platform-neutral — it does not import browser globals,
+URL history, Tauri, or native APIs. Hosts supply runtime bootstrap, container lookup,
+DevTools, and URL integration. Taurifold is an external desktop consumer of the packages: the
+same platform-neutral boundary that `pnpm check:packed` exercises lets a desktop host mount
+`@foldstryx/docs` through host-owned runtime wiring (Foldstryx pointer:
+[#25](https://github.com/boozedog/foldstryx/issues/25); live work:
+[boozedog/taurifold#10](https://github.com/boozedog/taurifold/issues/10)).
+
+Library contracts are distinct from demo/documentation content:
+
+- **Reusable primitives** (`@foldstryx/foldkit`) — named composition helpers for product apps.
+- **Kitchen sink** (`@foldstryx/kitchen-sink`) — a mountable regression/catalog submodel.
+- **Docs composition** (`@foldstryx/docs`) — the routed documentation application shell.
+
+The external-boundary gate is `pnpm check:packed`, which packs the five packages, installs the
+tarballs into a throwaway Vite consumer (no workspace links), and verifies the docs shell, a
+route transition, and font loading from package assets.
+
+## More
+
+- Root README: https://github.com/boozedog/foldstryx/blob/master/README.md
+- Releasing: https://github.com/boozedog/foldstryx/blob/master/RELEASING.md
+- NOTICE (Astryx source pin / attribution): https://github.com/boozedog/foldstryx/blob/master/NOTICE
+- Roadmap / umbrella: https://github.com/boozedog/foldstryx/issues/22
+- Taurifold consumer: https://github.com/boozedog/taurifold/issues/10
+- Taurifold migration (Foldstryx): https://github.com/boozedog/foldstryx/issues/25
