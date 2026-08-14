@@ -401,9 +401,22 @@ const main = async () => {
   await mkdir(packDir, { recursive: true })
   await mkdir(consumerDir, { recursive: true })
   try {
-    // 0. Build every package to dist/ so the packed artifacts carry built
-    //    JavaScript + declarations. (pnpm pack does not run `prepack`.)
-    await run('pnpm', ['build'], { cwd: root })
+    // 0. Build the external-consumer packages to dist/ so the packed artifacts
+    //    carry built JavaScript + declarations. (pnpm pack does not run
+    //    `prepack`.) Scope to the consumer packages only: a root `pnpm build`
+    //    also rebuilds the oxlint-plugin, which races with the `lint` step's
+    //    plugin build when this runs as part of the parallel pre-push gate.
+    await run(
+      'pnpm',
+      [
+        '-r',
+        '--filter',
+        '@foldstryx/{tokens,styles,foldkit,kitchen-sink,docs}',
+        '--if-present',
+        'build',
+      ],
+      { cwd: root },
+    )
 
     // 1. Pack every external-consumer package.
     const tarballs = {}
