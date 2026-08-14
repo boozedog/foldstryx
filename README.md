@@ -67,7 +67,7 @@ mise run typecheck   # tsc across packages
 mise run test        # vitest
 mise run lint        # oxlint (foldkit MVU + Effect-async + StyleX jsPlugins)
 pnpm check:tokens    # in-repo NOTICE pin + lifted token spot-check
-pnpm check:demo      # vite preview + computed-style smoke on http://localhost:5173/
+pnpm check:demo      # vite preview (ephemeral port) + computed-style smoke
 pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
 pnpm check:waivers   # frozen disable-comment + config waiver ratchet
 mise run check       # full gate (format, lint, tsc, fallow, test, tokens, fixtures, demo, waivers)
@@ -76,7 +76,7 @@ mise run pre-commit  # hk changed-file hooks (includes waiver ratchet)
 
 The visual catalog runs at `http://localhost:5173/`. UI and StyleX changes require a
 browser check for computed fonts, layout spacing, button states, and page shell padding.
-`pnpm check:demo` builds the demo, starts a fresh Vite preview on that URL (it does not
+`pnpm check:demo` builds the demo, starts a fresh Vite preview on an ephemeral port (it does not
 reuse `pnpm dev`), and drives headless Chrome (`google-chrome` or `CHROME_PATH`) for the
 automated computed-style subset. Astryx _feel_ stays human.
 

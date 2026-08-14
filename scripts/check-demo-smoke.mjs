@@ -1,23 +1,23 @@
 /**
  * Computed-style smoke for the sidebar catalog.
  *
- * Builds `sidebar-demo`, then boots a fresh `vite preview` on
- * http://localhost:5173/. It does not reuse an already-running `pnpm dev`.
- * Requires `google-chrome` or `CHROME_PATH`. Pass `--negative=font` or
- * `--negative=concat` to assert the gate fails. GitHub Actions sets `CI=true`;
- * that (or `CHROME_NO_SANDBOX=1`) adds `--no-sandbox` because ubuntu-latest
- * cannot use Chromium's user-namespace sandbox.
+ * Builds `sidebar-demo`, then boots a fresh `vite preview` on an ephemeral
+ * port (`--port 0`) and drives Chrome against the reported URL. It never
+ * reuses an already-running `pnpm dev` or a stale preview, so it works even
+ * when the developer has a dev server on 5173. Requires `google-chrome` or
+ * `CHROME_PATH`. Pass `--negative=font` or `--negative=concat` to assert the
+ * gate fails. GitHub Actions sets `CI=true`; that (or `CHROME_NO_SANDBOX=1`)
+ * adds `--no-sandbox` because ubuntu-latest cannot use Chromium's
+ * user-namespace sandbox.
  */
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
-import { createServer } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '..')
 const demoDir = resolve(root, 'examples/sidebar-demo')
-const DEMO_URL = 'http://localhost:5173/'
 const negative = process.argv
   .find(arg => arg.startsWith('--negative='))
   ?.slice('--negative='.length)
@@ -37,15 +37,6 @@ const run = (command, args, options = {}) =>
     })
   })
 
-const portFree = (port, host) =>
-  new Promise(resolveFree => {
-    const server = createServer()
-    server.once('error', () => resolveFree(false))
-    server.listen(port, host, () => {
-      server.close(() => resolveFree(true))
-    })
-  })
-
 const waitForUrl = async (url, timeoutMs = 30_000) => {
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
@@ -60,24 +51,22 @@ const waitForUrl = async (url, timeoutMs = 30_000) => {
   throw new Error(`Timed out waiting for ${url}`)
 }
 
+// Vite prints "➜  Local:   http://localhost:PORT/" once the preview server is
+// listening. Parse that URL so the probe targets the exact ephemeral port.
+const parsePreviewUrl = output => {
+  const local = output.match(/Local:\s*(https?:\/\/[^\s]+)/)
+  const url = local?.[1] ?? output.match(/https?:\/\/localhost:\d+/)?.[0]
+  if (url === undefined) return null
+  return url.endsWith('/') ? url : `${url}/`
+}
+
+// Start a fresh `vite preview` on an ephemeral port (--port 0), wait for Vite
+// to report the bound URL, and confirm it serves the built demo. The child is
+// killed on any startup failure so nothing leaks.
 const startPreview = async () => {
-  if (!(await portFree(5173, '127.0.0.1')) || !(await portFree(5173, '::1'))) {
-    throw new Error(
-      'Port 5173 is already in use. Stop the other process before pnpm check:demo so the gate serves the just-built preview.',
-    )
-  }
   const child = spawn(
     'pnpm',
-    [
-      'exec',
-      'vite',
-      'preview',
-      '--host',
-      'localhost',
-      '--port',
-      '5173',
-      '--strictPort',
-    ],
+    ['exec', 'vite', 'preview', '--host', 'localhost', '--port', '0'],
     { cwd: demoDir, stdio: ['ignore', 'pipe', 'pipe'] },
   )
   let output = ''
@@ -87,15 +76,58 @@ const startPreview = async () => {
   child.stderr.on('data', chunk => {
     output += chunk.toString()
   })
-  const exited = new Promise((_, reject) => {
-    child.on('exit', code => {
-      if (code !== 0 && code !== null) {
-        reject(new Error(`vite preview exited ${code}\n${output}`))
-      }
+  let exitInfo = null
+  let spawnError = null
+  const exited = new Promise(resolveExit => {
+    child.on('error', error => {
+      spawnError = error
+      resolveExit()
+    })
+    child.on('exit', (code, signal) => {
+      exitInfo = { code, signal }
+      resolveExit()
     })
   })
-  await Promise.race([waitForUrl(DEMO_URL), exited])
-  return child
+  // Kill the child (if it is still alive) and await its exit so no preview
+  // leaks on any startup failure.
+  const fail = reason => {
+    child.kill('SIGTERM')
+    return exited.then(() => {
+      const prefix =
+        spawnError !== null ? `\nspawn error: ${spawnError.message}` : ''
+      throw new Error(reason + prefix + `\n${output}`)
+    })
+  }
+  // Wait for Vite to print the ephemeral URL.
+  const start = Date.now()
+  let url = null
+  while (
+    Date.now() - start < 30_000 &&
+    exitInfo === null &&
+    spawnError === null
+  ) {
+    url = parsePreviewUrl(output)
+    if (url !== null) break
+    await wait(100)
+  }
+  if (url === null) {
+    return fail(
+      `vite preview did not report a URL${
+        exitInfo !== null ? ` (exited code=${exitInfo.code})` : ''
+      }`,
+    )
+  }
+  try {
+    await Promise.race([waitForUrl(url), exited])
+  } catch {
+    return fail(`vite preview never served ${url}`)
+  }
+  if (exitInfo !== null) {
+    return fail(
+      `vite preview exited before becoming ready (code=${exitInfo.code} signal=${exitInfo.signal})`,
+    )
+  }
+  return { child, url }
 }
 
 const chromePath = () => {
@@ -123,7 +155,7 @@ const chromeArgs = () => {
   return args
 }
 
-const withChrome = async (evaluate, mode) => {
+const withChrome = async (evaluate, mode, previewUrl) => {
   const chrome = spawn(chromePath(), chromeArgs(), {
     stdio: ['ignore', 'pipe', 'pipe'],
   })
@@ -170,7 +202,7 @@ const withChrome = async (evaluate, mode) => {
       ws.send(JSON.stringify({ id, method, params }))
     })
   try {
-    const { targetId } = await send('Target.createTarget', { url: DEMO_URL })
+    const { targetId } = await send('Target.createTarget', { url: previewUrl })
     const { sessionId } = await send('Target.attachToTarget', {
       targetId,
       flatten: true,
@@ -190,7 +222,7 @@ const withChrome = async (evaluate, mode) => {
       })
     await sessionSend('Page.enable')
     await sessionSend('Runtime.enable')
-    await sessionSend('Page.navigate', { url: DEMO_URL })
+    await sessionSend('Page.navigate', { url: previewUrl })
     const readyStarted = Date.now()
     while (Date.now() - readyStarted < 20_000) {
       const ready = await sessionSend('Runtime.evaluate', {
@@ -563,8 +595,8 @@ const pageProbe = `async (negative) => {
 }`
 
 const main = async () => {
-  const runProbe = async mode => {
-    const result = await withChrome(pageProbe, mode)
+  const runProbe = async (previewUrl, mode) => {
+    const result = await withChrome(pageProbe, mode, previewUrl)
     if (mode === 'font' || mode === 'concat') {
       if (result.failures.length === 0) {
         throw new Error(`expected negative=${mode} to fail`)
@@ -578,23 +610,23 @@ const main = async () => {
       throw new Error(result.failures.join('\n'))
     }
     console.log(
-      `check:demo OK (${DEMO_URL}) body=${result.bodyFont} h1=${result.headingFont}`,
+      `check:demo OK (${previewUrl}) body=${result.bodyFont} h1=${result.headingFont}`,
     )
     return result
   }
 
   await run('pnpm', ['--filter', 'sidebar-demo', 'build'], { cwd: root })
-  const preview = await startPreview()
+  const { child, url } = await startPreview()
   try {
     if (negative === 'font' || negative === 'concat') {
-      await runProbe(negative)
+      await runProbe(url, negative)
       return
     }
-    await runProbe(null)
-    await runProbe('font')
-    await runProbe('concat')
+    await runProbe(url, null)
+    await runProbe(url, 'font')
+    await runProbe(url, 'concat')
   } finally {
-    preview?.kill('SIGTERM')
+    child.kill('SIGTERM')
   }
 }
 
