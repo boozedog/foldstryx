@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@foldkit/devtools": "^0.113.0",
     "@foldstryx/docs": "workspace:*",
     "@foldstryx/styles": "workspace:*",
     "foldkit": "^0.113.0"

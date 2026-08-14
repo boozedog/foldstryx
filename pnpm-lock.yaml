@@ -47,6 +47,9 @@ importers:
 
   examples/sidebar-demo:
     dependencies:
+      '@foldkit/devtools':
+        specifier: ^0.113.0
+        version: 0.113.1(@foldkit/ui@0.113.1(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83)))(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83))
       '@foldstryx/docs':
         specifier: workspace:*
         version: link:../../packages/docs
@@ -626,6 +629,14 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@foldkit/devtools@0.113.1':
+    resolution: {integrity: sha512-s18v8XzCzWzIgwjZpHehwDqIW0U2D5mn3kVyEh7UgBamkHjQf4zrhL0y0Qo1hcRe1LBRuB2SsDsYeGZplTj59w==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@foldkit/ui': ^0
+      effect: 4.0.0-beta.83
+      foldkit: ^0
 
   '@foldkit/oxlint-plugin@0.6.0':
     resolution: {integrity: sha512-wp4a1ogiTiYpOW+O9zoBFy1r/y/KyWOCoDuUhzKC0UpAkNYc3zWYpCEtUaTC/IyIMEWw+9dCZWYuoer4WorAuA==}
@@ -2374,6 +2385,13 @@ snapshots:
       '@floating-ui/utils': 0.2.12
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@foldkit/devtools@0.113.1(@foldkit/ui@0.113.1(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83)))(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83))':
+    dependencies:
+      '@foldkit/ui': 0.113.1(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83))
+      clsx: 2.1.1
+      effect: 4.0.0-beta.83
+      foldkit: 0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83)
 
   '@foldkit/oxlint-plugin@0.6.0(effect@4.0.0-beta.100)':
     dependencies:
