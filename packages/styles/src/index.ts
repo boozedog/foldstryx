@@ -9,6 +9,10 @@ export { badgeStyles } from './badge.stylex.js'
 export { alertStyles } from './alert.stylex.js'
 export { tooltipStyles } from './tooltip.stylex.js'
 export { tableStyles } from './table.stylex.js'
+export { dialogStyles } from './dialog.stylex.js'
+export { tabsStyles } from './tabs.stylex.js'
+export { dropdownMenuStyles } from './dropdownMenu.stylex.js'
+export { toastStyles } from './toast.stylex.js'
 export {
   checkboxStyles,
   fieldStyles,

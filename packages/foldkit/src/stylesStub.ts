@@ -24,3 +24,7 @@ export const switchStyles = make
 export const separatorStyles = make
 export const sidebarStyles = make
 export const tableStyles = make
+export const dialogStyles = make
+export const tabsStyles = make
+export const dropdownMenuStyles = make
+export const toastStyles = make

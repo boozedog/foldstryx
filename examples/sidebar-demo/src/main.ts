@@ -1,5 +1,5 @@
 import { Schema as S } from 'effect'
-import { Runtime } from 'foldkit'
+import { Command, Runtime } from 'foldkit'
 import type { Html } from 'foldkit/html'
 import { html } from 'foldkit/html'
 
@@ -44,7 +44,7 @@ const init: Runtime.ApplicationInit<Model, Message> = () => {
 const update = (
   model: Model,
   message: Message,
-): readonly [Model, ReadonlyArray<never>] => {
+): readonly [Model, ReadonlyArray<Command.Command<Message>>] => {
   if (message._tag === 'ToggleSidebar')
     return [{ ...model, collapsed: !model.collapsed }, []]
   if (message._tag === 'Navigate') return [{ ...model, active: message.id }, []]
@@ -62,8 +62,11 @@ const update = (
     return [{ ...model, hovered: message.id ?? null }, []]
   if (message._tag === 'OpenNav')
     return [{ ...model, open: message.id ?? null }, []]
-  const [sink] = Mount.update(model.sink, message.message)
-  return [{ ...model, sink }, []]
+  const [sink, commands] = Mount.update(model.sink, message.message)
+  return [
+    { ...model, sink },
+    Command.mapMessages(commands, m => ({ _tag: 'Sink', message: m })),
+  ]
 }
 
 const view = (model: Model): Readonly<{ title: string; body: Html }> => {

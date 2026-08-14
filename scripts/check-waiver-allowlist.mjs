@@ -78,8 +78,12 @@ const EXPECTED = {
     'scripts/fixtures/**',
     'scripts/check-lint-fixtures.mjs',
     'scripts/check-waiver-allowlist.mjs',
+    'packages/oxlint-plugin-foldstryx/**',
   ],
-  fallowIgnoreDependencies: ['@foldkit/oxlint-plugin'],
+  fallowIgnoreDependencies: [
+    '@foldkit/oxlint-plugin',
+    '@foldstryx/oxlint-plugin',
+  ],
   fallowRules: {
     'unused-files': 'error',
     'unused-exports': 'error',

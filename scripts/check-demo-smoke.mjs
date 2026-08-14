@@ -221,8 +221,53 @@ const withChrome = async (evaluate, mode) => {
   }
 }
 
-const pageProbe = `(negative) => {
+const pageProbe = `async (negative) => {
   const failures = []
+  const waitFor = (selector, ms = 1000) =>
+    new Promise(resolve => {
+      const start = performance.now()
+      const check = () => {
+        if (
+          document.querySelector(selector) !== null ||
+          performance.now() - start > ms
+        ) {
+          resolve()
+        } else {
+          requestAnimationFrame(check)
+        }
+      }
+      check()
+    })
+  const waitForGone = (selector, ms = 1000) =>
+    new Promise(resolve => {
+      const start = performance.now()
+      const check = () => {
+        if (
+          document.querySelector(selector) === null ||
+          performance.now() - start > ms
+        ) {
+          resolve()
+        } else {
+          requestAnimationFrame(check)
+        }
+      }
+      check()
+    })
+  const waitForText = (text, ms = 1500) =>
+    new Promise(resolve => {
+      const start = performance.now()
+      const check = () => {
+        if (
+          (document.body.innerText ?? '').includes(text) ||
+          performance.now() - start > ms
+        ) {
+          resolve()
+        } else {
+          requestAnimationFrame(check)
+        }
+      }
+      check()
+    })
   const body = document.body
   const h1 = document.querySelector('h1')
   if (h1 === null) failures.push('missing h1')
@@ -344,6 +389,62 @@ const pageProbe = `(negative) => {
   }
   if (document.querySelector('[aria-label="Pagination"]') === null) {
     failures.push('missing aria-label=Pagination pagination')
+  }
+  // Phase D catalog sections and high-value roles (issue #17).
+  const phaseDSections = ['Dialog', 'Tabs', 'Dropdown menu', 'Toast']
+  for (const heading of phaseDSections) {
+    if (!bodyText.includes(heading)) {
+      failures.push('missing catalog section heading: ' + heading)
+    }
+  }
+  if (document.querySelector('[role="tablist"]') === null) {
+    failures.push('missing role=tablist tabs')
+  }
+  if (document.querySelector('[role="tab"]') === null) {
+    failures.push('missing role=tab tab')
+  }
+  const openDialog = [...document.querySelectorAll('button')].find(
+    button => (button.textContent ?? '').trim() === 'Open dialog',
+  )
+  if (openDialog === undefined) {
+    failures.push('missing Open dialog button')
+  } else {
+    openDialog.click()
+    await waitFor('dialog[open]')
+    if (document.querySelector('dialog[open]') === null) {
+      failures.push('missing open dialog element')
+    }
+    const closeDialog = [...document.querySelectorAll('button')].find(
+      button => (button.textContent ?? '').trim() === 'Cancel',
+    )
+    if (closeDialog !== undefined) {
+      closeDialog.click()
+      await waitForGone('dialog[open]')
+    }
+  }
+  const menuTrigger = [...document.querySelectorAll('button')].find(
+    button => (button.textContent ?? '').trim() === 'Actions',
+  )
+  if (menuTrigger === undefined) {
+    failures.push('missing Actions menu trigger')
+  } else {
+    menuTrigger.click()
+    await waitFor('[role="menu"]')
+    if (document.querySelector('[role="menu"]') === null) {
+      failures.push('missing role=menu after opening')
+    }
+  }
+  const infoButton = [...document.querySelectorAll('button')].find(
+    button => (button.textContent ?? '').trim() === 'Info',
+  )
+  if (infoButton === undefined) {
+    failures.push('missing Info toast trigger')
+  } else {
+    infoButton.click()
+    await waitForText('A toast was shown.')
+    if (!(document.body.innerText ?? '').includes('A toast was shown.')) {
+      failures.push('missing toast after triggering Info')
+    }
   }
   return { failures, bodyFont: bodyAfter, headingFont: headingAfter }
 }`

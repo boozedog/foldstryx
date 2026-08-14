@@ -1,4 +1,4 @@
-import { Schema as S } from 'effect'
+import { Option, Schema as S } from 'effect'
 import { Command, Runtime, Submodel } from 'foldkit'
 import { html } from 'foldkit/html'
 
@@ -10,6 +10,8 @@ import {
   Card,
   Checkbox,
   Details,
+  Dialog,
+  DropdownMenu,
   EmptyState,
   Field,
   Input,
@@ -23,22 +25,34 @@ import {
   Stat,
   Switch,
   Table,
+  Tabs,
   Text,
+  Toast,
   Tooltip,
   elAttrs,
   sxAttrs,
 } from '@foldstryx/foldkit'
 import { layoutStyles, tooltipStyles } from '@foldstryx/styles'
 
+type CatalogTab = 'overview' | 'details' | 'settings'
+const DemoTabs = Tabs.create<CatalogTab>()
+type CatalogItem = 'edit' | 'duplicate' | 'delete'
+const DemoMenu = DropdownMenu.create<CatalogItem>()
+const DemoToast = Toast.create()
+
 export const Model = S.Struct({
   clicks: S.Finite,
   detailsOpen: S.Boolean,
+  dialog: Dialog.Model,
   email: S.String,
   filter: S.String,
   includeInactive: S.Boolean,
   kind: S.String,
+  menu: DropdownMenu.Model,
   notifications: S.Boolean,
   page: S.Finite,
+  tabs: Tabs.Model,
+  toast: DemoToast.Model,
   tooltip: Tooltip.Model,
 })
 export type Model = typeof Model.Type
@@ -67,25 +81,56 @@ export const GotTooltipMessage = (message: Tooltip.Message) => ({
   _tag: 'GotTooltipMessage' as const,
   message,
 })
+export const GotDialogMessage = (message: Dialog.Message) => ({
+  _tag: 'GotDialogMessage' as const,
+  message,
+})
+export const GotTabsMessage = (message: Tabs.Message) => ({
+  _tag: 'GotTabsMessage' as const,
+  message,
+})
+export const GotMenuMessage = (message: DropdownMenu.Message) => ({
+  _tag: 'GotMenuMessage' as const,
+  message,
+})
+export const GotToastMessage = (message: typeof DemoToast.Message.Type) => ({
+  _tag: 'GotToastMessage' as const,
+  message,
+})
+export const ShowToast = (
+  variant: 'Info' | 'Success' | 'Warning' | 'Error',
+) => ({
+  _tag: 'ShowToast' as const,
+  variant,
+})
 export type Message = Readonly<
   | { _tag: 'Clicked' }
   | { _tag: 'FieldChanged'; field: 'email' | 'filter' | 'kind'; value: string }
   | { _tag: 'IncludeInactiveChanged'; checked: boolean }
   | { _tag: 'NotificationsChanged'; checked: boolean }
   | { _tag: 'DetailsToggled'; isOpen: boolean }
+  | { _tag: 'GotDialogMessage'; message: Dialog.Message }
   | { _tag: 'PageChanged'; delta: number }
   | { _tag: 'GotTooltipMessage'; message: Tooltip.Message }
+  | { _tag: 'GotTabsMessage'; message: Tabs.Message }
+  | { _tag: 'GotMenuMessage'; message: DropdownMenu.Message }
+  | { _tag: 'GotToastMessage'; message: typeof DemoToast.Message.Type }
+  | { _tag: 'ShowToast'; variant: 'Info' | 'Success' | 'Warning' | 'Error' }
 >
 export const init: Runtime.ApplicationInit<Model, Message> = () => [
   {
     clicks: 0,
     detailsOpen: false,
+    dialog: Dialog.init({ id: 'catalog-dialog' }),
     email: '',
     filter: '',
     includeInactive: false,
     kind: 'all',
+    menu: DropdownMenu.init({ id: 'catalog-menu' }),
     notifications: false,
     page: 1,
+    tabs: Tabs.init({ id: 'catalog-tabs' }),
+    toast: DemoToast.init({ id: 'catalog-toast' }),
     tooltip: Tooltip.init('catalog-tooltip'),
   },
   [],
@@ -100,6 +145,47 @@ export const update = (
       return [
         { ...model, tooltip },
         Command.mapMessages(commands, m => GotTooltipMessage(m)),
+      ]
+    }
+    case 'GotDialogMessage': {
+      const [dialog, commands] = Dialog.update(model.dialog, message.message)
+      return [
+        { ...model, dialog },
+        Command.mapMessages(commands, m => GotDialogMessage(m)),
+      ]
+    }
+    case 'GotTabsMessage': {
+      const [tabs, commands] = DemoTabs.update(model.tabs, message.message)
+      return [
+        { ...model, tabs },
+        Command.mapMessages(commands, m => GotTabsMessage(m)),
+      ]
+    }
+    case 'GotMenuMessage': {
+      const [menu, commands] = DemoMenu.update(model.menu, message.message)
+      return [
+        { ...model, menu },
+        Command.mapMessages(commands, m => GotMenuMessage(m)),
+      ]
+    }
+    case 'GotToastMessage': {
+      const [toast, commands] = DemoToast.update(model.toast, message.message)
+      return [
+        { ...model, toast },
+        Command.mapMessages(commands, m => GotToastMessage(m)),
+      ]
+    }
+    case 'ShowToast': {
+      const [toast, commands] = DemoToast.show(model.toast, {
+        payload: {
+          title: 'Notification',
+          maybeDescription: Option.some('A toast was shown.'),
+        },
+        variant: message.variant,
+      })
+      return [
+        { ...model, toast },
+        Command.mapMessages(commands, m => GotToastMessage(m)),
       ]
     }
     case 'Clicked':
@@ -520,6 +606,125 @@ export const view = Submodel.defineView<Model, Message>(model => {
                   onToggle: isOpen => DetailsToggled(isOpen),
                 }),
               ],
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Dialog',
+          description: 'Modal surface with accessible labeling and dismissal.',
+          padded: true,
+          children: [
+            Button.view<Message>({
+              label: 'Open dialog',
+              onClick: GotDialogMessage(Dialog.RequestedOpen()),
+            }),
+            h.submodel({
+              slotId: 'catalog-dialog',
+              model: model.dialog,
+              view: Dialog.view,
+              viewInputs: Dialog.styledViewInputs<Message>({
+                id: 'catalog-dialog',
+                title: 'Confirm action',
+                description: 'Controlled dialog with accessible labeling.',
+                showClose: true,
+                body: [Text.view({ children: 'Dialog body content.' })],
+                footer: [
+                  Button.view<Message>({
+                    label: 'Cancel',
+                    variant: 'secondary',
+                    onClick: GotDialogMessage(Dialog.RequestedClose()),
+                  }),
+                  Button.view<Message>({
+                    label: 'Confirm',
+                    onClick: GotDialogMessage(Dialog.RequestedClose()),
+                  }),
+                ],
+              }),
+              toParentMessage: message => GotDialogMessage(message),
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Tabs',
+          description: 'Accessible tablist with controlled selection.',
+          padded: true,
+          children: [
+            h.submodel({
+              slotId: 'catalog-tabs',
+              model: model.tabs,
+              view: DemoTabs.view,
+              viewInputs: DemoTabs.styledViewInputs({
+                tabs: ['overview', 'details', 'settings'],
+                ariaLabel: 'Catalog tabs',
+                renderPanel: value =>
+                  Text.view({
+                    variant: 'muted',
+                    children: `Panel for ${value}.`,
+                  }),
+              }),
+              toParentMessage: message => GotTabsMessage(message),
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Dropdown menu',
+          description:
+            'Menu trigger with accessible items and disabled behavior.',
+          padded: true,
+          children: [
+            h.submodel({
+              slotId: 'catalog-menu',
+              model: model.menu,
+              view: DemoMenu.view,
+              viewInputs: DropdownMenu.styledViewInputs<CatalogItem, Message>({
+                items: ['edit', 'duplicate', 'delete'],
+                buttonContent: h.span([], ['Actions']),
+                itemSpec: item =>
+                  item === 'delete'
+                    ? { label: 'Delete', variant: 'destructive' }
+                    : { label: item[0]!.toUpperCase() + item.slice(1) },
+                isItemDisabled: item => item === 'duplicate',
+              }),
+              toParentMessage: message => GotMenuMessage(message),
+            }),
+          ],
+        }),
+        Card.section({
+          title: 'Toast',
+          description: 'Status notifications with lifecycle and dismissal.',
+          padded: true,
+          children: [
+            Row.view({
+              align: 'wrap',
+              children: [
+                Button.view<Message>({
+                  label: 'Info',
+                  variant: 'secondary',
+                  onClick: ShowToast('Info'),
+                }),
+                Button.view<Message>({
+                  label: 'Success',
+                  variant: 'secondary',
+                  onClick: ShowToast('Success'),
+                }),
+                Button.view<Message>({
+                  label: 'Warning',
+                  variant: 'secondary',
+                  onClick: ShowToast('Warning'),
+                }),
+                Button.view<Message>({
+                  label: 'Error',
+                  variant: 'secondary',
+                  onClick: ShowToast('Error'),
+                }),
+              ],
+            }),
+            h.submodel({
+              slotId: 'catalog-toast',
+              model: model.toast,
+              view: DemoToast.view,
+              viewInputs: DemoToast.styledViewInputs(),
+              toParentMessage: message => GotToastMessage(message),
             }),
           ],
         }),

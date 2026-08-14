@@ -7,9 +7,10 @@
     "**/.changeset/**",
     "scripts/fixtures/**",
     "scripts/check-lint-fixtures.mjs",
-    "scripts/check-waiver-allowlist.mjs"
+    "scripts/check-waiver-allowlist.mjs",
+    "packages/oxlint-plugin-foldstryx/**"
   ],
-  "ignoreDependencies": ["@foldkit/oxlint-plugin"],
+  "ignoreDependencies": ["@foldkit/oxlint-plugin", "@foldstryx/oxlint-plugin"],
   "duplicates": {
     "skipLocal": true
   },
@@ -46,7 +47,8 @@
       },
       {
         "files": ["packages/kitchen-sink/src/index.ts"],
-        "maxCrap": 100,
+        "maxCrap": 200,
+        "maxUnitSize": 140,
         "reason": "Kitchen-sink catalog view intentionally composes all primitive demonstrations in one vertical page."
       },
       {
