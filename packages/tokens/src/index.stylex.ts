@@ -293,10 +293,11 @@ export const transitionVars = stylex.defineVars(transitionDefaults)
 
 export const typographyDefaults = {
   '--font-family-body':
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-  '--font-family-code': '"SF Mono", Monaco, Consolas, monospace',
+    '"Atkinson Hyperlegible Next", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  '--font-family-code':
+    '"Maple Mono NL NF", "SF Mono", Monaco, Consolas, monospace',
   '--font-family-heading':
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    '"Atkinson Hyperlegible Next", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 } as const
 
 export const typographyVars = stylex.defineVars(typographyDefaults)

@@ -141,7 +141,7 @@ export const layoutStyles = stylex.create({
     color: colorVars['--color-success'],
     fontFamily: typographyVars['--font-family-body'],
   },
-  mono: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
+  mono: { fontFamily: typographyVars['--font-family-code'] },
   sectionTitle: {
     color: colorVars['--color-text-primary'],
     fontFamily: typographyVars['--font-family-heading'],

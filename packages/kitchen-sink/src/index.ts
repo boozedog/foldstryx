@@ -235,6 +235,10 @@ export const view = Submodel.defineView<Model, Message>(model => {
             Text.view({ children: 'Body text for a readable interface.' }),
             Text.view({ variant: 'body', children: 'Label text' }),
             Text.view({ variant: 'muted', children: 'Supporting text' }),
+            Text.view({
+              variant: 'mono',
+              children: 'const font = "Maple Mono NL NF"',
+            }),
           ],
         }),
         Card.section({

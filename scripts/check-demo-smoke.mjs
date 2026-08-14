@@ -303,8 +303,6 @@ const pageProbe = `async (negative) => {
   const body = document.body
   const h1 = document.querySelector('h1')
   if (h1 === null) failures.push('missing h1')
-  const bodyFont = getComputedStyle(body).fontFamily
-  const headingFont = h1 === null ? '' : getComputedStyle(h1).fontFamily
   const tokenFont = getComputedStyle(body).getPropertyValue('--font-family-body')
   if (negative === 'font') {
     body.style.fontFamily = '"Times New Roman", Times, serif'
@@ -312,20 +310,69 @@ const pageProbe = `async (negative) => {
   }
   const bodyAfter = getComputedStyle(body).fontFamily
   const headingAfter = h1 === null ? '' : getComputedStyle(h1).fontFamily
-  const looksLikeTimes = value =>
-    /times new roman/i.test(value) || /^\\s*times\\b/i.test(value)
-  const looksLikeUi = value =>
-    /segoe ui/i.test(value) ||
-    /-apple-system/i.test(value) ||
-    /blinkmacsystemfont/i.test(value)
-  if (looksLikeTimes(bodyAfter)) failures.push('body font is Times')
-  if (looksLikeTimes(headingAfter)) failures.push('h1 font is Times')
+  const hasAtkinson = value => /atkinson hyperlegible next/i.test(value)
+  if (!hasAtkinson(bodyAfter)) {
+    failures.push('body font is not Atkinson Hyperlegible Next: ' + bodyAfter)
+  }
+  if (!hasAtkinson(headingAfter)) {
+    failures.push('h1 font is not Atkinson Hyperlegible Next: ' + headingAfter)
+  }
+  if (!hasAtkinson(tokenFont)) {
+    failures.push(
+      '--font-family-body token is not Atkinson Hyperlegible Next: ' +
+        tokenFont,
+    )
+  }
+  // Fallback stacks must be preserved (issue #21: robust fallbacks).
+  const headingToken = getComputedStyle(body).getPropertyValue(
+    '--font-family-heading',
+  )
+  const codeToken = getComputedStyle(body).getPropertyValue(
+    '--font-family-code',
+  )
+  if (!/-apple-system/i.test(tokenFont) || !/sans-serif/i.test(tokenFont)) {
+    failures.push('--font-family-body lost its system fallback: ' + tokenFont)
+  }
   if (
-    !looksLikeUi(bodyAfter) &&
-    !looksLikeUi(tokenFont) &&
-    !/segoe ui|-apple-system|blinkmacsystemfont/i.test(bodyFont + headingFont)
+    !/-apple-system/i.test(headingToken) ||
+    !/sans-serif/i.test(headingToken)
   ) {
-    failures.push('body/h1 font does not match token stack: ' + bodyAfter)
+    failures.push(
+      '--font-family-heading lost its system fallback: ' + headingToken,
+    )
+  }
+  if (!/"SF Mono"/i.test(codeToken) || !/monospace/i.test(codeToken)) {
+    failures.push(
+      '--font-family-code lost its monospace fallback: ' + codeToken,
+    )
+  }
+  // Verify the intended fonts actually loaded (not just the CSS stack).
+  await document.fonts.ready
+  const atkLoaded = await document.fonts.load('16px "Atkinson Hyperlegible Next"')
+  const mapleLoaded = await document.fonts.load('16px "Maple Mono NL NF"')
+  if (atkLoaded.length === 0) {
+    failures.push('Atkinson Hyperlegible Next did not load')
+  }
+  if (mapleLoaded.length === 0) {
+    failures.push('Maple Mono NL NF did not load')
+  }
+  // Code/monospace sample must use the intended code family.
+  const monoEl = [...document.querySelectorAll('span,p,div,code,pre')].find(
+    node => /maple mono nl nf/i.test(getComputedStyle(node).fontFamily),
+  )
+  if (monoEl === undefined) {
+    failures.push('no element uses Maple Mono NL NF')
+  }
+  // Form controls must inherit the interface family.
+  const formControl = document.querySelector('input, select, textarea')
+  if (
+    formControl !== null &&
+    !hasAtkinson(getComputedStyle(formControl).fontFamily)
+  ) {
+    failures.push(
+      'form control font is not Atkinson Hyperlegible Next: ' +
+        getComputedStyle(formControl).fontFamily,
+    )
   }
   const buttons = [...document.querySelectorAll('button')]
   const labeled = buttons.filter(button =>
@@ -335,6 +382,9 @@ const pageProbe = `async (negative) => {
   if (sample.length < 2) failures.push('need at least two buttons')
   const fonts = new Set(sample.map(button => getComputedStyle(button).fontFamily))
   if (fonts.size > 1) failures.push('buttons do not share a UI font: ' + [...fonts].join(' | '))
+  if (sample.some(button => !hasAtkinson(getComputedStyle(button).fontFamily))) {
+    failures.push('buttons do not use Atkinson Hyperlegible Next')
+  }
   const disabled = buttons.find(button => button.disabled || button.getAttribute('aria-disabled') === 'true')
   const enabled = buttons.find(button => !button.disabled && button.getAttribute('aria-disabled') !== 'true')
   if (disabled === undefined || enabled === undefined) {
