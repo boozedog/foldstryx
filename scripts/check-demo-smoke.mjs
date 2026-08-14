@@ -227,7 +227,7 @@ const withChrome = async (evaluate, mode, previewUrl) => {
     while (Date.now() - readyStarted < 20_000) {
       const ready = await sessionSend('Runtime.evaluate', {
         expression:
-          'document.readyState === "complete" && document.body.innerText.includes("Stack and Row")',
+          'document.readyState === "complete" && document.body.innerText.includes("Foldstryx documentation")',
         returnByValue: true,
       })
       if (ready.result?.value === true) break
@@ -303,6 +303,10 @@ const pageProbe = `async (negative) => {
   const body = document.body
   const h1 = document.querySelector('h1')
   if (h1 === null) failures.push('missing h1')
+  const initialH1 = h1?.textContent ?? ''
+  if (!initialH1.includes('Foldstryx documentation')) {
+    failures.push('initial route is not the overview page: ' + initialH1)
+  }
   const tokenFont = getComputedStyle(body).getPropertyValue('--font-family-body')
   if (negative === 'font') {
     body.style.fontFamily = '"Times New Roman", Times, serif'
@@ -356,49 +360,14 @@ const pageProbe = `async (negative) => {
   if (mapleLoaded.length === 0) {
     failures.push('Maple Mono NL NF did not load')
   }
-  // Code/monospace sample must use the intended code family.
-  const monoEl = [...document.querySelectorAll('span,p,div,code,pre')].find(
-    node => /maple mono nl nf/i.test(getComputedStyle(node).fontFamily),
-  )
-  if (monoEl === undefined) {
-    failures.push('no element uses Maple Mono NL NF')
-  }
-  // Form controls must inherit the interface family.
-  const formControl = document.querySelector('input, select, textarea')
-  if (
-    formControl !== null &&
-    !hasAtkinson(getComputedStyle(formControl).fontFamily)
-  ) {
-    failures.push(
-      'form control font is not Atkinson Hyperlegible Next: ' +
-        getComputedStyle(formControl).fontFamily,
-    )
-  }
-  const buttons = [...document.querySelectorAll('button')]
-  const labeled = buttons.filter(button =>
-    /primary|secondary|ghost|danger|small|disabled/i.test(button.textContent ?? ''),
-  )
-  const sample = labeled.length >= 2 ? labeled : buttons
-  if (sample.length < 2) failures.push('need at least two buttons')
-  const fonts = new Set(sample.map(button => getComputedStyle(button).fontFamily))
-  if (fonts.size > 1) failures.push('buttons do not share a UI font: ' + [...fonts].join(' | '))
-  if (sample.some(button => !hasAtkinson(getComputedStyle(button).fontFamily))) {
-    failures.push('buttons do not use Atkinson Hyperlegible Next')
-  }
-  const disabled = buttons.find(button => button.disabled || button.getAttribute('aria-disabled') === 'true')
-  const enabled = buttons.find(button => !button.disabled && button.getAttribute('aria-disabled') !== 'true')
-  if (disabled === undefined || enabled === undefined) {
-    failures.push('need enabled and disabled buttons')
-  } else {
-    const disabledOpacity = Number.parseFloat(getComputedStyle(disabled).opacity)
-    if (!(disabledOpacity < 1)) {
-      failures.push('disabled button opacity is not < 1: ' + disabledOpacity)
-    }
-  }
   const sidebar =
     document.querySelector('aside') ??
     document.querySelector('[aria-label="Sidebar"]')
   if (sidebar === null) failures.push('missing sidebar landmark')
+  const brandText = sidebar?.textContent ?? ''
+  if (!/foldstryx/i.test(brandText)) {
+    failures.push('missing foldstryx brand in the sidebar')
+  }
   // Fill-mode scroll contract (issue #19): bounded viewport shell, independent
   // nav/main scroll, sticky rail and inset header.
   const docEl = document.documentElement
@@ -485,6 +454,64 @@ const pageProbe = `async (negative) => {
         failures.push('rail nav container moved while nav scrolled')
       }
       navEl.scrollTop = 0
+    }
+  }
+  // Route transition: navigate from the overview page to the kitchen-sink
+  // route and assert the shell re-renders the kitchen-sink catalog.
+  const kitchenSinkButton = [...document.querySelectorAll('button')].find(
+    button => (button.getAttribute('aria-label') ?? '') === 'Kitchen sink',
+  )
+  if (kitchenSinkButton === undefined) {
+    failures.push('missing Kitchen sink nav item')
+  } else {
+    kitchenSinkButton.click()
+    await waitForText('Foldstryx catalog')
+    if (!(document.body.innerText ?? '').includes('Foldstryx catalog')) {
+      failures.push('kitchen-sink route did not render after navigation')
+    }
+    if ((kitchenSinkButton.getAttribute('aria-current') ?? '') !== 'page') {
+      failures.push(
+        'Kitchen sink nav item is not marked active after navigation',
+      )
+    }
+  }
+  // Code/monospace sample must use the intended code family.
+  const monoEl = [...document.querySelectorAll('span,p,div,code,pre')].find(
+    node => /maple mono nl nf/i.test(getComputedStyle(node).fontFamily),
+  )
+  if (monoEl === undefined) {
+    failures.push('no element uses Maple Mono NL NF')
+  }
+  // Form controls must inherit the interface family.
+  const formControl = document.querySelector('input, select, textarea')
+  if (
+    formControl !== null &&
+    !hasAtkinson(getComputedStyle(formControl).fontFamily)
+  ) {
+    failures.push(
+      'form control font is not Atkinson Hyperlegible Next: ' +
+        getComputedStyle(formControl).fontFamily,
+    )
+  }
+  const buttons = [...document.querySelectorAll('button')]
+  const labeled = buttons.filter(button =>
+    /primary|secondary|ghost|danger|small|disabled/i.test(button.textContent ?? ''),
+  )
+  const sample = labeled.length >= 2 ? labeled : buttons
+  if (sample.length < 2) failures.push('need at least two buttons')
+  const fonts = new Set(sample.map(button => getComputedStyle(button).fontFamily))
+  if (fonts.size > 1) failures.push('buttons do not share a UI font: ' + [...fonts].join(' | '))
+  if (sample.some(button => !hasAtkinson(getComputedStyle(button).fontFamily))) {
+    failures.push('buttons do not use Atkinson Hyperlegible Next')
+  }
+  const disabled = buttons.find(button => button.disabled || button.getAttribute('aria-disabled') === 'true')
+  const enabled = buttons.find(button => !button.disabled && button.getAttribute('aria-disabled') !== 'true')
+  if (disabled === undefined || enabled === undefined) {
+    failures.push('need enabled and disabled buttons')
+  } else {
+    const disabledOpacity = Number.parseFloat(getComputedStyle(disabled).opacity)
+    if (!(disabledOpacity < 1)) {
+      failures.push('disabled button opacity is not < 1: ' + disabledOpacity)
     }
   }
   const stackHeading = [...document.querySelectorAll('div,p,h1,h2,h3')].find(

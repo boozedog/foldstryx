@@ -98,7 +98,7 @@ const EXPECTED = {
     'duplicate-exports': 'off',
   },
   fallowThresholdFiles: [
-    'examples/sidebar-demo/src/main.ts',
+    'packages/docs/src/view.ts',
     'packages/foldkit/src/card.ts',
     'packages/foldkit/src/nativeSelect.ts',
     'packages/foldkit/src/row.ts',

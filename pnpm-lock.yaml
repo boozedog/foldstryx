@@ -47,18 +47,12 @@ importers:
 
   examples/sidebar-demo:
     dependencies:
-      '@foldstryx/foldkit':
+      '@foldstryx/docs':
         specifier: workspace:*
-        version: link:../../packages/foldkit
-      '@foldstryx/kitchen-sink':
-        specifier: workspace:*
-        version: link:../../packages/kitchen-sink
+        version: link:../../packages/docs
       '@foldstryx/styles':
         specifier: workspace:*
         version: link:../../packages/styles
-      effect:
-        specifier: 4.0.0-beta.83
-        version: 4.0.0-beta.83
       foldkit:
         specifier: ^0.113.0
         version: 0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83)
@@ -78,6 +72,43 @@ importers:
       vite:
         specifier: ^8.0.16
         version: 8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)
+
+  packages/docs:
+    dependencies:
+      '@foldstryx/foldkit':
+        specifier: workspace:*
+        version: link:../foldkit
+      '@foldstryx/kitchen-sink':
+        specifier: workspace:*
+        version: link:../kitchen-sink
+      '@foldstryx/styles':
+        specifier: workspace:*
+        version: link:../styles
+    devDependencies:
+      '@effect/platform-browser':
+        specifier: 4.0.0-beta.83
+        version: 4.0.0-beta.83(effect@4.0.0-beta.83)
+      '@effect/vitest':
+        specifier: 4.0.0-beta.83
+        version: 4.0.0-beta.83(effect@4.0.0-beta.83)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))
+      '@foldkit/ui':
+        specifier: ^0.113.0
+        version: 0.113.1(effect@4.0.0-beta.83)(foldkit@0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83))
+      effect:
+        specifier: 4.0.0-beta.83
+        version: 4.0.0-beta.83
+      foldkit:
+        specifier: ^0.113.0
+        version: 0.113.1(@effect/platform-browser@4.0.0-beta.83(effect@4.0.0-beta.83))(effect@4.0.0-beta.83)
+      happy-dom:
+        specifier: ^20.10.4
+        version: 20.11.2
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.9
+        version: 4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))
 
   packages/foldkit:
     dependencies:

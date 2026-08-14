@@ -52,16 +52,16 @@
         "reason": "Kitchen-sink catalog view intentionally composes all primitive demonstrations in one vertical page."
       },
       {
+        "files": ["packages/docs/src/view.ts"],
+        "maxCrap": 40,
+        "reason": "Docs view dispatches typed routes to focused pages; covered by docs tests and browser verification."
+      },
+      {
         "files": ["packages/foldkit/src/sidebar.ts"],
         "maxCrap": 220,
         "maxCognitive": 60,
         "maxUnitSize": 180,
         "reason": "Recursive Sidebar rendering keeps Astryx navigation, expansion, and accessibility semantics together; behavior is covered by Sidebar tests and browser verification."
-      },
-      {
-        "files": ["examples/sidebar-demo/src/main.ts"],
-        "maxCrap": 100,
-        "reason": "Demo MVU update routes shell and embedded kitchen-sink messages through a small explicit union."
       },
       {
         "files": [

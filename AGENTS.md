@@ -32,13 +32,15 @@ is a later product decision, not a day-1 merge.
 
 ## Layer map
 
-| Layer                   | Owns                                 |
-| ----------------------- | ------------------------------------ |
-| `@foldstryx/tokens`     | Astryx-faithful StyleX vars / themes |
-| `@foldstryx/styles`     | Typed component + layout styles      |
-| Foldkit (`@foldkit/ui`) | Headless behavior, a11y, state       |
-| `@foldstryx/foldkit`    | Named chrome + layout primitives     |
-| Product apps            | Domain models, formatting, workflows |
+| Layer                     | Owns                                                      |
+| ------------------------- | --------------------------------------------------------- |
+| `@foldstryx/tokens`       | Astryx-faithful StyleX vars / themes                      |
+| `@foldstryx/styles`       | Typed component + layout styles                           |
+| Foldkit (`@foldkit/ui`)   | Headless behavior, a11y, state                            |
+| `@foldstryx/foldkit`      | Named chrome + layout primitives                          |
+| `@foldstryx/kitchen-sink` | Mountable catalog submodel (independent)                  |
+| `@foldstryx/docs`         | Platform-neutral routed docs composition (shell + routes) |
+| Product apps              | Domain models, formatting, workflows                      |
 
 Styles stay **public** as an escape hatch. Package exports are **consumer contracts**.
 

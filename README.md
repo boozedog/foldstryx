@@ -32,6 +32,7 @@ Stack.view({
 | **`@foldstryx/tokens`**     | Astryx-faithful theme vars (color, space, type, elevation…) |
 | **`@foldstryx/styles`**     | StyleX rules for components + layout (public escape hatch)  |
 | **`@foldstryx/foldkit`**    | Named Html helpers: Button, Card, Stack, …                  |
+| **`@foldstryx/docs`**       | Platform-neutral routed documentation composition (shell)   |
 | **Foldkit / `@foldkit/ui`** | MVU runtime, headless behavior, a11y                        |
 | **Product apps**            | Domain models, formatting, workflows                        |
 
@@ -54,6 +55,21 @@ Card.section({ title: 'Details', children: ['Content'] })
 | [`@foldstryx/styles`](./packages/styles)             | Component + layout StyleX modules        |
 | [`@foldstryx/foldkit`](./packages/foldkit)           | Named primitives + StyleX attribute glue |
 | [`@foldstryx/kitchen-sink`](./packages/kitchen-sink) | Mountable catalog submodel               |
+| [`@foldstryx/docs`](./packages/docs)                 | Routed docs composition (shell + routes) |
+
+## Documentation composition
+
+`@foldstryx/docs` owns the canonical Foldstryx documentation site: a Foldkit
+`Model` / `Message` / `init` / `update` / `view` application with typed routes,
+canonical navigation metadata, and a fixed sidebar shell. It is
+**platform-neutral** — no browser globals, URL history, Tauri, or native APIs.
+The browser demo (`examples/sidebar-demo`) is a thin runtime bootstrap that
+imports the composition and runs it; a future Taurifold desktop host will do
+the same through packaged artifacts. Hosts own runtime bootstrap, container
+lookup, devtools, and URL integration.
+
+`@foldstryx/kitchen-sink` stays independently embeddable and is rendered as a
+dedicated docs route rather than making `Mount` itself route-aware.
 
 ## Develop
 
