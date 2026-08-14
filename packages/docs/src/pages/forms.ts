@@ -10,6 +10,8 @@ import {
   Text,
 } from '@foldstryx/foldkit'
 
+import type { Message } from '../model.js'
+
 export const view = (): Html =>
   Stack.view({
     gap: 'lg',
@@ -45,7 +47,7 @@ export const view = (): Html =>
                 id: 'docs-terms',
                 checked: false,
                 label: 'Accept terms',
-                onChange: () => undefined,
+                onChange: (): Message => ({ _tag: 'Noop' }),
               }),
             ],
           }),
@@ -66,7 +68,7 @@ export const view = (): Html =>
               { value: 'all', label: 'All kinds' },
               { value: 'active', label: 'Active' },
             ],
-            onChange: () => undefined,
+            onChange: (): Message => ({ _tag: 'Noop' }),
             label: 'Kind',
           }),
         ],

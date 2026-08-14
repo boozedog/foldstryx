@@ -21,6 +21,7 @@ export type Message = Readonly<
   | { _tag: 'ToggleNav'; id: string }
   | { _tag: 'HoverNav'; id: string | undefined }
   | { _tag: 'OpenNav'; id: string | undefined }
+  | { _tag: 'Noop' }
   | { _tag: 'Sink'; message: SinkMessage }
 >
 
@@ -62,6 +63,8 @@ export const update = (
       return [{ ...model, hovered: message.id ?? null }, []]
     case 'OpenNav':
       return [{ ...model, open: message.id ?? null }, []]
+    case 'Noop':
+      return [model, []]
     case 'Sink': {
       const [sink, commands] = Mount.update(model.sink, message.message)
       return [

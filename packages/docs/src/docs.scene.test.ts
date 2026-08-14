@@ -47,4 +47,24 @@ describe('docs scene', () => {
       Scene.expect(Scene.selector('h1')).toHaveText('Foldstryx documentation'),
     )
   })
+
+  it('dispatches a typed message when the forms checkbox is clicked', () => {
+    Scene.scene(
+      { update, view: m => view(m).body },
+      Scene.with(initialModel),
+      Scene.click(Scene.role('button', { name: 'Forms' })),
+      Scene.click(Scene.role('checkbox', { name: 'Accept terms' })),
+      Scene.expect(Scene.selector('h1')).toHaveText('Forms'),
+    )
+  })
+
+  it('dispatches a typed message when the forms select changes', () => {
+    Scene.scene(
+      { update, view: m => view(m).body },
+      Scene.with(initialModel),
+      Scene.click(Scene.role('button', { name: 'Forms' })),
+      Scene.change(Scene.role('combobox', { name: 'Kind' }), 'active'),
+      Scene.expect(Scene.selector('h1')).toHaveText('Forms'),
+    )
+  })
 })
