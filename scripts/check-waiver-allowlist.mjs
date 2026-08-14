@@ -59,6 +59,10 @@ const EXPECTED = {
       files: ['packages/styles/**', 'packages/tokens/**'],
       rules: { 'stylex/enforce-extension': 'off' },
     },
+    {
+      files: ['packages/foldkit/src/dialog.ts'],
+      rules: { 'foldkit/no-empty-children-array': 'off' },
+    },
   ],
   oxlintIgnore: [
     'node_modules/',

@@ -88,6 +88,7 @@ describe('Tabs scene', () => {
       { update: DemoTabs.update, view: disabledView },
       Scene.with(Tabs.init({ id: 'tabs' })),
       Scene.expect(detailsTab).toHaveAttr('aria-disabled', 'true'),
+      Scene.expect(detailsTab).not.toHaveHandler('click'),
       Scene.expect(overviewTab).toHaveAttr('aria-selected', 'true'),
       Scene.expect(detailsTab).toHaveAttr('aria-selected', 'false'),
     )

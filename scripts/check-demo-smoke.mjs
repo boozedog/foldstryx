@@ -445,6 +445,9 @@ const pageProbe = `async (negative) => {
     if (!(document.body.innerText ?? '').includes('A toast was shown.')) {
       failures.push('missing toast after triggering Info')
     }
+    if (document.querySelector('[role="status"]') === null) {
+      failures.push('missing toast role=status after triggering Info')
+    }
   }
   return { failures, bodyFont: bodyAfter, headingFont: headingAfter }
 }`

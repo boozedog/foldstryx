@@ -81,8 +81,17 @@ describe('Dialog', () => {
     const description = find(root, 'p')
     expect(title?.data?.props?.['id']).toBe('d-title')
     expect(description?.data?.props?.['id']).toBe('d-description')
+    expect(root.data?.attrs?.['aria-labelledby']).toBe('d-title')
+    expect(root.data?.attrs?.['aria-describedby']).toBe('d-description')
     expect(collectText(root)).toContain('Confirm')
     expect(collectText(root)).toContain('Details')
+  })
+
+  it('does not point aria-describedby at a missing node when title-only', () => {
+    const root = render({ id: 'd', title: 'Confirm' })
+    expect(find(root, 'p')).toBeUndefined()
+    expect(root.data?.attrs?.['aria-labelledby']).toBe('d-title')
+    expect(root.data?.attrs?.['aria-describedby']).toBe('')
   })
 
   it('renders a close button with aria-label when showClose is true', () => {

@@ -1,6 +1,13 @@
+import { Option } from 'effect'
 import type { Html } from 'foldkit/html'
 import { html } from 'foldkit/html'
 
+import {
+  RequestedClose,
+  descriptionId,
+  init,
+  titleId,
+} from '@foldkit/ui/dialog'
 import type { RenderInfo, ViewInputs } from '@foldkit/ui/dialog'
 import { dialogStyles } from '@foldstryx/styles'
 
@@ -23,7 +30,7 @@ export {
   RequestedClose,
 } from '@foldkit/ui/dialog'
 
-export type DialogStyledConfig<_ParentMessage> = Readonly<{
+export type DialogStyledConfig<ParentMessage> = Readonly<{
   title?: string
   description?: string
   body?: ReadonlyArray<Html>
@@ -31,11 +38,14 @@ export type DialogStyledConfig<_ParentMessage> = Readonly<{
   showClose?: boolean
   panelSize?: 'default' | 'sm'
   extraDialogAttributes?: ReadonlyArray<unknown>
+  /** Lifts an Escape-keydown close request into the parent's message type. */
+  onRequestClose?: (message: RequestedClose) => ParentMessage
 }>
 
 const panelContent = <ParentMessage>(
   h: ReturnType<typeof html<ParentMessage>>,
-  modelId: string,
+  titleElementId: string,
+  descriptionElementId: string,
   config: DialogStyledConfig<ParentMessage>,
   closeButton: RenderInfo['closeButton'],
 ): ReadonlyArray<Html> => [
@@ -59,7 +69,7 @@ const panelContent = <ParentMessage>(
                 h.h2(
                   elAttrs<ParentMessage>(
                     sxAttrs(h, dialogStyles.title),
-                    h.Id(`${modelId}-title`),
+                    h.Id(titleElementId),
                   ),
                   [config.title],
                 ),
@@ -70,7 +80,7 @@ const panelContent = <ParentMessage>(
                 h.p(
                   elAttrs<ParentMessage>(
                     sxAttrs(h, dialogStyles.description),
-                    h.Id(`${modelId}-description`),
+                    h.Id(descriptionElementId),
                   ),
                   [config.description],
                 ),
@@ -99,42 +109,74 @@ const panelContent = <ParentMessage>(
 /** Builds styled Foldkit Dialog view inputs with Astryx dialog visuals. */
 export const styledViewInputs = <ParentMessage>(
   config: DialogStyledConfig<ParentMessage> & Readonly<{ id: string }>,
-): ViewInputs => ({
-  toView: ({ dialog, backdrop, panel, closeButton, isVisible }) => {
-    const h = html<ParentMessage>()
+): ViewInputs => {
+  const model = init({ id: config.id })
+  const titleElementId = titleId(model)
+  const descriptionElementId = descriptionId(model)
+  const describedBy =
+    config.description !== undefined ? descriptionElementId : ''
 
-    return h.dialog(
-      elAttrs<ParentMessage>(
-        dialog,
-        sxAttrs(
-          h,
-          dialogStyles.dialog,
-          isVisible ? dialogStyles.dialogOpen : undefined,
+  return {
+    toView: ({ dialog, backdrop, panel, closeButton, isVisible }) => {
+      const h = html<ParentMessage>()
+
+      const handleDialogKeyDown = (
+        key: string,
+      ): Option.Option<ParentMessage> => {
+        if (
+          key !== 'Escape' ||
+          !isVisible ||
+          config.onRequestClose === undefined
+        ) {
+          return Option.none()
+        }
+        return Option.some(config.onRequestClose(RequestedClose()))
+      }
+
+      return h.dialog(
+        elAttrs<ParentMessage>(
+          dialog,
+          sxAttrs(
+            h,
+            dialogStyles.dialog,
+            isVisible ? dialogStyles.dialogOpen : undefined,
+          ),
+          ...(config.extraDialogAttributes ?? []),
+          h.OnKeyDownPreventDefault(handleDialogKeyDown),
+          h.AriaDescribedBy(describedBy),
         ),
-        ...(config.extraDialogAttributes ?? []),
-      ),
-      isVisible
-        ? [
-            h.div(
-              elAttrs<ParentMessage>(
-                backdrop,
-                sxAttrs(h, dialogStyles.backdrop),
+        isVisible
+          ? [
+              h.div(
+                elAttrs<ParentMessage>(
+                  backdrop,
+                  h.Id(`${config.id}-backdrop`),
+                  sxAttrs(h, dialogStyles.backdrop),
+                ),
+                [],
               ),
-              [],
-            ),
-            h.div(
-              elAttrs<ParentMessage>(
-                panel,
-                sxAttrs(
+              h.div(
+                elAttrs<ParentMessage>(
+                  panel,
+                  sxAttrs(
+                    h,
+                    dialogStyles.panel,
+                    config.panelSize === 'sm'
+                      ? dialogStyles.panelSm
+                      : undefined,
+                  ),
+                ),
+                panelContent(
                   h,
-                  dialogStyles.panel,
-                  config.panelSize === 'sm' ? dialogStyles.panelSm : undefined,
+                  titleElementId,
+                  descriptionElementId,
+                  config,
+                  closeButton,
                 ),
               ),
-              panelContent(h, config.id, config, closeButton),
-            ),
-          ]
-        : [],
-    )
-  },
-})
+            ]
+          : [],
+      )
+    },
+  }
+}

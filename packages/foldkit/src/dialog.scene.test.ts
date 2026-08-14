@@ -25,6 +25,7 @@ const sceneView = (model: Model) => {
       title: 'Confirm',
       description: 'Are you sure?',
       showClose: true,
+      onRequestClose: message => message,
       footer: [h.button([], ['OK'])],
     }),
     toParentMessage: message => message,
@@ -32,6 +33,7 @@ const sceneView = (model: Model) => {
 }
 
 const dialog = Scene.selector(`#${dialogId}`)
+const backdrop = Scene.selector(`#${dialogId}-backdrop`)
 const closeButton = Scene.role('button', { name: 'Close' })
 
 const closedModel = init({ id: dialogId })
@@ -71,6 +73,26 @@ describe('Dialog scene', () => {
       Scene.click(closeButton),
       resolveClose,
       Scene.expect(closeButton).toBeAbsent(),
+    )
+  })
+
+  it('closes on Escape keydown', () => {
+    Scene.scene(
+      { update, view: sceneView },
+      Scene.with(openModel),
+      Scene.keydown(dialog, 'Escape'),
+      resolveClose,
+      Scene.expect(closeButton).toBeAbsent(),
+    )
+  })
+
+  it('closes when the backdrop is clicked', () => {
+    Scene.scene(
+      { update, view: sceneView },
+      Scene.with(openModel),
+      Scene.click(backdrop),
+      resolveClose,
+      Scene.expect(backdrop).toBeAbsent(),
     )
   })
 })

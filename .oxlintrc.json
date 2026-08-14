@@ -35,7 +35,6 @@
     "foldstryx/no-hardcoded-styles": "error",
     "foldstryx/no-stylex-null-override": "error",
     "foldstryx/no-stylex-clobber": "error",
-    "foldkit/no-empty-children-array": "off",
     "stylex/valid-styles": "error",
     "stylex/valid-shorthands": "error",
     "stylex/no-unused": "error",
@@ -60,6 +59,12 @@
       "files": ["packages/styles/**", "packages/tokens/**"],
       "rules": {
         "stylex/enforce-extension": "off"
+      }
+    },
+    {
+      "files": ["packages/foldkit/src/dialog.ts"],
+      "rules": {
+        "foldkit/no-empty-children-array": "off"
       }
     }
   ],

@@ -627,6 +627,7 @@ export const view = Submodel.defineView<Model, Message>(model => {
                 title: 'Confirm action',
                 description: 'Controlled dialog with accessible labeling.',
                 showClose: true,
+                onRequestClose: message => GotDialogMessage(message),
                 body: [Text.view({ children: 'Dialog body content.' })],
                 footer: [
                   Button.view<Message>({
