@@ -116,11 +116,7 @@ const EXPECTED = {
     'scripts/check-demo-smoke.mjs',
     'scripts/check-packed-consumer.mjs',
   ],
-  changesetIgnore: [
-    '@foldstryx/oxlint-plugin',
-    '@foldstryx/kitchen-sink',
-    'sidebar-demo',
-  ],
+  changesetIgnore: ['@foldstryx/oxlint-plugin', 'sidebar-demo'],
   awaitAllowlist: ['/^(?:Effect|Runtime)\\.runPromise$/'],
 }
 

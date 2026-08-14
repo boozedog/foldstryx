@@ -1,13 +1,19 @@
 {
   "name": "@foldstryx/styles",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Astryx-inspired component styles for StyleX",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/boozedog/foldstryx.git"
+  },
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./document.global.css": "./src/document.global.css"
   },
   "publishConfig": {
+    "access": "public",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",

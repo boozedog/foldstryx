@@ -1,13 +1,18 @@
 {
   "name": "@foldstryx/docs",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Platform-neutral Foldstryx documentation composition (shell, typed routes, navigation)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/boozedog/foldstryx.git"
+  },
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "publishConfig": {
+    "access": "public",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",

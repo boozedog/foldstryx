@@ -112,6 +112,15 @@ it will consume these packed artifacts the same way the smoke consumer does,
 adding only host-specific runtime bootstrap, container lookup, devtools, and
 URL integration.
 
+## Releasing
+
+The five external-consumer packages publish together as one coordinated
+release. See [RELEASING.md](./RELEASING.md) for the exact, repeatable
+procedure: prepare metadata and Changesets, run `pnpm check`, version with
+`pnpm version-packages`, review the generated diff, re-run the gate, then
+publish with `pnpm release` (`changeset publish`). Credentials are configured
+locally and never committed.
+
 ## Develop
 
 Requires Node `>=20.19` or `>=22.12`, [pnpm](https://pnpm.io), and [mise](https://mise.jdx.dev)

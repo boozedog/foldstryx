@@ -7,9 +7,5 @@
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@foldstryx/oxlint-plugin",
-    "@foldstryx/kitchen-sink",
-    "sidebar-demo"
-  ]
+  "ignore": ["@foldstryx/oxlint-plugin", "sidebar-demo"]
 }
