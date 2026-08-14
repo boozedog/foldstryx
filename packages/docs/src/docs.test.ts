@@ -1,3 +1,4 @@
+import { Schema as S } from 'effect'
 import type { Html } from 'foldkit/html'
 import * as Scene from 'foldkit/scene'
 
@@ -5,7 +6,7 @@ import { describe, expect, it } from '@effect/vitest'
 import { AnchorTooltip, CompletedAnchorTooltip } from '@foldkit/ui/tooltip'
 import { GotTooltipMessage } from '@foldstryx/kitchen-sink'
 
-import { init, update } from './model.js'
+import { Message, init, update } from './model.js'
 import type { Model } from './model.js'
 import { Route, type Route as RouteType } from './routes.js'
 import { view } from './view.js'
@@ -124,5 +125,55 @@ describe('docs view', () => {
     const root = render(withRoute(Route.kitchenSink), true)
     expect(collectText(root)).toContain('Foldstryx catalog')
     expect(collectText(root)).toContain('Stack and Row')
+  })
+})
+
+describe('docs Message schema', () => {
+  const decode = (input: unknown): unknown =>
+    S.decodeUnknownSync(Message)(input)
+
+  it('decodes representative top-level messages', () => {
+    expect(decode({ _tag: 'ToggleSidebar' })).toEqual({ _tag: 'ToggleSidebar' })
+    expect(decode({ _tag: 'Navigate', route: { _tag: 'layout' } })).toEqual({
+      _tag: 'Navigate',
+      route: { _tag: 'layout' },
+    })
+    expect(decode({ _tag: 'ToggleNav', id: 'components' })).toEqual({
+      _tag: 'ToggleNav',
+      id: 'components',
+    })
+    expect(decode({ _tag: 'HoverNav', id: 'components' })).toEqual({
+      _tag: 'HoverNav',
+      id: 'components',
+    })
+    expect(decode({ _tag: 'OpenNav', id: 'components' })).toEqual({
+      _tag: 'OpenNav',
+      id: 'components',
+    })
+    expect(decode({ _tag: 'Noop' })).toEqual({ _tag: 'Noop' })
+  })
+
+  it('decodes hover/open ids as JSON-friendly nullable strings', () => {
+    expect(decode({ _tag: 'HoverNav', id: null })).toEqual({
+      _tag: 'HoverNav',
+      id: null,
+    })
+    expect(decode({ _tag: 'OpenNav' })).toEqual({ _tag: 'OpenNav' })
+  })
+
+  it('decodes a nested Sink message with an arbitrary payload', () => {
+    const payload = { _tag: 'GotTooltipMessage', message: { text: 'hi' } }
+    expect(decode({ _tag: 'Sink', message: payload })).toEqual({
+      _tag: 'Sink',
+      message: payload,
+    })
+  })
+
+  it('rejects an invalid representative message', () => {
+    expect(() => decode({ _tag: 'UnknownTag' })).toThrow()
+    expect(() =>
+      decode({ _tag: 'Navigate', route: { _tag: 'bogus' } }),
+    ).toThrow()
+    expect(() => decode({ _tag: 'Sink' })).toThrow()
   })
 })

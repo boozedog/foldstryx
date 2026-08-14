@@ -410,8 +410,7 @@ const main = async () => {
       'pnpm',
       [
         '-r',
-        '--filter',
-        '@foldstryx/{tokens,styles,foldkit,kitchen-sink,docs}',
+        ...PACKAGES.flatMap(pkg => ['--filter', pkg]),
         '--if-present',
         'build',
       ],

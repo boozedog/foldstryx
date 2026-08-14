@@ -3,7 +3,7 @@ import { Command, Runtime } from 'foldkit'
 
 import { Mount, type Message as SinkMessage } from '@foldstryx/kitchen-sink'
 
-import { Route, RouteSchema, type Route as RouteType } from './routes.js'
+import { Route, RouteSchema } from './routes.js'
 
 export const Model = S.Struct({
   route: RouteSchema,
@@ -15,15 +15,37 @@ export const Model = S.Struct({
 })
 export type Model = typeof Model.Type
 
-export type Message = Readonly<
-  | { _tag: 'ToggleSidebar' }
-  | { _tag: 'Navigate'; route: RouteType }
-  | { _tag: 'ToggleNav'; id: string }
-  | { _tag: 'HoverNav'; id: string | undefined }
-  | { _tag: 'OpenNav'; id: string | undefined }
-  | { _tag: 'Noop' }
+/**
+ * Runtime schema for the docs application's top-level `Message` union.
+ *
+ * External hosts (e.g. Taurifold) pass this to
+ * `Runtime.makeApplication({ devTools: { Message } })` so the Foldkit DevTools
+ * overlay can discover the message schema and decode inbound dispatch payloads
+ * without reconstructing the union in the host.
+ *
+ * The nested `Sink.message` payload is intentionally unconstrained (`S.Any`):
+ * the kitchen-sink catalog does not (yet) publish a stable runtime message
+ * schema, and the docs package MUST NOT depend on host-specific schemas. The
+ * typed `Message` type below narrows that payload to the kitchen-sink `Message`
+ * union for the host's typed `update`.
+ *
+ * `HoverNav` / `OpenNav` ids are JSON-friendly optional-nullable strings: they
+ * accept a missing key or `null`. Internal producers emit `string | undefined`;
+ * `undefined` is not JSON-transportable, so external dispatch should use `null`
+ * (or omit the key).
+ */
+export const Message = S.Union([
+  S.Struct({ _tag: S.Literal('ToggleSidebar') }),
+  S.Struct({ _tag: S.Literal('Navigate'), route: RouteSchema }),
+  S.Struct({ _tag: S.Literal('ToggleNav'), id: S.String }),
+  S.Struct({ _tag: S.Literal('HoverNav'), id: S.optional(S.NullOr(S.String)) }),
+  S.Struct({ _tag: S.Literal('OpenNav'), id: S.optional(S.NullOr(S.String)) }),
+  S.Struct({ _tag: S.Literal('Noop') }),
+  S.Struct({ _tag: S.Literal('Sink'), message: S.Any }),
+])
+export type Message =
+  | Exclude<typeof Message.Type, { _tag: 'Sink' }>
   | { _tag: 'Sink'; message: SinkMessage }
->
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => {
   const [sink] = Mount.init()

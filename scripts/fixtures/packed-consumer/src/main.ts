@@ -1,6 +1,6 @@
 import { Runtime } from 'foldkit'
 
-import { Model, init, update, view } from '@foldstryx/docs'
+import { Message, Model, init, update, view } from '@foldstryx/docs'
 import '@foldstryx/styles/document.global.css'
 
 const application = Runtime.makeApplication({
@@ -9,5 +9,6 @@ const application = Runtime.makeApplication({
   update,
   view,
   container: document.getElementById('root'),
+  devTools: { Message },
 })
 Runtime.run(application)

@@ -1,7 +1,7 @@
 import { Runtime } from 'foldkit'
 
 import { overlay } from '@foldkit/devtools'
-import { Model, init, update, view } from '@foldstryx/docs'
+import { Message, Model, init, update, view } from '@foldstryx/docs'
 import '@foldstryx/styles/document.global.css'
 
 const application = Runtime.makeApplication({
@@ -12,6 +12,7 @@ const application = Runtime.makeApplication({
   container: document.getElementById('root'),
   devTools: {
     overlay,
+    Message,
     excludeFromHistory: ['HoverNav', 'OpenNav', 'Noop'],
   },
 })
