@@ -13,7 +13,7 @@
     },
     {
       "name": "lens",
-      "specifier": "effect-lens/dist/plugin/index.js"
+      "specifier": "@boozedog/effect-lens/dist/plugin/index.js"
     }
   ],
   "rules": {

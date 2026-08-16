@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@boozedog/effect-lens':
+        specifier: 0.1.0
+        version: 0.1.0
       '@changesets/cli':
         specifier: ^2.31.0
         version: 2.31.1(@types/node@26.2.0)
@@ -29,9 +32,6 @@ importers:
       '@tsconfig/strictest':
         specifier: ^2.0.8
         version: 2.0.8
-      effect-lens:
-        specifier: file:../effect-lens/effect-lens-0.1.0.tgz
-        version: file:../effect-lens/effect-lens-0.1.0.tgz
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -311,6 +311,11 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
+
+  '@boozedog/effect-lens@0.1.0':
+    resolution: {integrity: sha512-aprloYNq7KC3cHVlxOxuwBGL3TOl0X4q+IfKtVS8XMI/fkkMVigrdktkLGM7e7NRLM0noG6WMRJ4+PX85Mo65A==}
+    engines: {node: '>=22.6'}
+    hasBin: true
 
   '@changesets/apply-release-plan@7.1.1':
     resolution: {integrity: sha512-9qPCm/rLx/xoOFXIHGB229+4GOL76S4MC+7tyOuTsR6+1jYlfFDQORdvwR5hDA6y4FL2BPt3qpbcQIS+dW85LA==}
@@ -1267,12 +1272,6 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  effect-lens@file:../effect-lens/effect-lens-0.1.0.tgz:
-    resolution: {integrity: sha512-WUdkd73LNAJJBswCR087hfyEjt3PQc5V6jkWjNMH9LwvONGOd8WGPFWpleeRe9rAblRT1hMskT4zqhrD46SO/w==, tarball: file:../effect-lens/effect-lens-0.1.0.tgz}
-    version: 0.1.0
-    engines: {node: '>=22.6'}
-    hasBin: true
-
   effect-oxlint@0.3.3:
     resolution: {integrity: sha512-J1+0nr0S4mOkPq54Lj2jNpq2iu9UKB+ChhxfT9HANKHKiQaOqjycZqaq8iiZHRGqT36Ir+Lv02LoVLsuA+NfGA==}
     peerDependencies:
@@ -2100,6 +2099,15 @@ snapshots:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
+  '@boozedog/effect-lens@0.1.0':
+    dependencies:
+      effect: 4.0.0-rc.109
+      oxlint: 1.78.0
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - oxlint-tsgolint
+      - vite-plus
+
   '@changesets/apply-release-plan@7.1.1':
     dependencies:
       '@changesets/config': 3.1.4
@@ -2863,15 +2871,6 @@ snapshots:
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
-
-  effect-lens@file:../effect-lens/effect-lens-0.1.0.tgz:
-    dependencies:
-      effect: 4.0.0-rc.109
-      oxlint: 1.78.0
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - oxlint-tsgolint
-      - vite-plus
 
   effect-oxlint@0.3.3(effect@4.0.0-beta.100):
     dependencies:
