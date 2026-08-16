@@ -53,6 +53,9 @@ const EXPECTED = {
         'foldstryx/no-await-expression': 'off',
         'foldstryx/no-new-promise': 'off',
         'typescript/consistent-type-assertions': 'off',
+        'lens/no-async-function': 'off',
+        'lens/no-await-expression': 'off',
+        'lens/no-new-promise': 'off',
       },
     },
     {
