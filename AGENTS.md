@@ -88,7 +88,7 @@ We rely on official StyleX lint + the compiler, not a capabilities matrix. Pin o
 
 Official `stylex/no-conflicting-props` is JSX-only. Foldkit uses `sxAttrs` + `h.Class` / `h.Style`; `foldstryx/no-stylex-clobber` is the analogue. Prefer extra styles in `sxAttrs()` — Foldkit last-write-wins on `Style`.
 
-Waivers are frozen. `pnpm check:waivers` (hk pre-commit / pre-push, `pnpm check`, and CI) fails if a new `oxlint-disable` / `@ts-expect-error` / prettier-ignore appears, if oxlint/fallow/changeset exceptions grow, or if `AWAIT_ALLOWLIST` changes. Shrink or growth both require editing `scripts/check-waiver-allowlist.mjs` in the same change. hk is local hooks only; CI runs `pnpm check`.
+Waivers are frozen. `pnpm check:waivers` (hk pre-commit / pre-push, `pnpm check`, and CI) fails if a new `oxlint-disable` / `@ts-expect-error` / prettier-ignore appears, if oxlint/fallow/changeset exceptions grow, or if `AWAIT_ALLOWLIST` changes. Shrink or growth both require editing `scripts/check-waiver-allowlist.mjs` in the same change. hk is local hooks only; CI runs `pnpm check` plus the dedicated Effect Lens step (`pnpm check:effect-lens`).
 
 ## Testing
 

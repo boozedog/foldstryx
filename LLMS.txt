@@ -135,6 +135,7 @@ route transition, and font loading from package assets.
 - Root README: https://github.com/boozedog/foldstryx/blob/master/README.md
 - Releasing: https://github.com/boozedog/foldstryx/blob/master/RELEASING.md
 - NOTICE (Astryx source pin / attribution): https://github.com/boozedog/foldstryx/blob/master/NOTICE
+- Effect Lens adoption baseline (foldstryx#29): https://github.com/boozedog/foldstryx/blob/master/EFFECT-LENS.md
 - Roadmap / umbrella: https://github.com/boozedog/foldstryx/issues/22
 - Taurifold consumer: https://github.com/boozedog/taurifold/issues/10
 - Taurifold migration (Foldstryx): https://github.com/boozedog/foldstryx/issues/25

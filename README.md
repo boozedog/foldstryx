@@ -139,6 +139,7 @@ pnpm check:tokens    # in-repo NOTICE pin + lifted token spot-check
 pnpm check:demo      # vite preview (ephemeral port) + computed-style smoke
 pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
 pnpm check:waivers   # frozen disable-comment + config waiver ratchet
+pnpm check:effect-lens  # unified Effect Lens gate over packages/foldkit
 mise run check       # full gate (format, lint, tsc, fallow, test, tokens, fixtures, demo, waivers)
 mise run pre-commit  # hk changed-file hooks (includes waiver ratchet)
 ```
@@ -149,7 +150,8 @@ browser check for computed fonts, layout spacing, button states, and page shell 
 reuse `pnpm dev`), and drives headless Chrome (`google-chrome` or `CHROME_PATH`) for the
 automated computed-style subset. Astryx _feel_ stays human.
 
-`mise run check` is the authoritative full verifier after implementation work.
+`mise run check` is the authoritative full verifier for the project checks; the
+unified Effect Lens gate is enforced separately at CI and pre-commit (see below).
 
 Official StyleX rules run through oxlint `jsPlugins` (`@stylexjs/eslint-plugin@0.19.0`,
 alias `stylex`) — there is no second ESLint runner. Token-hardcode / null-override /
@@ -157,7 +159,42 @@ Foldkit className clobber live in `@foldstryx/oxlint-plugin`.
 
 `pnpm check:waivers` freezes disable comments and oxlint/fallow/changeset exceptions.
 Install git hooks with `hk install` (or `hk install --mise` if you use mise tools).
-hk is for pre-commit and pre-push only. CI and `mise run check` run `pnpm check`.
+hk is for pre-commit and pre-push only. CI runs `pnpm check` plus the dedicated
+Effect Lens step; `mise run check` runs `pnpm check`.
+
+## Effect Lens gate
+
+The published [Effect Lens](https://github.com/boozedog/effect-lens) CLI is the
+unified lint gate for the `packages/foldkit` workspace, pinned exactly
+to `@boozedog/effect-lens@0.1.0` and registered as the `lens` oxlint `jsPlugins`
+provider (consumer-side pilot for
+[foldstryx#29](https://github.com/boozedog/foldstryx/issues/29)).
+
+| Gate                       | Command / scope                                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI (mandatory)             | `pnpm check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified`, run as its own step after `pnpm check` |
+| hk pre-commit              | `effect-lens check --mode unified --changed --workspace packages/foldkit` — staged changed files only                                          |
+| `pnpm check` / hk pre-push | unchanged; they do not run the Lens check                                                                                                      |
+
+Unified mode aggregates the `lens`, `foldstryx`, and `stylex` providers plus the
+Foldkit MVU rules over the workspace. Any finding (warning or error) fails the
+check gate; advisory diagnostics such as the expected missing
+`effect@4.0.0-beta.83` reference pack are not findings and do not fail the check.
+
+| Provider    | Owns                                                                                                 |
+| ----------- | ---------------------------------------------------------------------------------------------------- |
+| `lens`      | `lens/no-async-function`, `lens/no-await-expression`, `lens/no-new-promise` (Effect-async policy)    |
+| `foldstryx` | token / null / clobber rules (`no-hardcoded-styles`, `no-stylex-null-override`, `no-stylex-clobber`) |
+| `stylex`    | official StyleX rules (`@stylexjs/eslint-plugin@0.19.0`)                                             |
+
+Intentional overrides stay frozen: test files (`**/*.test.ts`, `**/*.test.tsx`)
+exempt the lens family and `typescript/consistent-type-assertions`;
+`packages/styles/**` and `packages/tokens/**` turn off `stylex/enforce-extension`;
+`scripts/**` and the oxlint `ignorePatterns` are unchanged. The Lens path requires
+Node `>=22.6` (CI pins Node 22).
+
+The reviewed Phase 2–4 audit baseline is recorded in
+[EFFECT-LENS.md](./EFFECT-LENS.md).
 
 ## Effect
 
