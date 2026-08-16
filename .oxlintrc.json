@@ -33,9 +33,9 @@
         "destructuredArrayIgnorePattern": "^_"
       }
     ],
-    "foldstryx/no-async-function": "error",
-    "foldstryx/no-await-expression": "error",
-    "foldstryx/no-new-promise": "error",
+    "lens/no-async-function": "error",
+    "lens/no-await-expression": "error",
+    "lens/no-new-promise": "error",
     "foldstryx/no-hardcoded-styles": "error",
     "foldstryx/no-stylex-null-override": "error",
     "foldstryx/no-stylex-clobber": "error",
@@ -53,9 +53,6 @@
     {
       "files": ["**/*.test.ts", "**/*.test.tsx"],
       "rules": {
-        "foldstryx/no-async-function": "off",
-        "foldstryx/no-await-expression": "off",
-        "foldstryx/no-new-promise": "off",
         "typescript/consistent-type-assertions": "off",
         "lens/no-async-function": "off",
         "lens/no-await-expression": "off",

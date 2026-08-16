@@ -49,9 +49,6 @@ const EXPECTED = {
     {
       files: ['**/*.test.ts', '**/*.test.tsx'],
       rules: {
-        'foldstryx/no-async-function': 'off',
-        'foldstryx/no-await-expression': 'off',
-        'foldstryx/no-new-promise': 'off',
         'typescript/consistent-type-assertions': 'off',
         'lens/no-async-function': 'off',
         'lens/no-await-expression': 'off',

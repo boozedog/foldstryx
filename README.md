@@ -134,7 +134,7 @@ pnpm install
 
 mise run typecheck   # tsc across packages
 mise run test        # vitest
-mise run lint        # oxlint (foldkit MVU + Effect-async + StyleX jsPlugins)
+mise run lint        # oxlint (foldkit MVU + Effect-async lens rules + StyleX jsPlugins)
 pnpm check:tokens    # in-repo NOTICE pin + lifted token spot-check
 pnpm check:demo      # vite preview (ephemeral port) + computed-style smoke
 pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
