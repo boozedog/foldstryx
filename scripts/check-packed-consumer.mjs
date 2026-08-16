@@ -108,11 +108,40 @@ const assertStylexCss = async consumerDir => {
   return { cssFile, stylexRules: stylexRules.length }
 }
 
+// Strip ANSI escape sequences (SGR etc.). Vite colorizes its banner even when
+// stdout is piped — e.g. in GitHub Actions it emits
+// `\x1b[1mLocal\x1b[22m:` and `http://localhost:\x1b[1m34503\x1b[22m/` with
+// the escape sequences interleaved inside the label and the port number. The
+// log viewer renders those codes invisibly, but they break literal matching,
+// so readiness detection must normalize the output first. A pipe chunk can
+// also end mid-escape (`\x1b[22` with no final byte); a second pass strips
+// that trailing incomplete sequence, otherwise the leftover digits would glue
+// onto the port (e.g. `localhost:330692/`).
+const stripAnsi = output =>
+  output
+    .replace(
+      /[\x1b\x9b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+      '',
+    )
+    .replace(/[\x1b\x9b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?$/g, '')
+
 const parsePreviewUrl = output => {
-  const local = output.match(/Local:\s*(https?:\/\/[^\s]+)/)
-  const url = local?.[1] ?? output.match(/https?:\/\/localhost:\d+/)?.[0]
-  if (url === undefined) return null
-  return url.endsWith('/') ? url : `${url}/`
+  const plain = stripAnsi(output)
+  const local = plain.match(/Local:\s*(https?:\/\/[^\s]+)/)
+  const candidate = local?.[1] ?? plain.match(/https?:\/\/localhost:\d+\//)?.[0]
+  // Only a complete `http://localhost:<port>/` counts as ready, and the URL
+  // must already carry its trailing slash: Vite writes the port and slash in
+  // one write, so a buffer ending mid-digits yields a slash-less candidate
+  // that is rejected, while glued digits from a split escape sequence fail
+  // the shape check. The poll loop keeps the first non-null parse, so
+  // accepting anything looser burns the whole waitForUrl budget.
+  if (
+    candidate === undefined ||
+    !/^https?:\/\/localhost:\d+\/$/.test(candidate)
+  ) {
+    return null
+  }
+  return candidate
 }
 
 const startPreview = async cwd => {

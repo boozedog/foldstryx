@@ -160,7 +160,7 @@ Foldkit className clobber live in `@foldstryx/oxlint-plugin`.
 `pnpm check:waivers` freezes disable comments and oxlint/fallow/changeset exceptions.
 Install git hooks with `hk install` (or `hk install --mise` if you use mise tools).
 hk is for pre-commit and pre-push only. CI runs `pnpm check` plus the dedicated
-Effect Lens step; `mise run check` runs `pnpm check`.
+Effect Lens job; `mise run check` runs `pnpm check`.
 
 ## Effect Lens gate
 
@@ -170,11 +170,11 @@ to `@boozedog/effect-lens@0.1.0` and registered as the `lens` oxlint `jsPlugins`
 provider (consumer-side pilot for
 [foldstryx#29](https://github.com/boozedog/foldstryx/issues/29)).
 
-| Gate                       | Command / scope                                                                                                                                |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| CI (mandatory)             | `pnpm check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified`, run as its own step after `pnpm check` |
-| hk pre-commit              | `effect-lens check --mode unified --changed --workspace packages/foldkit` — staged changed files only                                          |
-| `pnpm check` / hk pre-push | unchanged; they do not run the Lens check                                                                                                      |
+| Gate                       | Command / scope                                                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI (mandatory)             | `pnpm check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified`, run as its own job, independent of `pnpm check` |
+| hk pre-commit              | `effect-lens check --mode unified --changed --workspace packages/foldkit` — staged changed files only                                                   |
+| `pnpm check` / hk pre-push | unchanged; they do not run the Lens check                                                                                                               |
 
 Unified mode aggregates the `lens`, `foldstryx`, and `stylex` providers plus the
 Foldkit MVU rules over the workspace. Any finding (warning or error) fails the
