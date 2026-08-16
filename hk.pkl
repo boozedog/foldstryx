@@ -83,7 +83,14 @@ hooks {
   ["pre-commit"] {
     fix = false
     stash = "git"
-    steps = linters
+    steps {
+      ...linters
+      // === effect-lens:start ===
+      ["effect-lens"] {
+        check = "'node_modules/.bin/effect-lens' check --mode unified --changed --workspace 'packages/foldkit'"
+      }
+      // === effect-lens:end ===
+    }
   }
   ["pre-push"] {
     steps = prePushGate
