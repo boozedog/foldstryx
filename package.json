@@ -18,6 +18,7 @@
     "check:async-allowlist": "node scripts/check-async-allowlist.mjs",
     "check:waivers": "node scripts/check-waiver-allowlist.mjs",
     "check:lint-fixtures": "node scripts/check-lint-fixtures.mjs",
+    "check:effect-lens": "pnpm exec effect-lens check --project . --workspace packages/foldkit --mode unified",
     "check:demo": "node scripts/check-demo-smoke.mjs",
     "check:packed": "node scripts/check-packed-consumer.mjs",
     "check:fallow": "fallow",
