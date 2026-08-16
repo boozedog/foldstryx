@@ -106,6 +106,35 @@ Root oxlint `ignorePatterns` (unchanged by the adoption): `node_modules/`, `dist
 | `packages/docs`, `packages/kitchen-sink` | evaluated, excluded from the gate | Effect usage is `Schema` / `Command` / `Runtime` at the Foldkit boundary; zero `async`/`await`/`new Promise` in non-test library code; still covered by `pnpm lint` project-wide. Revisit when the docs composition grows async surface |
 | `packages/styles`, `packages/tokens`     | excluded from the gate            | pure StyleX modules, no Effect code; StyleX policy stays enforced by the `stylex` provider, `pnpm check:tokens`, and the lint fixtures                                                                                                  |
 
+## Workspace evaluation results (closeout)
+
+Re-verified at closeout with `@boozedog/effect-lens@0.1.0`, unified mode,
+project config (the docs/kitchen-sink runs additionally pass `--json` to
+record machine-readable results):
+
+| Workspace               | Command                                                                                 | Result                                             |
+| ----------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `packages/foldkit`      | `pnpm check:effect-lens` (CI gate)                                                      | 71 files linted, 0 findings, exit 0                |
+| `packages/docs`         | `effect-lens check --project . --workspace packages/docs --mode unified --json`         | 16 files linted, 0 findings, exit 0                |
+| `packages/kitchen-sink` | `effect-lens check --project . --workspace packages/kitchen-sink --mode unified --json` | 1 file linted (`src/index.ts`), 0 findings, exit 0 |
+
+The docs and kitchen-sink unified checks pass at baseline HEAD `2e4886b` with
+zero findings. This confirms the Phase 1 exclusion decision: both workspaces
+are still clean under the full unified provider set (lens + foldstryx + stylex
+
+- Foldkit MVU), so keeping the mandatory gate foldkit-only remains correct.
+  Kitchen-sink lint counts one file because its `vitest.config.ts` falls under
+  the root `**/vitest.config.ts` ignore pattern, matching project-wide
+  `pnpm lint`. These checks are evaluation-only; neither workspace is part of the
+  gate and no workspace-scoped CI or hook step was added for them.
+
+Residual risk: GitHub Actions on `master` had not executed the dedicated Lens
+step for any Phase 3–5 push at closeout — the `pnpm check` job fails before it
+at the pre-existing `check:demo` stage (`vite preview did not report a URL`),
+an unrelated flake that predates the adoption. The gate is evidenced locally
+(this document and the closeout re-verification); Actions will exercise the
+Lens step once the `check:demo` flake is fixed.
+
 ## Baseline result
 
 `effect-lens adoption audit --project . --workspace packages/foldkit` at baseline:
