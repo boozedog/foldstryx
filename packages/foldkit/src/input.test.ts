@@ -3,6 +3,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from '@effect/vitest'
 
 import { control } from './input.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string | undefined
@@ -31,10 +32,17 @@ describe('Input.control', () => {
   it('wires input events and omits them when disabled', () => {
     const message = { _tag: 'Changed' }
     const enabled = asNode(
-      control({ ariaLabel: 'Name', onInput: () => message }),
+      renderWithBuilder(h =>
+        control({ ariaLabel: 'Name', onInput: () => message }, h),
+      ),
     )
     const disabled = asNode(
-      control({ ariaLabel: 'Name', onInput: () => message, isDisabled: true }),
+      renderWithBuilder(h =>
+        control(
+          { ariaLabel: 'Name', onInput: () => message, isDisabled: true },
+          h,
+        ),
+      ),
     )
     expect(Object.keys(enabled.data?.on ?? {})).toContain('input')
     expect(Object.keys(disabled.data?.on ?? {})).not.toContain('input')
@@ -42,13 +50,18 @@ describe('Input.control', () => {
   })
   it('applies compact density and md width as distinct style keys', () => {
     const node = asNode(
-      control({
-        id: 'filter',
-        ariaLabel: 'Filter',
-        density: 'compact',
-        width: 'md',
-        value: '',
-      }),
+      renderWithBuilder(h =>
+        control(
+          {
+            id: 'filter',
+            ariaLabel: 'Filter',
+            density: 'compact',
+            width: 'md',
+            value: '',
+          },
+          h,
+        ),
+      ),
     )
     expect(node.sel).toBe('input')
     expect(node.data?.props?.['id']).toBe('filter')
@@ -62,19 +75,26 @@ describe('Input.control', () => {
 
   it('width auto overrides base full width; sm and end align are distinct', () => {
     const auto = asNode(
-      control({ ariaLabel: 'Auto', width: 'auto', value: '' }),
+      renderWithBuilder(h =>
+        control({ ariaLabel: 'Auto', width: 'auto', value: '' }, h),
+      ),
     )
     expect(hasSx(auto, 'inputWidthAuto')).toBe(true)
     expect(hasSx(auto, 'inputWidthFull')).toBe(false)
 
     const smEnd = asNode(
-      control({
-        ariaLabel: 'Value',
-        density: 'compact',
-        width: 'sm',
-        align: 'end',
-        value: '12.50',
-      }),
+      renderWithBuilder(h =>
+        control(
+          {
+            ariaLabel: 'Value',
+            density: 'compact',
+            width: 'sm',
+            align: 'end',
+            value: '12.50',
+          },
+          h,
+        ),
+      ),
     )
     expect(hasSx(smEnd, 'inputCompact')).toBe(true)
     expect(hasSx(smEnd, 'inputWidthSm')).toBe(true)
@@ -85,12 +105,17 @@ describe('Input.control', () => {
 
   it('full width and start align apply their style keys', () => {
     const node = asNode(
-      control({
-        ariaLabel: 'Full',
-        width: 'full',
-        align: 'start',
-        value: '',
-      }),
+      renderWithBuilder(h =>
+        control(
+          {
+            ariaLabel: 'Full',
+            width: 'full',
+            align: 'start',
+            value: '',
+          },
+          h,
+        ),
+      ),
     )
     expect(hasSx(node, 'inputWidthFull')).toBe(true)
     expect(hasSx(node, 'inputAlignStart')).toBe(true)

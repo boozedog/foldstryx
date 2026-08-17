@@ -3,6 +3,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from '@effect/vitest'
 
 import { view } from './listRow.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string
@@ -30,11 +31,16 @@ const hasSx = (node: Node, key: string): boolean =>
 describe('ListRow', () => {
   it('renders title, meta, and actions', () => {
     const node = asNode(
-      view({
-        title: 'Item one',
-        meta: ['Secondary'],
-        actions: ['Edit', 'Delete'],
-      }),
+      renderWithBuilder(h =>
+        view(
+          {
+            title: 'Item one',
+            meta: ['Secondary'],
+            actions: ['Edit', 'Delete'],
+          },
+          h,
+        ),
+      ),
     )
     expect(hasSx(node, 'listRow')).toBe(true)
     expect(text(node)).toContain('Item one')
@@ -44,7 +50,7 @@ describe('ListRow', () => {
   })
 
   it('omits the actions row when no actions are provided', () => {
-    const node = asNode(view({ title: 'Item one' }))
+    const node = asNode(renderWithBuilder(h => view({ title: 'Item one' }, h)))
     expect(hasSx(node, 'listRow')).toBe(true)
     expect(text(node)).toContain('Item one')
     const children = node.children as ReadonlyArray<Node>
@@ -52,7 +58,7 @@ describe('ListRow', () => {
   })
 
   it('renders the title with the listRowTitle style key', () => {
-    const node = asNode(view({ title: 'Item one' }))
+    const node = asNode(renderWithBuilder(h => view({ title: 'Item one' }, h)))
     const children = node.children as ReadonlyArray<Node>
     const titleBlock = children[0] as Node
     const title = titleBlock.children?.[0] as Node

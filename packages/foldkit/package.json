@@ -33,22 +33,21 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@effect/platform-browser": "4.0.0-beta.83",
-    "@foldkit/ui": "^0.113.0",
-    "effect": "4.0.0-beta.83",
-    "foldkit": "^0.113.0",
+    "@effect/vitest": "4.0.0-rc.108",
+    "@foldkit/ui": "0.145.0",
+    "effect": "4.0.0-rc.108",
+    "foldkit": "0.145.0",
     "happy-dom": "^20.10.4",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.9",
-    "@effect/vitest": "4.0.0-beta.83"
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@stylexjs/stylex": "^0.19.0",
     "@foldstryx/styles": "workspace:*"
   },
   "peerDependencies": {
-    "@foldkit/ui": ">=0.113.0",
-    "effect": ">=4.0.0-beta.83",
-    "foldkit": ">=0.113.0"
+    "@foldkit/ui": ">=0.145.0",
+    "effect": ">=4.0.0-rc.108",
+    "foldkit": ">=0.145.0"
   }
 }

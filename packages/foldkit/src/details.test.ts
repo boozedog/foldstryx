@@ -3,6 +3,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from '@effect/vitest'
 
 import { view } from './details.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string
@@ -32,11 +33,16 @@ const hasSx = (node: Node, key: string): boolean =>
 describe('Details', () => {
   it('renders summary and body', () => {
     const node = asNode(
-      view({
-        summary: 'More info',
-        children: ['Hidden details'],
-        open: true,
-      }),
+      renderWithBuilder(h =>
+        view(
+          {
+            summary: 'More info',
+            children: ['Hidden details'],
+            open: true,
+          },
+          h,
+        ),
+      ),
     )
     expect(node.sel).toBe('details')
     expect(hasSx(node, 'detailsBox')).toBe(true)
@@ -46,18 +52,28 @@ describe('Details', () => {
 
   it('sets the open prop when open is true', () => {
     const node = asNode(
-      view({ summary: 'More info', children: ['Body'], open: true }),
+      renderWithBuilder(h =>
+        view({ summary: 'More info', children: ['Body'], open: true }, h),
+      ),
     )
     expect(node.data?.props?.['open']).toBe(true)
   })
 
   it('forces the open prop to false when closed (controlled close)', () => {
-    const node = asNode(view({ summary: 'More info', children: ['Body'] }))
+    const node = asNode(
+      renderWithBuilder(h =>
+        view({ summary: 'More info', children: ['Body'] }, h),
+      ),
+    )
     expect(node.data?.props?.['open']).toBe(false)
   })
 
   it('renders the summary with the detailsSummary style key', () => {
-    const node = asNode(view({ summary: 'More info', children: ['Body'] }))
+    const node = asNode(
+      renderWithBuilder(h =>
+        view({ summary: 'More info', children: ['Body'] }, h),
+      ),
+    )
     const summary = node.children?.[0] as Node
     expect(summary.sel).toBe('summary')
     expect(hasSx(summary, 'detailsSummary')).toBe(true)
@@ -65,17 +81,26 @@ describe('Details', () => {
 
   it('attaches an OnToggle handler to the details element when provided', () => {
     const node = asNode(
-      view({
-        summary: 'More info',
-        children: ['Body'],
-        onToggle: isOpen => ({ _tag: 'T', isOpen }),
-      }),
+      renderWithBuilder(h =>
+        view(
+          {
+            summary: 'More info',
+            children: ['Body'],
+            onToggle: isOpen => ({ _tag: 'T', isOpen }),
+          },
+          h,
+        ),
+      ),
     )
     expect(Object.keys(node.data?.on ?? {})).toContain('toggle')
   })
 
   it('omits the OnToggle handler when not provided', () => {
-    const node = asNode(view({ summary: 'More info', children: ['Body'] }))
+    const node = asNode(
+      renderWithBuilder(h =>
+        view({ summary: 'More info', children: ['Body'] }, h),
+      ),
+    )
     expect(Object.keys(node.data?.on ?? {})).not.toContain('toggle')
   })
 })

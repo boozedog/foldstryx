@@ -1,6 +1,5 @@
 import { Predicate } from 'effect'
-import type { Attribute, Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Attribute, Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button as UiButton } from '@foldkit/ui'
 import { buttonStyles } from '@foldstryx/styles'
@@ -31,7 +30,10 @@ const sizeStyle = (size: ButtonSize) =>
     sm: buttonStyles.sizeSm,
     icon: buttonStyles.sizeIcon,
   })[size]
-export const view = <Message>(config: ButtonViewConfig<Message>): Html => {
+export const view = <Message>(
+  config: ButtonViewConfig<Message>,
+  h: HtmlBuilder<Message>,
+): Html => {
   const {
     label,
     icon,
@@ -43,9 +45,8 @@ export const view = <Message>(config: ButtonViewConfig<Message>): Html => {
   } = config
   const toView = (
     attributes: Readonly<{ button: ReadonlyArray<Attribute<Message>> }>,
-  ): Html => {
-    const h = html<Message>()
-    return h.button(
+  ): Html =>
+    h.button(
       elAttrs<Message>(
         attributes.button,
         sxAttrs(h, buttonStyles.base, variantStyle(variant), sizeStyle(size)),
@@ -53,8 +54,7 @@ export const view = <Message>(config: ButtonViewConfig<Message>): Html => {
       ),
       [...(icon ? [icon] : []), ...(label ? [label] : [])],
     )
-  }
   return Predicate.isNotUndefined(onClick)
-    ? UiButton.view<Message>({ onClick, isDisabled, toView })
-    : UiButton.view<Message>({ isDisabled, toView })
+    ? UiButton.view<Message>({ onClick, isDisabled, toView }, h)
+    : UiButton.view<Message>({ isDisabled, toView }, h)
 }

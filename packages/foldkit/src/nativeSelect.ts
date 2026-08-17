@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { fieldStyles, formDensityStyles, inputStyles } from '@foldstryx/styles'
 
@@ -52,9 +51,8 @@ const widthStyle = (width: InputWidth | undefined) =>
 /** Renders a styled native `<select>` (pragmatic v1 — no combobox). */
 export const view = <ParentMessage>(
   config: NativeSelectViewConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
-
   const select = h.select(
     elAttrs<ParentMessage>(
       sxAttrs(

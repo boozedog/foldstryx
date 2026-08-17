@@ -1,5 +1,5 @@
 import { Match as M, Schema as S } from 'effect'
-import { html } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import { m } from 'foldkit/message'
 import * as Scene from 'foldkit/scene'
 
@@ -25,29 +25,35 @@ const update = (
     }),
   )
 
-const alertView = (model: Model) => {
+const alertView = (model: Model, h: HtmlBuilder<Message>) => {
   if (!model.open) {
-    return html<Message>().div([], ['closed'])
+    return h.div([], ['closed'])
   }
 
-  return view<Message>({
-    variant: 'destructive',
-    body: 'Something went wrong',
-    title: 'Error',
-    action: Button.view({
-      label: 'Dismiss',
-      onClick: Dismissed(),
-      variant: 'ghost',
-      size: 'sm',
-    }),
-  })
+  return view<Message>(
+    {
+      variant: 'destructive',
+      body: 'Something went wrong',
+      title: 'Error',
+      action: Button.view(
+        {
+          label: 'Dismiss',
+          onClick: Dismissed(),
+          variant: 'ghost',
+          size: 'sm',
+        },
+        h,
+      ),
+    },
+    h,
+  )
 }
 
 describe('Alert scene', () => {
   it('exposes alert role and body text', () => {
     Scene.scene(
       { update, view: alertView },
-      Scene.with({ open: true }),
+      Scene.given({ open: true }),
       Scene.expect(Scene.role('alert')).toExist(),
       Scene.expect(Scene.text('Something went wrong')).toExist(),
       Scene.expect(Scene.text('Error')).toExist(),
@@ -55,19 +61,22 @@ describe('Alert scene', () => {
   })
 
   it('renders compact destructive without action layout', () => {
-    const compactView = () =>
-      view<Message>({
-        variant: 'warning',
-        body: 'Review required',
-        compact: true,
-      })
+    const compactView = (_model: Model, h: HtmlBuilder<Message>) =>
+      view<Message>(
+        {
+          variant: 'warning',
+          body: 'Review required',
+          compact: true,
+        },
+        h,
+      )
 
     Scene.scene(
       {
         update: () => [{ open: true }, []],
         view: compactView,
       },
-      Scene.with({ open: true }),
+      Scene.given({ open: true }),
       Scene.expect(Scene.role('alert')).toExist(),
       Scene.expect(Scene.text('Review required')).toExist(),
     )
@@ -76,25 +85,28 @@ describe('Alert scene', () => {
   it('fires action message when dismiss is clicked', () => {
     Scene.scene(
       { update, view: alertView },
-      Scene.with({ open: true }),
+      Scene.given({ open: true }),
       Scene.click(Scene.role('button', { name: 'Dismiss' })),
       Scene.expect(Scene.text('closed')).toExist(),
     )
   })
 
   it('renders success variant body', () => {
-    const successView = () =>
-      view<Message>({
-        variant: 'success',
-        body: 'Import complete',
-      })
+    const successView = (_model: Model, h: HtmlBuilder<Message>) =>
+      view<Message>(
+        {
+          variant: 'success',
+          body: 'Import complete',
+        },
+        h,
+      )
 
     Scene.scene(
       {
         update: () => [{ open: true }, []],
         view: successView,
       },
-      Scene.with({ open: true }),
+      Scene.given({ open: true }),
       Scene.expect(Scene.role('alert')).toExist(),
       Scene.expect(Scene.text('Import complete')).toExist(),
     )

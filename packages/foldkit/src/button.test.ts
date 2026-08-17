@@ -2,6 +2,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from 'vitest'
 
 import * as Button from './button.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string
@@ -22,7 +23,9 @@ const text = (value: unknown): string => {
 describe('Button', () => {
   it('renders its label and aria name', () => {
     const node = asNode(
-      Button.view({ label: 'Save', ariaLabel: 'Save changes' }),
+      renderWithBuilder(h =>
+        Button.view({ label: 'Save', ariaLabel: 'Save changes' }, h),
+      ),
     )
     expect(node.sel).toBe('button')
     expect(text(node)).toContain('Save')
@@ -31,22 +34,35 @@ describe('Button', () => {
 
   it('renders enabled click and disabled paths without throwing', () => {
     const enabled = asNode(
-      Button.view({ label: 'Primary', onClick: { _tag: 'Clicked' } }),
+      renderWithBuilder(h =>
+        Button.view({ label: 'Primary', onClick: { _tag: 'Clicked' } }, h),
+      ),
     )
     const disabled = asNode(
-      Button.view({
-        label: 'Disabled',
-        onClick: { _tag: 'Clicked' },
-        isDisabled: true,
-      }),
+      renderWithBuilder(h =>
+        Button.view(
+          {
+            label: 'Disabled',
+            onClick: { _tag: 'Clicked' },
+            isDisabled: true,
+          },
+          h,
+        ),
+      ),
     )
     expect(Object.keys(enabled.data?.on ?? {})).toContain('click')
     expect(Object.keys(disabled.data?.on ?? {})).not.toContain('click')
     expect(() =>
-      Button.view({ label: 'Primary', onClick: { _tag: 'Clicked' } }),
+      renderWithBuilder(h =>
+        Button.view({ label: 'Primary', onClick: { _tag: 'Clicked' } }, h),
+      ),
     ).not.toThrow()
 
-    const node = asNode(Button.view({ label: 'Disabled', isDisabled: true }))
+    const node = asNode(
+      renderWithBuilder(h =>
+        Button.view({ label: 'Disabled', isDisabled: true }, h),
+      ),
+    )
     expect(node.data?.attrs?.['data-disabled']).toBe('')
   })
 })

@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { sidebarStyles } from '@foldstryx/styles'
 
@@ -53,13 +52,13 @@ export type SidebarInsetConfig<_Message = never> = Readonly<{
 }>
 
 const iconSlot = <Message>(
+  h: HtmlBuilder<Message>,
   item: SidebarNavItem<Message>,
   selected: boolean,
 ): ReadonlyArray<Html> => {
   const icon =
     selected && item.selectedIcon !== undefined ? item.selectedIcon : item.icon
   if (icon === undefined) return []
-  const h = html<Message>()
   return [
     h.span(
       elAttrs<Message>(
@@ -75,13 +74,13 @@ const iconSlot = <Message>(
 }
 
 const itemContent = <Message>(
+  h: HtmlBuilder<Message>,
   item: SidebarNavItem<Message>,
   selected: boolean,
   collapsed: boolean,
 ): ReadonlyArray<Html> => {
-  const h = html<Message>()
   return [
-    ...iconSlot<Message>(item, selected),
+    ...iconSlot<Message>(h, item, selected),
     ...(collapsed
       ? []
       : [
@@ -100,12 +99,12 @@ const itemContent = <Message>(
 }
 
 const expandControl = <Message>(
+  h: HtmlBuilder<Message>,
   item: SidebarNavItem<Message>,
   expanded: boolean,
   childId: string,
   onToggleItem: (id: string) => Message,
 ): Html => {
-  const h = html<Message>()
   return h.button(
     elAttrs<Message>(
       h.AriaLabel(`${expanded ? 'Collapse' : 'Expand'} ${item.label}`),
@@ -129,8 +128,7 @@ const expandControl = <Message>(
   )
 }
 
-const chevron = <Message>(expanded: boolean): Html => {
-  const h = html<Message>()
+const chevron = <Message>(h: HtmlBuilder<Message>, expanded: boolean): Html => {
   return h.span(
     elAttrs<Message>(
       sxAttrs(
@@ -163,16 +161,16 @@ const itemModes = <Message>(
 }
 
 const primaryButton = <Message>(
+  h: HtmlBuilder<Message>,
   config: SidebarNavConfig<Message>,
   item: SidebarNavItem<Message>,
   collapsed: boolean,
   modes: ReturnType<typeof itemModes<Message>>,
 ): Html => {
-  const h = html<Message>()
   const childId = `sidebar-children-${item.id}`
   const content = [
-    ...itemContent<Message>(item, modes.selected, collapsed),
-    ...(modes.rowToggle ? [chevron<Message>(modes.expanded)] : []),
+    ...itemContent<Message>(h, item, modes.selected, collapsed),
+    ...(modes.rowToggle ? [chevron<Message>(h, modes.expanded)] : []),
   ]
   const collapsedParentClick =
     collapsed && modes.hasChildren && config.onOpenItem !== undefined
@@ -212,13 +210,13 @@ const primaryButton = <Message>(
 }
 
 const itemRow = <Message>(
+  h: HtmlBuilder<Message>,
   config: SidebarNavConfig<Message>,
   item: SidebarNavItem<Message>,
   collapsed: boolean,
   modes: ReturnType<typeof itemModes<Message>>,
 ): Html => {
-  const h = html<Message>()
-  const primary = primaryButton(config, item, collapsed, modes)
+  const primary = primaryButton(h, config, item, collapsed, modes)
   if (!modes.independentToggle) return primary
   return h.div(
     elAttrs<Message>(
@@ -232,6 +230,7 @@ const itemRow = <Message>(
     [
       primary,
       expandControl(
+        h,
         item,
         modes.expanded,
         `sidebar-children-${item.id}`,
@@ -242,11 +241,11 @@ const itemRow = <Message>(
 }
 
 const childGroup = <Message>(
+  h: HtmlBuilder<Message>,
   item: SidebarNavItem<Message>,
   expanded: boolean,
   childNodes: ReadonlyArray<Html>,
 ): Html => {
-  const h = html<Message>()
   const childId = `sidebar-children-${item.id}`
   const groupId = `sidebar-group-label-${item.id}`
   return h.div(
@@ -278,20 +277,20 @@ const childGroup = <Message>(
 }
 
 const itemFlyout = <Message>(
+  h: HtmlBuilder<Message>,
   config: SidebarNavConfig<Message>,
   item: SidebarNavItem<Message>,
   collapsed: boolean,
   modes: ReturnType<typeof itemModes<Message>>,
 ): Html | undefined => {
   if (!collapsed || (!modes.hovered && !modes.open)) return undefined
-  const h = html<Message>()
   if (modes.hasChildren) {
     return h.div(elAttrs<Message>(sxAttrs(h, sidebarStyles.flyout)), [
       h.div(elAttrs<Message>(sxAttrs(h, sidebarStyles.flyoutHeader)), [
         item.label,
       ]),
       ...(item.children ?? [])
-        .map(child => navItem(config, child, false))
+        .map(child => navItem(h, config, child, false))
         .filter((node): node is Html => node !== undefined),
     ])
   }
@@ -301,20 +300,20 @@ const itemFlyout = <Message>(
 }
 
 const navItem = <Message>(
+  h: HtmlBuilder<Message>,
   config: SidebarNavConfig<Message>,
   item: SidebarNavItem<Message>,
   collapsed: boolean,
 ): Html | undefined => {
   if (collapsed && item.icon === undefined) return undefined
 
-  const h = html<Message>()
   const modes = itemModes(config, item, collapsed)
   const childNodes = modes.hasChildren
     ? (item.children ?? [])
-        .map(child => navItem(config, child, collapsed))
+        .map(child => navItem(h, config, child, collapsed))
         .filter((node): node is Html => node !== undefined)
     : []
-  const flyout = itemFlyout(config, item, collapsed, modes)
+  const flyout = itemFlyout(h, config, item, collapsed, modes)
 
   return h.div(
     elAttrs<Message>(
@@ -331,17 +330,19 @@ const navItem = <Message>(
         : []),
     ),
     [
-      itemRow(config, item, collapsed, modes),
+      itemRow(h, config, item, collapsed, modes),
       ...(modes.hasChildren && !collapsed
-        ? [childGroup(item, modes.expanded, childNodes)]
+        ? [childGroup(h, item, modes.expanded, childNodes)]
         : []),
       ...(flyout !== undefined ? [flyout] : []),
     ],
   )
 }
 
-const footerIcons = <Message>(collapsed: boolean): Html => {
-  const h = html<Message>()
+const footerIcons = <Message>(
+  h: HtmlBuilder<Message>,
+  collapsed: boolean,
+): Html => {
   return h.div(
     elAttrs<Message>(
       sxAttrs(
@@ -374,8 +375,8 @@ const footerIcons = <Message>(collapsed: boolean): Html => {
 export const desktop = <Message>(
   config: SidebarNavConfig<Message>,
   options: Readonly<{ isCollapsed?: boolean }> = {},
+  h: HtmlBuilder<Message>,
 ): Html => {
-  const h = html<Message>()
   const collapsed = options.isCollapsed === true
   const brandIcon = config.brand.icon ?? Icon.appMark
 
@@ -455,7 +456,7 @@ export const desktop = <Message>(
               h.div(
                 elAttrs<Message>(sxAttrs(h, sidebarStyles.groupItems)),
                 group.items
-                  .map(item => navItem(config, item, collapsed))
+                  .map(item => navItem(h, config, item, collapsed))
                   .filter((node): node is Html => node !== undefined),
               ),
             ],
@@ -481,7 +482,7 @@ export const desktop = <Message>(
                 ]),
               ]
             : []),
-          footerIcons<Message>(collapsed),
+          footerIcons<Message>(h, collapsed),
           ...(config.onToggleSidebar !== undefined
             ? [
                 h.button(
@@ -515,8 +516,10 @@ export const desktop = <Message>(
   )
 }
 
-export const inset = <Message>(config: SidebarInsetConfig<Message>): Html => {
-  const h = html<Message>()
+export const inset = <Message>(
+  config: SidebarInsetConfig<Message>,
+  h: HtmlBuilder<Message>,
+): Html => {
   return h.main(elAttrs<Message>(sxAttrs(h, sidebarStyles.inset)), [
     h.header(
       elAttrs<Message>(sxAttrs(h, sidebarStyles.insetHeader)),

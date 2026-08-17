@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -22,9 +21,10 @@ export type DetailsViewConfig<Message> = Readonly<{
 }>
 
 /** Styled details/summary disclosure. */
-export const view = <Message>(config: DetailsViewConfig<Message>): Html => {
-  const h = html<Message>()
-
+export const view = <Message>(
+  config: DetailsViewConfig<Message>,
+  h: HtmlBuilder<Message>,
+): Html => {
   return h.details(
     elAttrs<Message>(
       sxAttrs(h, layoutStyles.detailsBox),

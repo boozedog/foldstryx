@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { pageStyles } from '@foldstryx/styles'
 
@@ -20,9 +19,10 @@ export type PageHeaderConfig = Readonly<{
  * row. Renders a semantic `<header>` when no actions are present; wraps in a
  * row when actions are supplied.
  */
-export const header = <ParentMessage>(config: PageHeaderConfig): Html => {
-  const h = html<ParentMessage>()
-
+export const header = <ParentMessage>(
+  config: PageHeaderConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const titleAndDescription = h.header(
     elAttrs<ParentMessage>(sxAttrs(h, pageStyles.header)),
     [
@@ -55,18 +55,16 @@ export const header = <ParentMessage>(config: PageHeaderConfig): Html => {
 /** Page content region. */
 export const content = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
-
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, pageStyles.content)), children)
 }
 
 /** Page footer region. */
 export const footer = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
-
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, pageStyles.footer)), children)
 }
 
@@ -80,12 +78,13 @@ export type PageShellConfig = Readonly<{
  * Convenience composer: page shell with optional header and footer around a
  * content region. Keeps the slot API; does not replace header/content/footer.
  */
-export const shell = <ParentMessage>(config: PageShellConfig): Html => {
-  const h = html<ParentMessage>()
-
+export const shell = <ParentMessage>(
+  config: PageShellConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, pageStyles.shell)), [
     ...(config.header !== undefined ? [config.header] : []),
-    content<ParentMessage>(config.content),
+    content<ParentMessage>(config.content, h),
     ...(config.footer !== undefined ? [config.footer] : []),
   ])
 }

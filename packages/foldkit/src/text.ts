@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -67,8 +66,10 @@ const variantStyle = (variant: TextVariant) => {
 }
 
 /** Named typography primitive — closed variants + optional closed `as`. */
-export const view = <ParentMessage>(config: TextViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: TextViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const variant = config.variant ?? 'body'
   const tag = config.as ?? defaultElement(variant)
   const children =

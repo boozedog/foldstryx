@@ -1,4 +1,4 @@
-import { html, submodel } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
@@ -14,23 +14,24 @@ import { init, styledViewInputs, update, view } from './dialog.js'
 
 const dialogId = 'confirm-dialog'
 
-const sceneView = (model: Model) => {
-  const h = html<Message>()
-  return submodel({
+const sceneView = (model: Model, h: HtmlBuilder<Message>) =>
+  h.submodel({
     slotId: model.id,
     model,
     view,
-    viewInputs: styledViewInputs<Message>({
-      id: dialogId,
-      title: 'Confirm',
-      description: 'Are you sure?',
-      showClose: true,
-      onRequestClose: message => message,
-      footer: [h.button([], ['OK'])],
-    }),
+    viewInputs: styledViewInputs<Message>(
+      {
+        id: dialogId,
+        title: 'Confirm',
+        description: 'Are you sure?',
+        showClose: true,
+        onRequestClose: message => message,
+        footer: [h.button([], ['OK'])],
+      },
+      h,
+    ),
     toParentMessage: message => message,
   })
-}
 
 const dialog = Scene.selector(`#${dialogId}`)
 const backdrop = Scene.selector(`#${dialogId}-backdrop`)
@@ -48,12 +49,15 @@ describe('Dialog scene', () => {
   it('renders the native dialog open when open', () => {
     Scene.scene(
       { update, view: sceneView },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.expect(dialog).toHaveAttr('open', 'true'),
-      Scene.expect(dialog).toHaveAttr('aria-labelledby', `${dialogId}-title`),
+      Scene.expect(dialog).toHaveAttr(
+        'aria-labelledby',
+        `${dialogId}-dialog-title`,
+      ),
       Scene.expect(dialog).toHaveAttr(
         'aria-describedby',
-        `${dialogId}-description`,
+        `${dialogId}-dialog-description`,
       ),
     )
   })
@@ -61,7 +65,7 @@ describe('Dialog scene', () => {
   it('renders no panel content when closed', () => {
     Scene.scene(
       { update, view: sceneView },
-      Scene.with(closedModel),
+      Scene.given(closedModel),
       Scene.expect(closeButton).toBeAbsent(),
     )
   })
@@ -69,7 +73,7 @@ describe('Dialog scene', () => {
   it('closes when the close button is clicked', () => {
     Scene.scene(
       { update, view: sceneView },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.click(closeButton),
       resolveClose,
       Scene.expect(closeButton).toBeAbsent(),
@@ -79,7 +83,7 @@ describe('Dialog scene', () => {
   it('closes on Escape keydown', () => {
     Scene.scene(
       { update, view: sceneView },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.keydown(dialog, 'Escape'),
       resolveClose,
       Scene.expect(closeButton).toBeAbsent(),
@@ -89,7 +93,7 @@ describe('Dialog scene', () => {
   it('closes when the backdrop is clicked', () => {
     Scene.scene(
       { update, view: sceneView },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.click(backdrop),
       resolveClose,
       Scene.expect(backdrop).toBeAbsent(),

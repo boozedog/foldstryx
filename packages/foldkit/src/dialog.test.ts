@@ -2,7 +2,14 @@ import type { Html } from 'foldkit/html'
 
 import { describe, expect, it } from '@effect/vitest'
 
-import { init, styledViewInputs, update, view } from './dialog.js'
+import {
+  type DialogStyledConfig,
+  Message,
+  init,
+  styledViewInputs,
+  update,
+  view,
+} from './dialog.js'
 import { renderSubmodel } from './renderHelper.js'
 
 type Node = Readonly<{
@@ -38,10 +45,16 @@ const classKeys = (node: Node): ReadonlyArray<string> =>
 const hasSx = (node: Node, key: string): boolean =>
   classKeys(node).includes(`sx-${key}`)
 
-const render = (config: Parameters<typeof styledViewInputs>[0]) => {
+const render = (
+  config: DialogStyledConfig<Message> & Readonly<{ id: string }>,
+) => {
   const model = init({ id: config.id, isOpen: true })
   return asNode(
-    renderSubmodel(m => view(m, styledViewInputs(config)), model, update),
+    renderSubmodel(
+      (m, h) => view(m, styledViewInputs<Message>(config, h), h),
+      model,
+      update,
+    ),
   )
 }
 
@@ -79,19 +92,19 @@ describe('Dialog', () => {
     const root = render({ id: 'd', title: 'Confirm', description: 'Details' })
     const title = find(root, 'h2')
     const description = find(root, 'p')
-    expect(title?.data?.props?.['id']).toBe('d-title')
-    expect(description?.data?.props?.['id']).toBe('d-description')
-    expect(root.data?.attrs?.['aria-labelledby']).toBe('d-title')
-    expect(root.data?.attrs?.['aria-describedby']).toBe('d-description')
+    expect(title?.data?.props?.['id']).toBe('d-dialog-title')
+    expect(description?.data?.props?.['id']).toBe('d-dialog-description')
+    expect(root.data?.attrs?.['aria-labelledby']).toBe('d-dialog-title')
+    expect(root.data?.attrs?.['aria-describedby']).toBe('d-dialog-description')
     expect(collectText(root)).toContain('Confirm')
     expect(collectText(root)).toContain('Details')
   })
 
-  it('does not point aria-describedby at a missing node when title-only', () => {
+  it('keeps the upstream description id on aria-describedby when title-only', () => {
     const root = render({ id: 'd', title: 'Confirm' })
     expect(find(root, 'p')).toBeUndefined()
-    expect(root.data?.attrs?.['aria-labelledby']).toBe('d-title')
-    expect(root.data?.attrs?.['aria-describedby']).toBe('')
+    expect(root.data?.attrs?.['aria-labelledby']).toBe('d-dialog-title')
+    expect(root.data?.attrs?.['aria-describedby']).toBe('d-dialog-description')
   })
 
   it('renders a close button with aria-label when showClose is true', () => {

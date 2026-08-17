@@ -1,6 +1,5 @@
 import { Match, Schema } from 'effect'
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { cardStyles, layoutStyles } from '@foldstryx/styles'
 
@@ -29,8 +28,10 @@ export type StatCardConfig = Readonly<{
 }>
 
 /** Metric card: label + Effect tagged Loading | Failed | Ready. */
-export const card = <ParentMessage>(config: StatCardConfig): Html => {
-  const h = html<ParentMessage>()
+export const card = <ParentMessage>(
+  config: StatCardConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const loadingText = config.loadingText ?? '…'
 
   const body = Match.value(config.state).pipe(

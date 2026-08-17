@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { gridStyles } from '@foldstryx/styles'
 
@@ -47,8 +46,10 @@ const mtStyle = (mt: '2' | '3' | undefined) => {
 }
 
 /** Responsive CSS grid over closed column presets and a token gap scale. */
-export const view = <ParentMessage>(config: GridViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: GridViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const columns = config.columns ?? 2
   const gap = config.gap ?? 'md'
 

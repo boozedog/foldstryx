@@ -4,7 +4,6 @@ import * as Scene from 'foldkit/scene'
 
 import { describe, expect, it } from '@effect/vitest'
 import { AnchorTooltip, CompletedAnchorTooltip } from '@foldkit/ui/tooltip'
-import { GotTooltipMessage } from '@foldstryx/kitchen-sink'
 
 import { Message, init, update } from './model.js'
 import type { Model } from './model.js'
@@ -45,15 +44,14 @@ const collectText = (node: unknown): string => {
 const acknowledgeTooltip = Scene.Mount.resolve(
   AnchorTooltip,
   CompletedAnchorTooltip(),
-  message => ({ _tag: 'Sink', message: GotTooltipMessage(message) }),
 )
 
 const render = (model: Model, resolveTooltip = false): Node => {
   let result: Html = null
   if (resolveTooltip) {
     Scene.scene(
-      { update, view: m => view(m).body },
-      Scene.with(model),
+      { update, view: (m, h) => view(m, h).body },
+      Scene.given(model),
       acknowledgeTooltip,
       Scene.tap(simulation => {
         result = simulation.html
@@ -61,8 +59,8 @@ const render = (model: Model, resolveTooltip = false): Node => {
     )
   } else {
     Scene.scene(
-      { update, view: m => view(m).body },
-      Scene.with(model),
+      { update, view: (m, h) => view(m, h).body },
+      Scene.given(model),
       Scene.tap(simulation => {
         result = simulation.html
       }),

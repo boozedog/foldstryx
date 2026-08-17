@@ -1,7 +1,7 @@
 import { Option } from 'effect'
 import { Command } from 'foldkit'
-import type { Html } from 'foldkit/html'
-import { childAttributes, html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
+import { childAttributes } from 'foldkit/html'
 import type { View } from 'foldkit/submodel'
 
 import { Menu } from '@foldkit/ui'
@@ -71,9 +71,8 @@ const itemClassName = (
 /** Builds styled Foldkit Menu view inputs with Astryx dropdown-menu visuals. */
 export const styledViewInputs = <Item extends string, ParentMessage>(
   config: DropdownMenuStyledConfig<Item, ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
 ): ViewInputs<Item> => {
-  const h = html<ParentMessage>()
-
   return {
     items: config.items,
     anchor: config.anchor ?? { placement: 'bottom-start', gap: 4, padding: 8 },

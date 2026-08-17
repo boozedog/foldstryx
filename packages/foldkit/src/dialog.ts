@@ -1,13 +1,7 @@
 import { Option } from 'effect'
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
-import {
-  RequestedClose,
-  descriptionId,
-  init,
-  titleId,
-} from '@foldkit/ui/dialog'
+import { RequestedClose } from '@foldkit/ui/dialog'
 import type { RenderInfo, ViewInputs } from '@foldkit/ui/dialog'
 import { dialogStyles } from '@foldstryx/styles'
 
@@ -43,17 +37,15 @@ export type DialogStyledConfig<ParentMessage> = Readonly<{
 }>
 
 const panelContent = <ParentMessage>(
-  h: ReturnType<typeof html<ParentMessage>>,
-  titleElementId: string,
-  descriptionElementId: string,
+  h: HtmlBuilder<ParentMessage>,
+  render: RenderInfo,
   config: DialogStyledConfig<ParentMessage>,
-  closeButton: RenderInfo['closeButton'],
 ): ReadonlyArray<Html> => [
   ...(config.showClose === true
     ? [
         h.button(
           elAttrs<ParentMessage>(
-            closeButton,
+            render.closeButton,
             sxAttrs(h, dialogStyles.close),
             h.AriaLabel('Close'),
           ),
@@ -69,7 +61,7 @@ const panelContent = <ParentMessage>(
                 h.h2(
                   elAttrs<ParentMessage>(
                     sxAttrs(h, dialogStyles.title),
-                    h.Id(titleElementId),
+                    render.title,
                   ),
                   [config.title],
                 ),
@@ -80,7 +72,7 @@ const panelContent = <ParentMessage>(
                 h.p(
                   elAttrs<ParentMessage>(
                     sxAttrs(h, dialogStyles.description),
-                    h.Id(descriptionElementId),
+                    render.description,
                   ),
                   [config.description],
                 ),
@@ -106,19 +98,18 @@ const panelContent = <ParentMessage>(
     : []),
 ]
 
-/** Builds styled Foldkit Dialog view inputs with Astryx dialog visuals. */
+/**
+ * Builds styled Foldkit Dialog view inputs with Astryx dialog visuals.
+ * The parent thread's builder renders the dialog markup in the parent
+ * boundary; the dialog keeps its headless submodel.
+ */
 export const styledViewInputs = <ParentMessage>(
   config: DialogStyledConfig<ParentMessage> & Readonly<{ id: string }>,
+  h: HtmlBuilder<ParentMessage>,
 ): ViewInputs => {
-  const model = init({ id: config.id })
-  const titleElementId = titleId(model)
-  const descriptionElementId = descriptionId(model)
-  const describedBy =
-    config.description !== undefined ? descriptionElementId : ''
-
   return {
-    toView: ({ dialog, backdrop, panel, closeButton, isVisible }) => {
-      const h = html<ParentMessage>()
+    toView: render => {
+      const { dialog, backdrop, panel, isVisible } = render
 
       const handleDialogKeyDown = (
         key: string,
@@ -143,7 +134,6 @@ export const styledViewInputs = <ParentMessage>(
           ),
           ...(config.extraDialogAttributes ?? []),
           h.OnKeyDownPreventDefault(handleDialogKeyDown),
-          h.AriaDescribedBy(describedBy),
         ),
         isVisible
           ? [
@@ -166,13 +156,7 @@ export const styledViewInputs = <ParentMessage>(
                       : undefined,
                   ),
                 ),
-                panelContent(
-                  h,
-                  titleElementId,
-                  descriptionElementId,
-                  config,
-                  closeButton,
-                ),
+                panelContent(h, render, config),
               ),
             ]
           : [],

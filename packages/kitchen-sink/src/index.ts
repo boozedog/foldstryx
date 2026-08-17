@@ -1,6 +1,5 @@
 import { Option, Schema as S } from 'effect'
 import { Command, Runtime, Submodel } from 'foldkit'
-import { html } from 'foldkit/html'
 
 import {
   Alert,
@@ -54,6 +53,7 @@ export const Model = S.Struct({
   menu: DropdownMenu.Model,
   notifications: S.Boolean,
   page: S.Finite,
+  selectedTab: S.Literals(['overview', 'details', 'settings']),
   tabs: Tabs.Model,
   toast: DemoToast.Model,
   tooltip: Tooltip.Model,
@@ -132,6 +132,7 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => [
     menu: DropdownMenu.init({ id: 'catalog-menu' }),
     notifications: false,
     page: 1,
+    selectedTab: 'overview',
     tabs: Tabs.init({ id: 'catalog-tabs' }),
     toast: DemoToast.init({ id: 'catalog-toast' }),
     tooltip: Tooltip.init('catalog-tooltip'),
@@ -158,9 +159,14 @@ export const update = (
       ]
     }
     case 'GotTabsMessage': {
-      const [tabs, commands] = DemoTabs.update(model.tabs, message.message)
+      const [tabs, commands, maybeOut] = DemoTabs.update(
+        model.tabs,
+        message.message,
+      )
+      const selectedTab =
+        maybeOut._tag === 'Some' ? maybeOut.value.value : model.selectedTab
       return [
-        { ...model, tabs },
+        { ...model, tabs, selectedTab },
         Command.mapMessages(commands, m => GotTabsMessage(m)),
       ]
     }
@@ -212,598 +218,902 @@ export const update = (
   }
 }
 
-export const view = Submodel.defineView<Model, Message>(model => {
-  const h = html<Message>()
+export const view = Submodel.defineView<Model, Message>((model, h) => {
   return h.div(elAttrs<Message>(sxAttrs(h, layoutStyles.catalogShell)), [
-    Stack.view({
-      gap: 'lg',
-      children: [
-        Text.view({
-          variant: 'title',
-          as: 'h1',
-          children: 'Foldstryx catalog',
-        }),
-        Text.view({
-          variant: 'muted',
-          children: 'First primitives: layout, type, controls, and chrome.',
-        }),
-        Card.section({
-          title: 'Typography',
-          description: 'Astryx-faithful type roles.',
-          padded: true,
-          children: [
-            Text.view({ children: 'Body text for a readable interface.' }),
-            Text.view({ variant: 'body', children: 'Label text' }),
-            Text.view({ variant: 'muted', children: 'Supporting text' }),
-            Text.view({
-              variant: 'mono',
-              children: 'const font = "Maple Mono NL NF"',
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Stack and Row',
-          description: 'Token-based spacing and alignment.',
-          padded: true,
-          children: [
-            Row.view({
-              align: 'wrap',
+    Stack.view(
+      {
+        gap: 'lg',
+        children: [
+          Text.view(
+            {
+              variant: 'title',
+              as: 'h1',
+              children: 'Foldstryx catalog',
+            },
+            h,
+          ),
+          Text.view(
+            {
+              variant: 'muted',
+              children: 'First primitives: layout, type, controls, and chrome.',
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Typography',
+              description: 'Astryx-faithful type roles.',
+              padded: true,
               children: [
-                Text.view({ children: 'Row item' }),
-                Text.view({ children: 'Another item' }),
+                Text.view(
+                  { children: 'Body text for a readable interface.' },
+                  h,
+                ),
+                Text.view({ variant: 'body', children: 'Label text' }, h),
+                Text.view({ variant: 'muted', children: 'Supporting text' }, h),
+                Text.view(
+                  {
+                    variant: 'mono',
+                    children: 'const font = "Maple Mono NL NF"',
+                  },
+                  h,
+                ),
               ],
-            }),
-            Stack.view({
-              gap: 'sm',
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Stack and Row',
+              description: 'Token-based spacing and alignment.',
+              padded: true,
               children: [
-                Text.view({ children: 'Stack item' }),
-                Text.view({ children: 'Another item' }),
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      Text.view({ children: 'Row item' }, h),
+                      Text.view({ children: 'Another item' }, h),
+                    ],
+                  },
+                  h,
+                ),
+                Stack.view(
+                  {
+                    gap: 'sm',
+                    children: [
+                      Text.view({ children: 'Stack item' }, h),
+                      Text.view({ children: 'Another item' }, h),
+                    ],
+                  },
+                  h,
+                ),
               ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Page',
-          description: 'Header, content, and footer regions compose a shell.',
-          padded: true,
-          children: [
-            Page.shell({
-              header: Page.header({
-                title: 'Page title',
-                description: 'Supporting description for the page.',
-                actions: [
-                  Button.view<Message>({
-                    label: 'Action',
-                    size: 'sm',
-                    variant: 'secondary',
-                    onClick: Clicked(),
-                  }),
-                ],
-              }),
-              content: [
-                Text.view({
-                  children: 'Page content sits between the header and footer.',
-                }),
-              ],
-              footer: Page.footer([
-                Text.view({ variant: 'mutedSm', children: 'Footer region' }),
-              ]),
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Grid',
-          description: 'Responsive columns with a token gap scale.',
-          padded: true,
-          children: [
-            Grid.view({
-              columns: 3,
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Page',
+              description:
+                'Header, content, and footer regions compose a shell.',
+              padded: true,
               children: [
-                Text.view({ children: 'Cell one' }),
-                Text.view({ children: 'Cell two' }),
-                Text.view({ children: 'Cell three' }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Avatar',
-          description: 'Sizes, shapes, image, and fallback labeling.',
-          padded: true,
-          children: [
-            Row.view({
-              align: 'wrap',
-              children: [
-                Avatar.view({ fallback: 'JD', label: 'Jane Doe' }),
-                Avatar.view({ fallback: 'AB', size: 'sm' }),
-                Avatar.view({ fallback: 'CD', size: 'lg' }),
-                Avatar.view({ fallback: 'EF', shape: 'rounded' }),
-                Avatar.view({
-                  fallback: 'GH',
-                  imageSrc:
-                    'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22><rect width=%2232%22 height=%2232%22 fill=%22%230064E0%22/></svg>',
-                  label: 'With image',
-                }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Buttons',
-          description: `Click count: ${model.clicks}`,
-          padded: true,
-          children: [
-            Row.view({
-              align: 'wrap',
-              children: [
-                Button.view({ label: 'Primary', onClick: Clicked() }),
-                Button.view({ label: 'Secondary', variant: 'secondary' }),
-                Button.view({ label: 'Ghost', variant: 'ghost' }),
-                Button.view({ label: 'Danger', variant: 'danger' }),
-                Button.view({ label: 'Small', size: 'sm' }),
-                Button.view({ label: 'Disabled', isDisabled: true }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Card',
-          description: 'Root, header, and body slots compose surface chrome.',
-          padded: true,
-          children: [
-            Text.view({
-              children:
-                'Cards provide a neutral surface with border, radius, and elevation.',
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Form',
-          description: 'Labeled controls with shared Astryx form styling.',
-          padded: true,
-          children: [
-            Input.view<Message>({
-              id: 'catalog-email',
-              label: 'Email',
-              value: model.email,
-              onInput: value => FieldChanged('email', value),
-              placeholder: 'name@example.com',
-              description: 'We will never share your email.',
-            }),
-            Input.view<Message>({
-              id: 'catalog-disabled',
-              label: 'Disabled',
-              value: 'Read only',
-              isDisabled: true,
-            }),
-            Field.group<Message>({
-              orientation: 'horizontal',
-              children: [
-                Checkbox.control<Message>({
-                  id: 'catalog-terms',
-                  checked: model.includeInactive,
-                  label: 'Accept terms',
-                  onChange: checked => IncludeInactiveChanged(checked),
-                }),
-              ],
-            }),
-            h.submodel({
-              slotId: 'catalog-notifications',
-              model: {
-                id: 'catalog-notifications',
-                isChecked: model.notifications,
-              },
-              view: Switch.view,
-              viewInputs: Switch.styledViewInputs(
-                { id: 'catalog-notifications', isChecked: model.notifications },
-                {
-                  label: 'Notifications',
-                  description: 'Enable notifications.',
-                },
-              ),
-              toParentMessage: message =>
-                message._tag === 'Toggled'
-                  ? NotificationsChanged(!model.notifications)
-                  : NotificationsChanged(message.isChecked),
-            }),
-            Separator.view<Message>(),
-          ],
-        }),
-        Card.section({
-          title: 'Dense controls',
-          description: 'Compact inputs and native select for filters.',
-          padded: true,
-          children: [
-            Row.view({
-              align: 'wrap',
-              children: [
-                Input.control<Message>({
-                  id: 'catalog-filter',
-                  ariaLabel: 'Filter',
-                  density: 'compact',
-                  width: 'md',
-                  placeholder: 'Filter…',
-                  value: model.filter,
-                  onInput: value => FieldChanged('filter', value),
-                  label: 'Filter',
-                }),
-                NativeSelect.view<Message>({
-                  id: 'catalog-kind',
-                  ariaLabel: 'Kind',
-                  density: 'compact',
-                  width: 'sm',
-                  value: model.kind,
-                  options: [
-                    { value: 'all', label: 'All kinds' },
-                    { value: 'active', label: 'Active' },
-                  ],
-                  onChange: value => FieldChanged('kind', value),
-                  label: 'Kind',
-                }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Badges',
-          description: 'Status and metadata chips across sentiment variants.',
-          padded: true,
-          children: [
-            Row.view({
-              align: 'wrap',
-              children: [
-                Badge.view({ label: 'Default' }),
-                Badge.view({ label: 'Secondary', variant: 'secondary' }),
-                Badge.view({ label: 'Destructive', variant: 'destructive' }),
-                Badge.view({ label: 'Outline', variant: 'outline' }),
-                Badge.view({ label: 'Success', variant: 'success' }),
-                Badge.view({ label: 'Warning', variant: 'warning' }),
-                Badge.view({ label: 'Info', variant: 'info' }),
-                Badge.view({ label: 'Large', size: 'lg' }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Alerts',
-          description: 'Role=alert banners with optional action slots.',
-          padded: true,
-          children: [
-            Stack.view({
-              gap: 'sm',
-              children: [
-                Alert.view<Message>({
-                  title: 'Default',
-                  body: 'A neutral informational banner.',
-                }),
-                Alert.view<Message>({
-                  variant: 'destructive',
-                  title: 'Error',
-                  body: 'Something went wrong.',
-                  action: Button.view<Message>({
-                    label: 'Dismiss',
-                    variant: 'ghost',
-                    size: 'sm',
-                    onClick: Clicked(),
-                  }),
-                }),
-                Alert.view<Message>({
-                  variant: 'warning',
-                  body: 'Review required before continuing.',
-                  compact: true,
-                }),
-                Alert.view<Message>({
-                  variant: 'success',
-                  body: 'Import complete.',
-                }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Feedback',
-          description: 'Loading, empty, and attention surfaces.',
-          padded: true,
-          children: [
-            Stack.view({
-              gap: 'sm',
-              children: [
-                LoadingPanel.view<Message>({
-                  message: 'Loading panel…',
-                  card: false,
-                }),
-                EmptyState.view<Message>({
-                  title: 'Nothing here',
-                  message: 'Empty state with an optional action.',
-                  action: Button.view<Message>({
-                    label: 'Create',
-                    size: 'sm',
-                    variant: 'ghost',
-                    onClick: Clicked(),
-                  }),
-                  card: false,
-                }),
-                Attention.view<Message>({
-                  title: 'Attention',
-                  body: 'Soft callout for inline notices (not role=alert).',
-                }),
-              ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Tooltip',
-          description: 'Hover or focus the trigger to reveal the panel.',
-          padded: true,
-          children: [
-            h.submodel({
-              slotId: 'catalog-tooltip',
-              model: model.tooltip,
-              view: Tooltip.view,
-              viewInputs: {
-                anchor: { placement: 'top', gap: 8, padding: 8 },
-                enabled: true,
-                toView: ({ trigger, panel, isVisible }) =>
-                  h.div(
-                    elAttrs<Message>(sxAttrs(h, layoutStyles.rowCenterGap2)),
-                    [
-                      h.button(elAttrs<Message>(trigger), [
-                        'Hover or focus me',
-                      ]),
-                      h.div(
-                        elAttrs<Message>(
-                          sxAttrs(
+                Page.shell(
+                  {
+                    header: Page.header(
+                      {
+                        title: 'Page title',
+                        description: 'Supporting description for the page.',
+                        actions: [
+                          Button.view<Message>(
+                            {
+                              label: 'Action',
+                              size: 'sm',
+                              variant: 'secondary',
+                              onClick: Clicked(),
+                            },
                             h,
-                            tooltipStyles.content,
-                            isVisible ? undefined : tooltipStyles.contentHidden,
                           ),
-                          panel,
-                        ),
-                        ['Tooltip content'],
+                        ],
+                      },
+                      h,
+                    ),
+                    content: [
+                      Text.view(
+                        {
+                          children:
+                            'Page content sits between the header and footer.',
+                        },
+                        h,
                       ),
                     ],
+                    footer: Page.footer(
+                      [
+                        Text.view(
+                          { variant: 'mutedSm', children: 'Footer region' },
+                          h,
+                        ),
+                      ],
+                      h,
+                    ),
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Grid',
+              description: 'Responsive columns with a token gap scale.',
+              padded: true,
+              children: [
+                Grid.view(
+                  {
+                    columns: 3,
+                    children: [
+                      Text.view({ children: 'Cell one' }, h),
+                      Text.view({ children: 'Cell two' }, h),
+                      Text.view({ children: 'Cell three' }, h),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Avatar',
+              description: 'Sizes, shapes, image, and fallback labeling.',
+              padded: true,
+              children: [
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      Avatar.view({ fallback: 'JD', label: 'Jane Doe' }, h),
+                      Avatar.view({ fallback: 'AB', size: 'sm' }, h),
+                      Avatar.view({ fallback: 'CD', size: 'lg' }, h),
+                      Avatar.view({ fallback: 'EF', shape: 'rounded' }, h),
+                      Avatar.view(
+                        {
+                          fallback: 'GH',
+                          imageSrc:
+                            'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22><rect width=%2232%22 height=%2232%22 fill=%22%230064E0%22/></svg>',
+                          label: 'With image',
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Buttons',
+              description: `Click count: ${model.clicks}`,
+              padded: true,
+              children: [
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      Button.view({ label: 'Primary', onClick: Clicked() }, h),
+                      Button.view(
+                        { label: 'Secondary', variant: 'secondary' },
+                        h,
+                      ),
+                      Button.view({ label: 'Ghost', variant: 'ghost' }, h),
+                      Button.view({ label: 'Danger', variant: 'danger' }, h),
+                      Button.view({ label: 'Small', size: 'sm' }, h),
+                      Button.view({ label: 'Disabled', isDisabled: true }, h),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Card',
+              description:
+                'Root, header, and body slots compose surface chrome.',
+              padded: true,
+              children: [
+                Text.view(
+                  {
+                    children:
+                      'Cards provide a neutral surface with border, radius, and elevation.',
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Form',
+              description: 'Labeled controls with shared Astryx form styling.',
+              padded: true,
+              children: [
+                Input.view<Message>(
+                  {
+                    id: 'catalog-email',
+                    label: 'Email',
+                    value: model.email,
+                    onInput: value => FieldChanged('email', value),
+                    placeholder: 'name@example.com',
+                    description: 'We will never share your email.',
+                  },
+                  h,
+                ),
+                Input.view<Message>(
+                  {
+                    id: 'catalog-disabled',
+                    label: 'Disabled',
+                    value: 'Read only',
+                    isDisabled: true,
+                  },
+                  h,
+                ),
+                Field.group<Message>(h, {
+                  orientation: 'horizontal',
+                  children: [
+                    Checkbox.control<Message>(
+                      {
+                        id: 'catalog-terms',
+                        checked: model.includeInactive,
+                        label: 'Accept terms',
+                        onChange: checked => IncludeInactiveChanged(checked),
+                      },
+                      h,
+                    ),
+                  ],
+                }),
+                Switch.view(
+                  {
+                    id: 'catalog-notifications',
+                    isChecked: model.notifications,
+                    onToggle: checked => NotificationsChanged(checked),
+                    label: 'Notifications',
+                    description: 'Enable notifications.',
+                  },
+                  h,
+                ),
+                Separator.view<Message>({}, h),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Dense controls',
+              description: 'Compact inputs and native select for filters.',
+              padded: true,
+              children: [
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      Input.control<Message>(
+                        {
+                          id: 'catalog-filter',
+                          ariaLabel: 'Filter',
+                          density: 'compact',
+                          width: 'md',
+                          placeholder: 'Filter…',
+                          value: model.filter,
+                          onInput: value => FieldChanged('filter', value),
+                          label: 'Filter',
+                        },
+                        h,
+                      ),
+                      NativeSelect.view<Message>(
+                        {
+                          id: 'catalog-kind',
+                          ariaLabel: 'Kind',
+                          density: 'compact',
+                          width: 'sm',
+                          value: model.kind,
+                          options: [
+                            { value: 'all', label: 'All kinds' },
+                            { value: 'active', label: 'Active' },
+                          ],
+                          onChange: value => FieldChanged('kind', value),
+                          label: 'Kind',
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Badges',
+              description:
+                'Status and metadata chips across sentiment variants.',
+              padded: true,
+              children: [
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      Badge.view({ label: 'Default' }, h),
+                      Badge.view(
+                        { label: 'Secondary', variant: 'secondary' },
+                        h,
+                      ),
+                      Badge.view(
+                        { label: 'Destructive', variant: 'destructive' },
+                        h,
+                      ),
+                      Badge.view({ label: 'Outline', variant: 'outline' }, h),
+                      Badge.view({ label: 'Success', variant: 'success' }, h),
+                      Badge.view({ label: 'Warning', variant: 'warning' }, h),
+                      Badge.view({ label: 'Info', variant: 'info' }, h),
+                      Badge.view({ label: 'Large', size: 'lg' }, h),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Alerts',
+              description: 'Role=alert banners with optional action slots.',
+              padded: true,
+              children: [
+                Stack.view(
+                  {
+                    gap: 'sm',
+                    children: [
+                      Alert.view<Message>(
+                        {
+                          title: 'Default',
+                          body: 'A neutral informational banner.',
+                        },
+                        h,
+                      ),
+                      Alert.view<Message>(
+                        {
+                          variant: 'destructive',
+                          title: 'Error',
+                          body: 'Something went wrong.',
+                          action: Button.view<Message>(
+                            {
+                              label: 'Dismiss',
+                              variant: 'ghost',
+                              size: 'sm',
+                              onClick: Clicked(),
+                            },
+                            h,
+                          ),
+                        },
+                        h,
+                      ),
+                      Alert.view<Message>(
+                        {
+                          variant: 'warning',
+                          body: 'Review required before continuing.',
+                          compact: true,
+                        },
+                        h,
+                      ),
+                      Alert.view<Message>(
+                        {
+                          variant: 'success',
+                          body: 'Import complete.',
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Feedback',
+              description: 'Loading, empty, and attention surfaces.',
+              padded: true,
+              children: [
+                Stack.view(
+                  {
+                    gap: 'sm',
+                    children: [
+                      LoadingPanel.view<Message>(
+                        {
+                          message: 'Loading panel…',
+                          card: false,
+                        },
+                        h,
+                      ),
+                      EmptyState.view<Message>(
+                        {
+                          title: 'Nothing here',
+                          message: 'Empty state with an optional action.',
+                          action: Button.view<Message>(
+                            {
+                              label: 'Create',
+                              size: 'sm',
+                              variant: 'ghost',
+                              onClick: Clicked(),
+                            },
+                            h,
+                          ),
+                          card: false,
+                        },
+                        h,
+                      ),
+                      Attention.view<Message>(
+                        {
+                          title: 'Attention',
+                          body: 'Soft callout for inline notices (not role=alert).',
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Tooltip',
+              description: 'Hover or focus the trigger to reveal the panel.',
+              padded: true,
+              children: [
+                h.submodel({
+                  slotId: 'catalog-tooltip',
+                  model: model.tooltip,
+                  view: Tooltip.view,
+                  viewInputs: {
+                    anchor: { placement: 'top', gap: 8, padding: 8 },
+                    enabled: true,
+                    toView: ({ trigger, panel, isVisible }) =>
+                      h.div(
+                        elAttrs<Message>(
+                          sxAttrs(h, layoutStyles.rowCenterGap2),
+                        ),
+                        [
+                          h.button(elAttrs<Message>(trigger), [
+                            'Hover or focus me',
+                          ]),
+                          h.div(
+                            elAttrs<Message>(
+                              sxAttrs(
+                                h,
+                                tooltipStyles.content,
+                                isVisible
+                                  ? undefined
+                                  : tooltipStyles.contentHidden,
+                              ),
+                              panel,
+                            ),
+                            ['Tooltip content'],
+                          ),
+                        ],
+                      ),
+                  },
+                  toParentMessage: message => GotTooltipMessage(message),
+                }),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Data display',
+              description:
+                'Tables, stats, list rows, pagination, and disclosures.',
+              padded: true,
+              children: [
+                Stack.view(
+                  {
+                    gap: 'sm',
+                    children: [
+                      Table.wrap(
+                        [
+                          Table.table(
+                            [
+                              Table.thead(
+                                [
+                                  Table.tr(
+                                    {
+                                      children: [
+                                        Table.th('Project', h),
+                                        Table.th(
+                                          { align: 'right', children: 'Value' },
+                                          h,
+                                        ),
+                                        Table.th(
+                                          {
+                                            align: 'right',
+                                            children: 'Status',
+                                          },
+                                          h,
+                                        ),
+                                      ],
+                                    },
+                                    h,
+                                  ),
+                                ],
+                                h,
+                              ),
+                              Table.tbody(
+                                [
+                                  Table.tr(
+                                    {
+                                      children: [
+                                        Table.td('Foldstryx', h),
+                                        Table.td(
+                                          { align: 'right', children: '1,240' },
+                                          h,
+                                        ),
+                                        Table.td(
+                                          {
+                                            align: 'right',
+                                            tone: 'success',
+                                            children: 'Active',
+                                          },
+                                          h,
+                                        ),
+                                      ],
+                                    },
+                                    h,
+                                  ),
+                                  Table.tr(
+                                    {
+                                      children: [
+                                        Table.td('Sidebar', h),
+                                        Table.td(
+                                          { align: 'right', children: '860' },
+                                          h,
+                                        ),
+                                        Table.td(
+                                          {
+                                            align: 'right',
+                                            tone: 'warning',
+                                            children: 'Review',
+                                          },
+                                          h,
+                                        ),
+                                      ],
+                                    },
+                                    h,
+                                  ),
+                                  Table.tr(
+                                    {
+                                      presentation: 'summary',
+                                      children: [
+                                        Table.td('Total', h),
+                                        Table.td(
+                                          { align: 'right', children: '2,100' },
+                                          h,
+                                        ),
+                                        Table.td(
+                                          { align: 'right', children: '' },
+                                          h,
+                                        ),
+                                      ],
+                                    },
+                                    h,
+                                  ),
+                                ],
+                                h,
+                              ),
+                            ],
+                            h,
+                          ),
+                        ],
+                        h,
+                      ),
+                      Row.view(
+                        {
+                          align: 'wrap',
+                          children: [
+                            Stat.card<Message>(
+                              {
+                                label: 'Active users',
+                                state: new Stat.Ready({ value: '1,240' }),
+                              },
+                              h,
+                            ),
+                            Stat.card<Message>(
+                              {
+                                label: 'Error rate',
+                                state: new Stat.Failed({
+                                  message: 'Unavailable',
+                                }),
+                              },
+                              h,
+                            ),
+                            Stat.card<Message>(
+                              {
+                                label: 'Requests',
+                                state: new Stat.Loading(),
+                              },
+                              h,
+                            ),
+                          ],
+                        },
+                        h,
+                      ),
+                      ListRow.view<Message>(
+                        {
+                          title: 'Recent activity',
+                          meta: ['Updated 2 min ago'],
+                          actions: [
+                            Button.view<Message>(
+                              {
+                                label: 'View',
+                                size: 'sm',
+                                variant: 'ghost',
+                                onClick: Clicked(),
+                              },
+                              h,
+                            ),
+                          ],
+                        },
+                        h,
+                      ),
+                      Pagination.view<Message>(
+                        {
+                          status: `Page ${model.page} of 5`,
+                          previous: Button.view<Message>(
+                            {
+                              label: 'Previous',
+                              variant: 'secondary',
+                              size: 'sm',
+                              onClick: PageChanged(-1),
+                              isDisabled: model.page <= 1,
+                            },
+                            h,
+                          ),
+                          next: Button.view<Message>(
+                            {
+                              label: 'Next',
+                              variant: 'secondary',
+                              size: 'sm',
+                              onClick: PageChanged(1),
+                              isDisabled: model.page >= 5,
+                            },
+                            h,
+                          ),
+                        },
+                        h,
+                      ),
+                      Details.view<Message>(
+                        {
+                          summary: 'More about this data',
+                          children: [
+                            Text.view(
+                              {
+                                variant: 'muted',
+                                children:
+                                  'Disclosure body with supporting detail.',
+                              },
+                              h,
+                            ),
+                          ],
+                          open: model.detailsOpen,
+                          onToggle: isOpen => DetailsToggled(isOpen),
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Dialog',
+              description:
+                'Modal surface with accessible labeling and dismissal.',
+              padded: true,
+              children: [
+                Button.view<Message>(
+                  {
+                    label: 'Open dialog',
+                    onClick: GotDialogMessage(Dialog.RequestedOpen()),
+                  },
+                  h,
+                ),
+                h.submodel({
+                  slotId: 'catalog-dialog',
+                  model: model.dialog,
+                  view: Dialog.view,
+                  viewInputs: Dialog.styledViewInputs<Message>(
+                    {
+                      id: 'catalog-dialog',
+                      title: 'Confirm action',
+                      description:
+                        'Controlled dialog with accessible labeling.',
+                      showClose: true,
+                      onRequestClose: message => GotDialogMessage(message),
+                      body: [
+                        Text.view({ children: 'Dialog body content.' }, h),
+                      ],
+                      footer: [
+                        Button.view<Message>(
+                          {
+                            label: 'Cancel',
+                            variant: 'secondary',
+                            onClick: GotDialogMessage(Dialog.RequestedClose()),
+                          },
+                          h,
+                        ),
+                        Button.view<Message>(
+                          {
+                            label: 'Confirm',
+                            onClick: GotDialogMessage(Dialog.RequestedClose()),
+                          },
+                          h,
+                        ),
+                      ],
+                    },
+                    h,
                   ),
-              },
-              toParentMessage: message => GotTooltipMessage(message),
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Data display',
-          description: 'Tables, stats, list rows, pagination, and disclosures.',
-          padded: true,
-          children: [
-            Stack.view({
-              gap: 'sm',
-              children: [
-                Table.wrap([
-                  Table.table([
-                    Table.thead([
-                      Table.tr({
-                        children: [
-                          Table.th('Project'),
-                          Table.th({ align: 'right', children: 'Value' }),
-                          Table.th({ align: 'right', children: 'Status' }),
-                        ],
-                      }),
-                    ]),
-                    Table.tbody([
-                      Table.tr({
-                        children: [
-                          Table.td('Foldstryx'),
-                          Table.td({ align: 'right', children: '1,240' }),
-                          Table.td({
-                            align: 'right',
-                            tone: 'success',
-                            children: 'Active',
-                          }),
-                        ],
-                      }),
-                      Table.tr({
-                        children: [
-                          Table.td('Sidebar'),
-                          Table.td({ align: 'right', children: '860' }),
-                          Table.td({
-                            align: 'right',
-                            tone: 'warning',
-                            children: 'Review',
-                          }),
-                        ],
-                      }),
-                      Table.tr({
-                        presentation: 'summary',
-                        children: [
-                          Table.td('Total'),
-                          Table.td({ align: 'right', children: '2,100' }),
-                          Table.td({ align: 'right', children: '' }),
-                        ],
-                      }),
-                    ]),
-                  ]),
-                ]),
-                Row.view({
-                  align: 'wrap',
-                  children: [
-                    Stat.card<Message>({
-                      label: 'Active users',
-                      state: new Stat.Ready({ value: '1,240' }),
-                    }),
-                    Stat.card<Message>({
-                      label: 'Error rate',
-                      state: new Stat.Failed({ message: 'Unavailable' }),
-                    }),
-                    Stat.card<Message>({
-                      label: 'Requests',
-                      state: new Stat.Loading(),
-                    }),
-                  ],
-                }),
-                ListRow.view<Message>({
-                  title: 'Recent activity',
-                  meta: ['Updated 2 min ago'],
-                  actions: [
-                    Button.view<Message>({
-                      label: 'View',
-                      size: 'sm',
-                      variant: 'ghost',
-                      onClick: Clicked(),
-                    }),
-                  ],
-                }),
-                Pagination.view<Message>({
-                  status: `Page ${model.page} of 5`,
-                  previous: Button.view<Message>({
-                    label: 'Previous',
-                    variant: 'secondary',
-                    size: 'sm',
-                    onClick: PageChanged(-1),
-                    isDisabled: model.page <= 1,
-                  }),
-                  next: Button.view<Message>({
-                    label: 'Next',
-                    variant: 'secondary',
-                    size: 'sm',
-                    onClick: PageChanged(1),
-                    isDisabled: model.page >= 5,
-                  }),
-                }),
-                Details.view<Message>({
-                  summary: 'More about this data',
-                  children: [
-                    Text.view({
-                      variant: 'muted',
-                      children: 'Disclosure body with supporting detail.',
-                    }),
-                  ],
-                  open: model.detailsOpen,
-                  onToggle: isOpen => DetailsToggled(isOpen),
+                  toParentMessage: message => GotDialogMessage(message),
                 }),
               ],
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Dialog',
-          description: 'Modal surface with accessible labeling and dismissal.',
-          padded: true,
-          children: [
-            Button.view<Message>({
-              label: 'Open dialog',
-              onClick: GotDialogMessage(Dialog.RequestedOpen()),
-            }),
-            h.submodel({
-              slotId: 'catalog-dialog',
-              model: model.dialog,
-              view: Dialog.view,
-              viewInputs: Dialog.styledViewInputs<Message>({
-                id: 'catalog-dialog',
-                title: 'Confirm action',
-                description: 'Controlled dialog with accessible labeling.',
-                showClose: true,
-                onRequestClose: message => GotDialogMessage(message),
-                body: [Text.view({ children: 'Dialog body content.' })],
-                footer: [
-                  Button.view<Message>({
-                    label: 'Cancel',
-                    variant: 'secondary',
-                    onClick: GotDialogMessage(Dialog.RequestedClose()),
-                  }),
-                  Button.view<Message>({
-                    label: 'Confirm',
-                    onClick: GotDialogMessage(Dialog.RequestedClose()),
-                  }),
-                ],
-              }),
-              toParentMessage: message => GotDialogMessage(message),
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Tabs',
-          description: 'Accessible tablist with controlled selection.',
-          padded: true,
-          children: [
-            h.submodel({
-              slotId: 'catalog-tabs',
-              model: model.tabs,
-              view: DemoTabs.view,
-              viewInputs: DemoTabs.styledViewInputs({
-                tabs: ['overview', 'details', 'settings'],
-                ariaLabel: 'Catalog tabs',
-                renderPanel: value =>
-                  Text.view({
-                    variant: 'muted',
-                    children: `Panel for ${value}.`,
-                  }),
-              }),
-              toParentMessage: message => GotTabsMessage(message),
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Dropdown menu',
-          description:
-            'Menu trigger with accessible items and disabled behavior.',
-          padded: true,
-          children: [
-            h.submodel({
-              slotId: 'catalog-menu',
-              model: model.menu,
-              view: DemoMenu.view,
-              viewInputs: DropdownMenu.styledViewInputs<CatalogItem, Message>({
-                items: ['edit', 'duplicate', 'delete'],
-                buttonContent: h.span([], ['Actions']),
-                itemSpec: item =>
-                  item === 'delete'
-                    ? { label: 'Delete', variant: 'destructive' }
-                    : { label: item[0]!.toUpperCase() + item.slice(1) },
-                isItemDisabled: item => item === 'duplicate',
-              }),
-              toParentMessage: message => GotMenuMessage(message),
-            }),
-          ],
-        }),
-        Card.section({
-          title: 'Toast',
-          description: 'Status notifications with lifecycle and dismissal.',
-          padded: true,
-          children: [
-            Row.view({
-              align: 'wrap',
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Tabs',
+              description: 'Accessible tablist with controlled selection.',
+              padded: true,
               children: [
-                Button.view<Message>({
-                  label: 'Info',
-                  variant: 'secondary',
-                  onClick: ShowToast('Info'),
-                }),
-                Button.view<Message>({
-                  label: 'Success',
-                  variant: 'secondary',
-                  onClick: ShowToast('Success'),
-                }),
-                Button.view<Message>({
-                  label: 'Warning',
-                  variant: 'secondary',
-                  onClick: ShowToast('Warning'),
-                }),
-                Button.view<Message>({
-                  label: 'Error',
-                  variant: 'secondary',
-                  onClick: ShowToast('Error'),
+                h.submodel({
+                  slotId: 'catalog-tabs',
+                  model: model.tabs,
+                  view: DemoTabs.view,
+                  viewInputs: DemoTabs.styledViewInputs(
+                    {
+                      selectedValue: model.selectedTab,
+                      tabs: ['overview', 'details', 'settings'],
+                      ariaLabel: 'Catalog tabs',
+                      renderPanel: value =>
+                        Text.view(
+                          {
+                            variant: 'muted',
+                            children: `Panel for ${value}.`,
+                          },
+                          h,
+                        ),
+                    },
+                    h,
+                  ),
+                  toParentMessage: message => GotTabsMessage(message),
                 }),
               ],
-            }),
-            h.submodel({
-              slotId: 'catalog-toast',
-              model: model.toast,
-              view: DemoToast.view,
-              viewInputs: DemoToast.styledViewInputs(),
-              toParentMessage: message => GotToastMessage(message),
-            }),
-          ],
-        }),
-      ],
-    }),
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Dropdown menu',
+              description:
+                'Menu trigger with accessible items and disabled behavior.',
+              padded: true,
+              children: [
+                h.submodel({
+                  slotId: 'catalog-menu',
+                  model: model.menu,
+                  view: DemoMenu.view,
+                  viewInputs: DropdownMenu.styledViewInputs<
+                    CatalogItem,
+                    Message
+                  >(
+                    {
+                      items: ['edit', 'duplicate', 'delete'],
+                      buttonContent: h.span([], ['Actions']),
+                      itemSpec: item =>
+                        item === 'delete'
+                          ? { label: 'Delete', variant: 'destructive' }
+                          : { label: item[0]!.toUpperCase() + item.slice(1) },
+                      isItemDisabled: item => item === 'duplicate',
+                    },
+                    h,
+                  ),
+                  toParentMessage: message => GotMenuMessage(message),
+                }),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Toast',
+              description: 'Status notifications with lifecycle and dismissal.',
+              padded: true,
+              children: [
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      Button.view<Message>(
+                        {
+                          label: 'Info',
+                          variant: 'secondary',
+                          onClick: ShowToast('Info'),
+                        },
+                        h,
+                      ),
+                      Button.view<Message>(
+                        {
+                          label: 'Success',
+                          variant: 'secondary',
+                          onClick: ShowToast('Success'),
+                        },
+                        h,
+                      ),
+                      Button.view<Message>(
+                        {
+                          label: 'Warning',
+                          variant: 'secondary',
+                          onClick: ShowToast('Warning'),
+                        },
+                        h,
+                      ),
+                      Button.view<Message>(
+                        {
+                          label: 'Error',
+                          variant: 'secondary',
+                          onClick: ShowToast('Error'),
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+                h.submodel({
+                  slotId: 'catalog-toast',
+                  model: model.toast,
+                  view: DemoToast.view,
+                  viewInputs: DemoToast.styledViewInputs(),
+                  toParentMessage: message => GotToastMessage(message),
+                }),
+              ],
+            },
+            h,
+          ),
+        ],
+      },
+      h,
+    ),
   ])
 })
 

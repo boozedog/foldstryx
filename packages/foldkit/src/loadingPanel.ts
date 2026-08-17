@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { cardStyles, layoutStyles } from '@foldstryx/styles'
 
@@ -14,8 +13,8 @@ export type LoadingPanelViewConfig = Readonly<{
 /** Centered muted loading panel for async regions. */
 export const view = <ParentMessage>(
   config: LoadingPanelViewConfig = {},
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   const message = config.message ?? 'Loading…'
   const useCard = config.card !== false
 

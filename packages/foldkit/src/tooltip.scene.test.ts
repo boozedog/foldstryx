@@ -1,4 +1,4 @@
-import { html, submodel } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
@@ -21,10 +21,8 @@ const acknowledgeAnchor = Scene.Mount.resolve(
 
 const sceneView =
   (overrides: { enabled?: boolean } = {}) =>
-  (model: Model) => {
-    const h = html<Message>()
-
-    return submodel({
+  (model: Model, h: HtmlBuilder<Message>) =>
+    h.submodel({
       slotId: model.id,
       model,
       view,
@@ -42,7 +40,6 @@ const sceneView =
       },
       toParentMessage: message => message,
     })
-  }
 
 const trigger = Scene.selector('#sidebar-tip-trigger')
 const panel = Scene.selector('#sidebar-tip-panel')
@@ -54,7 +51,7 @@ describe('SidebarTooltip scene', () => {
   it('attaches tooltip handlers when enabled', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: true }) },
-      Scene.with(hiddenModel),
+      Scene.given(hiddenModel),
       Scene.expect(trigger).toHaveAttr('aria-describedby', 'sidebar-tip-panel'),
       Scene.expect(trigger).toHaveHandler('mouseenter'),
       Scene.expect(trigger).toHaveHandler('focus'),
@@ -64,7 +61,7 @@ describe('SidebarTooltip scene', () => {
   it('leaves the trigger alone when disabled', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: false }) },
-      Scene.with(hiddenModel),
+      Scene.given(hiddenModel),
       Scene.expect(trigger).not.toHaveAttr('aria-describedby'),
       Scene.expect(trigger).not.toHaveHandler('mouseenter'),
       Scene.expect(trigger).not.toHaveHandler('focus'),
@@ -74,7 +71,7 @@ describe('SidebarTooltip scene', () => {
   it('renders the panel when open and enabled', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: true }) },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.expect(panel).toExist(),
       Scene.expect(panel).toHaveAttr('role', 'tooltip'),
       Scene.expect(trigger).toHaveAttr('data-open', ''),
@@ -85,7 +82,7 @@ describe('SidebarTooltip scene', () => {
   it('does not mark the panel open when disabled even if the model is open', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: false }) },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.expect(panel).toBeAbsent(),
       Scene.expect(trigger).not.toHaveAttr('data-open'),
     )
@@ -94,7 +91,7 @@ describe('SidebarTooltip scene', () => {
   it('adds anchor positioning styles and hooks to the panel', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: true }) },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.expect(panel).toHaveStyle('position', 'absolute'),
       Scene.expect(panel).toHaveStyle('margin', '0'),
       Scene.expect(panel).toHaveStyle('visibility', 'hidden'),
@@ -108,7 +105,7 @@ describe('SidebarTooltip scene', () => {
   it('opens on focus and closes on blur', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: true }) },
-      Scene.with(hiddenModel),
+      Scene.given(hiddenModel),
       Scene.expect(panel).toBeAbsent(),
       Scene.focus(trigger),
       Scene.expect(panel).toExist(),
@@ -122,7 +119,7 @@ describe('SidebarTooltip scene', () => {
   it('dismisses an open tooltip on Escape', () => {
     Scene.scene(
       { update, view: sceneView({ enabled: true }) },
-      Scene.with(openModel),
+      Scene.given(openModel),
       Scene.expect(panel).toExist(),
       acknowledgeAnchor,
       Scene.keydown(trigger, 'Escape'),

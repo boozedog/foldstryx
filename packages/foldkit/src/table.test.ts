@@ -2,7 +2,25 @@ import type { Html } from 'foldkit/html'
 
 import { describe, expect, it } from '@effect/vitest'
 
-import * as Table from './table.js'
+import { renderWithBuilder } from './renderHelper.js'
+import * as TableBase from './table.js'
+
+const Table = {
+  wrap: (config: Parameters<typeof TableBase.wrap>[0]) =>
+    renderWithBuilder(h => TableBase.wrap(config, h)),
+  table: (config: Parameters<typeof TableBase.table>[0]) =>
+    renderWithBuilder(h => TableBase.table(config, h)),
+  thead: (config: Parameters<typeof TableBase.thead>[0]) =>
+    renderWithBuilder(h => TableBase.thead(config, h)),
+  tbody: (config: Parameters<typeof TableBase.tbody>[0]) =>
+    renderWithBuilder(h => TableBase.tbody(config, h)),
+  th: (config: Parameters<typeof TableBase.th>[0]) =>
+    renderWithBuilder(h => TableBase.th(config, h)),
+  td: (config: Parameters<typeof TableBase.td>[0]) =>
+    renderWithBuilder(h => TableBase.td(config, h)),
+  tr: (config: Parameters<typeof TableBase.tr>[0]) =>
+    renderWithBuilder(h => TableBase.tr(config, h)),
+}
 
 type Node = Readonly<{
   sel?: string

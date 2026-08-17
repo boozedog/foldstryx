@@ -1,5 +1,5 @@
 import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import { inertHtml } from 'foldkit/html'
 
 const noChildren: ReadonlyArray<never> = []
 
@@ -15,7 +15,7 @@ export type IconConfig = Readonly<{
 export type IconCustomConfig = IconConfig &
   Readonly<{ children: ReadonlyArray<IconChild> }>
 export const custom = (config: IconCustomConfig): Html => {
-  const h = html()
+  const h = inertHtml
   const size = String(config.size ?? 16)
   const children = config.children.map(child =>
     'd' in child

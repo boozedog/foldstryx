@@ -3,6 +3,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from '@effect/vitest'
 
 import { view } from './attention.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   children?: ReadonlyArray<unknown> | undefined
@@ -28,10 +29,15 @@ describe('Attention', () => {
   it('renders title and body', () => {
     const text = collectText(
       asNode(
-        view({
-          title: 'Note',
-          body: 'Review optional fields before submit.',
-        }),
+        renderWithBuilder(h =>
+          view(
+            {
+              title: 'Note',
+              body: 'Review optional fields before submit.',
+            },
+            h,
+          ),
+        ),
       ),
     )
     expect(text).toContain('Note')
@@ -39,20 +45,24 @@ describe('Attention', () => {
   })
 
   it('renders body without a title', () => {
-    const text = collectText(asNode(view({ body: 'Just a tip.' })))
+    const text = collectText(
+      asNode(renderWithBuilder(h => view({ body: 'Just a tip.' }, h))),
+    )
     expect(text).toContain('Just a tip.')
   })
 
   it('renders children after the body', () => {
     const child = { sel: 'button', children: ['Learn more'] } as unknown as Html
-    const root = asNode(view({ body: 'Tip', children: [child] }))
+    const root = asNode(
+      renderWithBuilder(h => view({ body: 'Tip', children: [child] }, h)),
+    )
     const children = root.children as ReadonlyArray<Node>
     expect(children).toHaveLength(2)
     expect(collectText(children[1])).toContain('Learn more')
   })
 
   it('is not role=alert (soft callout, not urgent)', () => {
-    const root = asNode(view({ body: 'Tip' }))
+    const root = asNode(renderWithBuilder(h => view({ body: 'Tip' }, h)))
     expect(root.data?.attrs?.['role']).toBeUndefined()
   })
 })

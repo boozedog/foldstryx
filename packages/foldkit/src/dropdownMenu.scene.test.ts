@@ -1,4 +1,4 @@
-import { html, submodel } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
@@ -21,24 +21,25 @@ type Item = 'edit' | 'delete'
 
 const DemoMenu = DropdownMenu.create<Item>()
 
-const sceneView = (model: Model) => {
-  const h = html<Message>()
-  return submodel({
+const sceneView = (model: Model, h: HtmlBuilder<Message>) =>
+  h.submodel({
     slotId: model.id,
     model,
     view: DemoMenu.view,
-    viewInputs: DropdownMenu.styledViewInputs<Item, Message>({
-      items: ['edit', 'delete'],
-      buttonContent: h.span([], ['Actions']),
-      itemSpec: item =>
-        item === 'delete'
-          ? { label: 'Delete', variant: 'destructive' }
-          : { label: 'Edit' },
-      isItemDisabled: item => item === 'delete',
-    }),
+    viewInputs: DropdownMenu.styledViewInputs<Item, Message>(
+      {
+        items: ['edit', 'delete'],
+        buttonContent: h.span([], ['Actions']),
+        itemSpec: item =>
+          item === 'delete'
+            ? { label: 'Delete', variant: 'destructive' }
+            : { label: 'Edit' },
+        isItemDisabled: item => item === 'delete',
+      },
+      h,
+    ),
     toParentMessage: message => message,
   })
-}
 
 const trigger = Scene.role('button', { name: 'Actions' })
 const editItem = Scene.role('menuitem', { name: 'Edit' })
@@ -64,7 +65,7 @@ describe('DropdownMenu scene', () => {
   it('opens on trigger click and renders items', () => {
     Scene.scene(
       { update: DemoMenu.update, view: sceneView },
-      Scene.with(DropdownMenu.init({ id: 'menu' })),
+      Scene.given(DropdownMenu.init({ id: 'menu' })),
       Scene.click(trigger),
       ...resolveOpen,
       Scene.expect(editItem).toExist(),
@@ -75,7 +76,7 @@ describe('DropdownMenu scene', () => {
   it('closes on Escape', () => {
     Scene.scene(
       { update: DemoMenu.update, view: sceneView },
-      Scene.with(DropdownMenu.init({ id: 'menu' })),
+      Scene.given(DropdownMenu.init({ id: 'menu' })),
       Scene.click(trigger),
       ...resolveOpen,
       Scene.keydown(menu, 'Escape'),
@@ -91,7 +92,7 @@ describe('DropdownMenu scene', () => {
   it('marks a disabled item as disabled', () => {
     Scene.scene(
       { update: DemoMenu.update, view: sceneView },
-      Scene.with(DropdownMenu.init({ id: 'menu' })),
+      Scene.given(DropdownMenu.init({ id: 'menu' })),
       Scene.click(trigger),
       ...resolveOpen,
       Scene.expect(deleteItem).toHaveAttr('aria-disabled', 'true'),

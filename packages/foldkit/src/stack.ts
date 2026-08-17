@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -36,8 +35,10 @@ const mtStyle = (mt: '2' | '3' | undefined) => {
 }
 
 /** Vertical flex stack with closed gap scale. Prefer over raw layoutStyles.stack*. */
-export const view = <ParentMessage>(config: StackViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: StackViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const gap = config.gap ?? 'md'
 
   return h.div(

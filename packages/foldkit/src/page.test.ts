@@ -1,7 +1,19 @@
 import type { Html } from 'foldkit/html'
 import { describe, expect, it } from 'vitest'
 
-import * as Page from './page.js'
+import * as PageBase from './page.js'
+import { renderWithBuilder } from './renderHelper.js'
+
+const Page = {
+  header: (config: Parameters<typeof PageBase.header>[0]) =>
+    renderWithBuilder(h => PageBase.header(config, h)),
+  content: (config: Parameters<typeof PageBase.content>[0]) =>
+    renderWithBuilder(h => PageBase.content(config, h)),
+  footer: (config: Parameters<typeof PageBase.footer>[0]) =>
+    renderWithBuilder(h => PageBase.footer(config, h)),
+  shell: (config: Parameters<typeof PageBase.shell>[0]) =>
+    renderWithBuilder(h => PageBase.shell(config, h)),
+}
 
 type Node = Readonly<{
   sel?: string

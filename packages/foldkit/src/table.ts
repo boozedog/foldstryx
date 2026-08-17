@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { tableStyles } from '@foldstryx/styles'
 
@@ -8,16 +7,16 @@ import { elAttrs, sxAttrs } from './sx.js'
 /** Scrollable card chrome around a table. */
 export const wrap = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, tableStyles.wrap)), children)
 }
 
 /** Native `<table>` element with table styles. */
 export const table = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   return h.table(
     elAttrs<ParentMessage>(sxAttrs(h, tableStyles.table)),
     children,
@@ -27,8 +26,8 @@ export const table = <ParentMessage>(
 /** Styled `<thead>`. */
 export const thead = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   return h.thead(
     elAttrs<ParentMessage>(sxAttrs(h, tableStyles.thead)),
     children,
@@ -38,8 +37,8 @@ export const thead = <ParentMessage>(
 /** Styled `<tbody>`. */
 export const tbody = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   return h.tbody([], children)
 }
 
@@ -75,8 +74,8 @@ const normalizeTh = (
 /** Styled table header cell. */
 export const th = <ParentMessage>(
   config: ThConfig | string | ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   const normalized = normalizeTh(config)
   const children =
     typeof normalized.children === 'string'
@@ -140,8 +139,8 @@ const normalizeTd = (
 /** Styled table data cell. */
 export const td = <ParentMessage>(
   config: TdConfig | string | ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   const normalized = normalizeTd(config)
   const children =
     typeof normalized.children === 'string'
@@ -178,8 +177,10 @@ const trStyle = (presentation: TrPresentation | undefined) => {
 }
 
 /** Styled table row with optional presentation axis. */
-export const tr = <ParentMessage>(config: TrConfig): Html => {
-  const h = html<ParentMessage>()
+export const tr = <ParentMessage>(
+  config: TrConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   return h.tr(
     elAttrs<ParentMessage>(sxAttrs(h, trStyle(config.presentation))),
     config.children,

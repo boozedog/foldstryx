@@ -1,6 +1,6 @@
 import { Duration, Match as M, Option } from 'effect'
-import type { Html } from 'foldkit/html'
-import { childAttributes, html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
+import { childAttributes } from 'foldkit/html'
 import { defineView } from 'foldkit/submodel'
 
 import {
@@ -15,6 +15,7 @@ import {
   type Model as TooltipModel,
   type ViewInputs as TooltipViewInputs,
   init as tooltipInit,
+  triggerId,
 } from '@foldkit/ui/tooltip'
 import type { AnchorConfig } from '@foldkit/ui/tooltip'
 import { tooltipStyles } from '@foldstryx/styles'
@@ -45,9 +46,7 @@ export const view = defineView<
   TooltipModel,
   TooltipMessage,
   SidebarTooltipViewInputs
->((model, viewInputs) => {
-  const h = html<TooltipMessage>()
-
+>((model, viewInputs, h) => {
   const { id, isOpen } = model
   const { anchor, toView, enabled } = viewInputs
 
@@ -61,9 +60,8 @@ export const view = defineView<
 
   const handleTriggerPointerDown = (
     pointerType: string,
-    button: number,
   ): Option.Option<PressedPointerOnTrigger> =>
-    Option.some(PressedPointerOnTrigger({ pointerType, button }))
+    Option.some(PressedPointerOnTrigger({ pointerType }))
 
   const interactiveTriggerAttributes = enabled
     ? [
@@ -79,7 +77,7 @@ export const view = defineView<
     : []
 
   const triggerAttributes = [
-    h.Id(`${id}-trigger`),
+    h.Id(triggerId(id)),
     h.Type('button'),
     ...interactiveTriggerAttributes,
   ]
@@ -93,7 +91,7 @@ export const view = defineView<
       visibility: 'hidden',
       pointerEvents: 'none',
     }),
-    h.OnMount(AnchorTooltip({ buttonId: `${id}-trigger`, anchor })),
+    h.OnMount(AnchorTooltip({ buttonId: triggerId(id), anchor })),
     ...(isOpen && enabled ? [h.DataAttribute('open', '')] : []),
   ]
 
@@ -115,7 +113,7 @@ export type WrapConfig<ParentMessage> = Readonly<{
 
 /** Wraps a menu button in a Foldkit tooltip submodel (stable DOM; use `enabled` to toggle). */
 export const wrapButton = <ParentMessage>(
-  h: ReturnType<typeof html<ParentMessage>>,
+  h: HtmlBuilder<ParentMessage>,
   config: WrapConfig<ParentMessage>,
 ): Html =>
   h.submodel({

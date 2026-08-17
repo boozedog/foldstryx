@@ -4,6 +4,7 @@ import * as Story from 'foldkit/story'
 
 import { describe, expect, it } from '@effect/vitest'
 
+import { renderWithBuilder } from './renderHelper.js'
 import { Failed, Loading, Ready, StatState, card } from './stat.js'
 
 type Node = Readonly<{
@@ -19,7 +20,7 @@ const text = (value: unknown): string => {
   return node.children?.map(text).join('') ?? ''
 }
 const cardText = (state: StatState): string =>
-  text(card({ label: 'Pending', state }))
+  text(renderWithBuilder(h => card({ label: 'Pending', state }, h)))
 
 // A minimal async metric reducer that drives Stat's tagged states and
 // demonstrates stale-result handling via a request id.
@@ -43,14 +44,12 @@ const MetricModel = S.Struct({
 })
 type MetricModel = typeof MetricModel.Type
 
-const FetchMetric = Command.define(
-  'FetchMetric',
-  { requestId: S.Finite },
-  Loaded,
-  LoadFailed,
-)(({ requestId }): Effect.Effect<Loaded | LoadFailed> =>
-  Effect.succeed(new Loaded({ requestId, value: '42' })),
-)
+const FetchMetric = Command.define('FetchMetric', {
+  args: { requestId: S.Finite },
+  messages: [Loaded, LoadFailed],
+  execute: ({ requestId }): Effect.Effect<Loaded | LoadFailed> =>
+    Effect.succeed(new Loaded({ requestId, value: '42' })),
+})
 
 const update = (
   model: MetricModel,
@@ -76,7 +75,7 @@ describe('Stat async lifecycle', () => {
   it('transitions Loading → Ready when the fetch resolves', () => {
     Story.story(
       update,
-      Story.with({ state: new Loading(), requestId: 0 }),
+      Story.given({ state: new Loading(), requestId: 0 }),
       Story.message(new LoadRequested({ requestId: 1 })),
       Story.model(model => {
         expect(model.state._tag).toBe('Loading')
@@ -102,7 +101,7 @@ describe('Stat async lifecycle', () => {
   it('transitions Loading → Failed when the fetch fails', () => {
     Story.story(
       update,
-      Story.with({ state: new Loading(), requestId: 0 }),
+      Story.given({ state: new Loading(), requestId: 0 }),
       Story.message(new LoadRequested({ requestId: 1 })),
       Story.Command.resolve(
         FetchMetric({ requestId: 1 }),

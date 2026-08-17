@@ -46,6 +46,7 @@
       },
       {
         "files": [
+          "packages/foldkit/src/checkbox.ts",
           "packages/foldkit/src/switch.ts",
           "packages/foldkit/src/nativeSelect.ts"
         ],

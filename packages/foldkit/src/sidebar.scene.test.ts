@@ -1,5 +1,5 @@
 import { Match as M, Schema as S } from 'effect'
-import { html } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import { m } from 'foldkit/message'
 import * as Scene from 'foldkit/scene'
 
@@ -38,8 +38,7 @@ const update = (
     }),
   )
 
-const view = (model: Model) => {
-  const h = html<Message>()
+const view = (model: Model, h: HtmlBuilder<Message>) => {
   return h.div(
     [],
     [
@@ -75,6 +74,7 @@ const view = (model: Model) => {
           ],
         },
         { isCollapsed: model.collapsed },
+        h,
       ),
       h.span([h.Id('state')], [model.active]),
       h.span([h.Id('open')], [model.open ?? 'none']),
@@ -86,7 +86,7 @@ describe('Sidebar scene', () => {
   it('toggles nested items and navigates to a child', () => {
     Scene.scene(
       { update, view },
-      Scene.with({
+      Scene.given({
         expanded: false,
         active: 'components',
         collapsed: false,
@@ -102,7 +102,7 @@ describe('Sidebar scene', () => {
   it('opens a collapsed parent flyout on click', () => {
     Scene.scene(
       { update, view },
-      Scene.with({
+      Scene.given({
         expanded: false,
         active: 'components',
         collapsed: true,

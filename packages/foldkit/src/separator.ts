@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { separatorStyles } from '@foldstryx/styles'
 
@@ -16,8 +15,8 @@ export type SeparatorViewConfig<_ParentMessage> = Readonly<{
 /** Renders a shadcn-styled separator line. */
 export const view = <ParentMessage>(
   config: SeparatorViewConfig<ParentMessage> = {},
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   const orientation = config.orientation ?? 'horizontal'
 
   return h.div(

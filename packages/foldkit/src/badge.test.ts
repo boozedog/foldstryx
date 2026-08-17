@@ -2,6 +2,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from 'vitest'
 
 import * as Badge from './badge.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string
@@ -29,7 +30,7 @@ const hasSx = (node: Node, key: string): boolean =>
 
 describe('Badge', () => {
   it('renders its label in a span', () => {
-    const node = asNode(Badge.view({ label: 'New' }))
+    const node = asNode(renderWithBuilder(h => Badge.view({ label: 'New' }, h)))
     expect(node.sel).toBe('span')
     expect(text(node)).toContain('New')
   })
@@ -46,9 +47,13 @@ describe('Badge', () => {
       'info',
     ] as const
     for (const variant of variants) {
-      expect(() => Badge.view({ label: 'x', variant })).not.toThrow()
+      expect(() =>
+        renderWithBuilder(h => Badge.view({ label: 'x', variant }, h)),
+      ).not.toThrow()
     }
-    expect(() => Badge.view({ label: 'x', size: 'lg' })).not.toThrow()
+    expect(() =>
+      renderWithBuilder(h => Badge.view({ label: 'x', size: 'lg' }, h)),
+    ).not.toThrow()
   })
 
   it('selects the expected StyleX key for every variant', () => {
@@ -62,18 +67,22 @@ describe('Badge', () => {
       ['info', 'variantInfo'],
     ]
     for (const [variant, key] of cases) {
-      const node = asNode(Badge.view({ label: 'x', variant }))
+      const node = asNode(
+        renderWithBuilder(h => Badge.view({ label: 'x', variant }, h)),
+      )
       expect(hasSx(node, key)).toBe(true)
       expect(hasSx(node, 'base')).toBe(true)
     }
   })
 
   it('selects the expected StyleX key for each size', () => {
-    const def = asNode(Badge.view({ label: 'x' }))
+    const def = asNode(renderWithBuilder(h => Badge.view({ label: 'x' }, h)))
     expect(hasSx(def, 'sizeDefault')).toBe(true)
     expect(hasSx(def, 'sizeLg')).toBe(false)
 
-    const lg = asNode(Badge.view({ label: 'x', size: 'lg' }))
+    const lg = asNode(
+      renderWithBuilder(h => Badge.view({ label: 'x', size: 'lg' }, h)),
+    )
     expect(hasSx(lg, 'sizeLg')).toBe(true)
     expect(hasSx(lg, 'sizeDefault')).toBe(false)
   })

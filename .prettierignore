@@ -2,3 +2,4 @@ node_modules
 dist
 *.tsbuildinfo
 pnpm-lock.yaml
+.effect-lens-check-*.json

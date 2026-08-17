@@ -64,17 +64,23 @@ type TabValue = 'overview' | 'details'
 const DemoTabs = Tabs.create<TabValue>()
 
 const render = (activeIndex = 0) => {
-  const model = Tabs.init({ id: 't', activeIndex })
+  const model = Tabs.init({ id: 't' })
+  const selectedValue = ['overview', 'details'][activeIndex] as TabValue
   return asNode(
     renderSubmodel(
-      m =>
+      (m, h) =>
         DemoTabs.view(
           m,
-          DemoTabs.styledViewInputs({
-            tabs: ['overview', 'details'],
-            ariaLabel: 'Demo tabs',
-            renderPanel: value => value as unknown as Html,
-          }),
+          DemoTabs.styledViewInputs(
+            {
+              selectedValue,
+              tabs: ['overview', 'details'],
+              ariaLabel: 'Demo tabs',
+              renderPanel: value => value as unknown as Html,
+            },
+            h,
+          ),
+          h,
         ),
       model,
       DemoTabs.update,

@@ -1,8 +1,11 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
+import { inertHtml } from 'foldkit/html'
 
-import type { Model, ViewInputs } from '@foldkit/ui/checkbox'
-import type { Message as CheckboxMessage } from '@foldkit/ui/checkbox'
+import { Checkbox as UiCheckbox } from '@foldkit/ui'
+import type {
+  CheckboxAttributes,
+  ViewConfig as CheckboxViewConfig,
+} from '@foldkit/ui/checkbox'
 import { checkboxStyles, fieldStyles, layoutStyles } from '@foldstryx/styles'
 
 import * as Field from './field.js'
@@ -10,22 +13,16 @@ import { elAttrs, sxAttrs } from './sx.js'
 
 const noChildren: ReadonlyArray<never> = []
 
-export {
-  init,
-  update,
-  setChecked,
-  reflectChecked,
-  view,
-  Model,
-  Message,
-  OutMessage,
-  ToggledChecked,
+export { descriptionId, labelId } from '@foldkit/ui/checkbox'
+export type {
+  CheckboxAttributes,
+  ViewConfig as CheckboxViewConfig,
 } from '@foldkit/ui/checkbox'
 
 /**
- * Lightweight controlled checkbox (no MVU submodel).
- * Prefer this for dense tables/filters; use MVU Checkbox (`view` + `styledViewInputs`)
- * when you need headless a11y state, indeterminate, or Field description chrome.
+ * Lightweight controlled native checkbox (no headless MVU).
+ * Prefer this for dense tables/filters; use `view` when you need the
+ * styled controlled surface, indeterminate, or Field description chrome.
  */
 export type CheckboxControlConfig<ParentMessage> = Readonly<{
   checked: boolean
@@ -37,11 +34,11 @@ export type CheckboxControlConfig<ParentMessage> = Readonly<{
   ariaLabel?: string
 }>
 
-/** Controlled native checkbox without Foldkit Checkbox MVU. */
+/** Controlled native checkbox without styled chrome. */
 export const control = <ParentMessage>(
   config: CheckboxControlConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
   const accessibleName = config.ariaLabel ?? config.label
 
   const input = h.input(
@@ -73,31 +70,30 @@ export const control = <ParentMessage>(
   )
 }
 
-export type CheckboxStyledConfig = Readonly<{
+/**
+ * Styled Checkbox configuration. The parent owns the checked state and
+ * receives the new value through `onToggle` — the view is a stateless
+ * controlled component in the parent frame (no nested submodel).
+ */
+export type CheckboxStyledConfig<ParentMessage> = Readonly<{
+  id: string
   label: string
   description?: string
   orientation?: 'vertical' | 'horizontal'
   isDisabled?: boolean
+  isReadOnly?: boolean
   isIndeterminate?: boolean
+  /** Optional custom indicator markup; defaults to the checkmark. */
   indicator?: Html
+  /** Parent-owned checked state, read straight from the parent model. */
+  isChecked: boolean
+  /** Dispatched with the new checked state; the parent stores it. */
+  onToggle: (isChecked: boolean) => ParentMessage
 }>
 
-const checkboxStylesFor = (
-  h: ReturnType<typeof html<CheckboxMessage>>,
-  model: Model,
-  isIndeterminate: boolean,
-) =>
-  sxAttrs(
-    h,
-    checkboxStyles.root,
-    model.isChecked && !isIndeterminate
-      ? checkboxStyles.rootChecked
-      : undefined,
-    isIndeterminate ? checkboxStyles.rootIndeterminate : undefined,
-  )
-
-const defaultIndicator = (h: ReturnType<typeof html<CheckboxMessage>>): Html =>
-  h.span(elAttrs<CheckboxMessage>(sxAttrs(h, checkboxStyles.indicator)), [
+const defaultIndicator = (): Html => {
+  const h = inertHtml
+  return h.span(elAttrs<never>(sxAttrs(h, checkboxStyles.indicator)), [
     h.svg(
       [
         h.AriaHidden(true),
@@ -114,62 +110,82 @@ const defaultIndicator = (h: ReturnType<typeof html<CheckboxMessage>>): Html =>
       [h.path([h.D('M20 6 9 17l-5-5')], noChildren)],
     ),
   ])
+}
 
-/** Builds styled Foldkit Checkbox view inputs with shadcn checkbox visuals. */
-export const styledViewInputs = (
-  model: Model,
-  config: CheckboxStyledConfig,
-): ViewInputs => ({
-  ...(config.isDisabled === true ? { isDisabled: true } : {}),
-  ...(config.isIndeterminate === true ? { isIndeterminate: true } : {}),
-  toView: attributes => {
-    const h = html<CheckboxMessage>()
-    const isIndeterminate = config.isIndeterminate === true
-    const indicator = config.indicator
-    const orientation = config.orientation ?? 'horizontal'
+const toView = <ParentMessage>(
+  h: HtmlBuilder<ParentMessage>,
+  config: CheckboxStyledConfig<ParentMessage>,
+  attributes: CheckboxAttributes<ParentMessage>,
+): Html => {
+  const isIndeterminate = config.isIndeterminate === true
+  const indicator = config.indicator
+  const orientation = config.orientation ?? 'horizontal'
 
-    const control = h.button(
-      elAttrs<CheckboxMessage>(
-        attributes.checkbox,
-        checkboxStylesFor(h, model, isIndeterminate),
+  const control = h.button(
+    elAttrs<ParentMessage>(
+      attributes.checkbox,
+      sxAttrs(
+        h,
+        checkboxStyles.root,
+        config.isChecked && !isIndeterminate
+          ? checkboxStyles.rootChecked
+          : undefined,
+        isIndeterminate ? checkboxStyles.rootIndeterminate : undefined,
       ),
-      model.isChecked || isIndeterminate
-        ? [indicator ?? defaultIndicator(h)]
-        : [],
-    )
+    ),
+    config.isChecked || isIndeterminate
+      ? [indicator ?? defaultIndicator()]
+      : [],
+  )
 
-    const fieldLabel = Field.label<CheckboxMessage>(
-      config.label,
-      attributes.label,
-    )
-    const fieldDescription =
-      config.description !== undefined
-        ? Field.description<CheckboxMessage>(
-            config.description,
-            attributes.description,
-          )
-        : undefined
+  const fieldLabel = Field.label(h, config.label, attributes.label)
+  const fieldDescription =
+    config.description !== undefined
+      ? Field.description(h, config.description, attributes.description)
+      : undefined
 
-    if (orientation === 'vertical') {
-      return Field.group<CheckboxMessage>({
-        orientation: 'vertical',
-        label: fieldLabel,
-        ...(fieldDescription !== undefined
-          ? { description: fieldDescription }
-          : {}),
-        children: [control],
-      })
-    }
-
-    return Field.group<CheckboxMessage>({
-      orientation: 'horizontal',
-      children: [
-        control,
-        h.div(elAttrs<CheckboxMessage>(sxAttrs(h, fieldStyles.fieldContent)), [
-          fieldLabel,
-          ...(fieldDescription !== undefined ? [fieldDescription] : []),
-        ]),
-      ],
+  if (orientation === 'vertical') {
+    return Field.group(h, {
+      orientation: 'vertical',
+      label: fieldLabel,
+      ...(fieldDescription !== undefined
+        ? { description: fieldDescription }
+        : {}),
+      children: [control],
     })
-  },
+  }
+
+  return Field.group(h, {
+    orientation: 'horizontal',
+    children: [
+      control,
+      h.div(elAttrs<ParentMessage>(sxAttrs(h, fieldStyles.fieldContent)), [
+        fieldLabel,
+        ...(fieldDescription !== undefined ? [fieldDescription] : []),
+      ]),
+    ],
+  })
+}
+
+/**
+ * Builds a styled controlled Checkbox view config. Parent owns checked state;
+ * `onToggle` lifts the new value into the parent's Message universe.
+ */
+export const styledViewConfig = <ParentMessage>(
+  config: CheckboxStyledConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
+): CheckboxViewConfig<ParentMessage> => ({
+  id: config.id,
+  isChecked: config.isChecked,
+  onToggle: config.onToggle,
+  ...(config.isDisabled === true ? { isDisabled: true } : {}),
+  ...(config.isReadOnly === true ? { isReadOnly: true } : {}),
+  ...(config.isIndeterminate === true ? { isIndeterminate: true } : {}),
+  toView: attributes => toView(h, config, attributes),
 })
+
+/** Renders a styled controlled Checkbox with Astryx visuals. */
+export const view = <ParentMessage>(
+  config: CheckboxStyledConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
+): Html => UiCheckbox.view(styledViewConfig(config, h), h)

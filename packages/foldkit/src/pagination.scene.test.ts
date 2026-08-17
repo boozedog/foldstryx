@@ -1,5 +1,5 @@
 import { Match as M, Schema as S } from 'effect'
-import { html } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import { m } from 'foldkit/message'
 import * as Scene from 'foldkit/scene'
 
@@ -32,24 +32,32 @@ const update = (
     }),
   )
 
-const view = (model: Model) => {
-  const h = html<Message>()
+const view = (model: Model, h: HtmlBuilder<Message>) => {
   return h.div(
     [],
     [
-      Pagination.view({
-        status: `Page ${model.page} of ${model.total}`,
-        previous: Button.view({
-          label: 'Previous',
-          onClick: Prev(),
-          isDisabled: model.page <= 1,
-        }),
-        next: Button.view({
-          label: 'Next',
-          onClick: Next(),
-          isDisabled: model.page >= model.total,
-        }),
-      }),
+      Pagination.view(
+        {
+          status: `Page ${model.page} of ${model.total}`,
+          previous: Button.view(
+            {
+              label: 'Previous',
+              onClick: Prev(),
+              isDisabled: model.page <= 1,
+            },
+            h,
+          ),
+          next: Button.view(
+            {
+              label: 'Next',
+              onClick: Next(),
+              isDisabled: model.page >= model.total,
+            },
+            h,
+          ),
+        },
+        h,
+      ),
       h.span([h.Id('page')], [String(model.page)]),
     ],
   )
@@ -59,7 +67,7 @@ describe('Pagination scene', () => {
   it('advances to the next page on Next', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ page: 1, total: 3 }),
+      Scene.given({ page: 1, total: 3 }),
       Scene.click(Scene.role('button', { name: 'Next' })),
       Scene.expect(Scene.selector('#page')).toHaveText('2'),
     )
@@ -68,7 +76,7 @@ describe('Pagination scene', () => {
   it('moves back to the previous page on Previous', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ page: 2, total: 3 }),
+      Scene.given({ page: 2, total: 3 }),
       Scene.click(Scene.role('button', { name: 'Previous' })),
       Scene.expect(Scene.selector('#page')).toHaveText('1'),
     )
@@ -77,7 +85,7 @@ describe('Pagination scene', () => {
   it('disables Previous on the first page', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ page: 1, total: 3 }),
+      Scene.given({ page: 1, total: 3 }),
       Scene.expect(Scene.role('button', { name: 'Previous' })).toBeDisabled(),
       Scene.expect(Scene.selector('#page')).toHaveText('1'),
     )
@@ -86,7 +94,7 @@ describe('Pagination scene', () => {
   it('disables Next on the last page', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ page: 3, total: 3 }),
+      Scene.given({ page: 3, total: 3 }),
       Scene.expect(Scene.role('button', { name: 'Next' })).toBeDisabled(),
       Scene.expect(Scene.selector('#page')).toHaveText('3'),
     )

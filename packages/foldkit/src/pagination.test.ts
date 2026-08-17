@@ -3,6 +3,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from '@effect/vitest'
 
 import { view } from './pagination.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string
@@ -30,11 +31,16 @@ const hasSx = (node: Node, key: string): boolean =>
 describe('Pagination', () => {
   it('renders status between previous and next', () => {
     const node = asNode(
-      view({
-        status: 'Page 2 of 10',
-        previous: 'Prev',
-        next: 'Next',
-      }),
+      renderWithBuilder(h =>
+        view(
+          {
+            status: 'Page 2 of 10',
+            previous: 'Prev',
+            next: 'Next',
+          },
+          h,
+        ),
+      ),
     )
     expect(hasSx(node, 'pagination')).toBe(true)
     expect(text(node)).toContain('Prev')
@@ -44,7 +50,9 @@ describe('Pagination', () => {
 
   it('exposes navigation semantics with an accessible label', () => {
     const node = asNode(
-      view({ status: 'Page 1 of 1', previous: 'Prev', next: 'Next' }),
+      renderWithBuilder(h =>
+        view({ status: 'Page 1 of 1', previous: 'Prev', next: 'Next' }, h),
+      ),
     )
     expect(node.data?.attrs?.['role']).toBe('navigation')
     expect(node.data?.attrs?.['aria-label']).toBe('Pagination')
@@ -52,7 +60,9 @@ describe('Pagination', () => {
 
   it('renders the status with the muted style key', () => {
     const node = asNode(
-      view({ status: 'Page 1 of 1', previous: 'Prev', next: 'Next' }),
+      renderWithBuilder(h =>
+        view({ status: 'Page 1 of 1', previous: 'Prev', next: 'Next' }, h),
+      ),
     )
     const children = node.children as ReadonlyArray<Node>
     const status = children[1] as Node

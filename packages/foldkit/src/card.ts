@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { cardStyles, layoutStyles } from '@foldstryx/styles'
 
@@ -8,32 +7,32 @@ import { elAttrs, sxAttrs } from './sx.js'
 /** Renders a token-styled card container. */
 export const root = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
-
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, cardStyles.root)), children)
 }
 
 /** Renders a card header block. */
 export const header = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
-
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, cardStyles.header)), children)
 }
 
 /** Renders a card title. */
-export const title = <ParentMessage>(text: string): Html => {
-  const h = html<ParentMessage>()
-
+export const title = <ParentMessage>(
+  text: string,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, cardStyles.title)), [text])
 }
 
 /** Renders a card description. */
-export const description = <ParentMessage>(text: string): Html => {
-  const h = html<ParentMessage>()
-
+export const description = <ParentMessage>(
+  text: string,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, cardStyles.description)), [
     text,
   ])
@@ -42,9 +41,8 @@ export const description = <ParentMessage>(text: string): Html => {
 /** Renders a card content section. */
 export const content = <ParentMessage>(
   children: ReadonlyArray<Html | string>,
+  h: HtmlBuilder<ParentMessage>,
 ): Html => {
-  const h = html<ParentMessage>()
-
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, cardStyles.content)), children)
 }
 
@@ -63,8 +61,10 @@ export type CardSectionConfig = Readonly<{
   padded?: boolean
 }>
 
-export const section = <ParentMessage>(config: CardSectionConfig): Html => {
-  const h = html<ParentMessage>()
+export const section = <ParentMessage>(
+  config: CardSectionConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const hasHeader =
     config.title !== undefined || config.description !== undefined
 
@@ -76,10 +76,10 @@ export const section = <ParentMessage>(config: CardSectionConfig): Html => {
       ),
       [
         ...(config.title !== undefined
-          ? [title<ParentMessage>(config.title)]
+          ? [title<ParentMessage>(config.title, h)]
           : []),
         ...(config.description !== undefined
-          ? [description<ParentMessage>(config.description)]
+          ? [description<ParentMessage>(config.description, h)]
           : []),
         ...config.children,
       ],
@@ -87,20 +87,23 @@ export const section = <ParentMessage>(config: CardSectionConfig): Html => {
   }
 
   const headerBlock = hasHeader
-    ? header<ParentMessage>([
-        ...(config.title !== undefined
-          ? [title<ParentMessage>(config.title)]
-          : []),
-        ...(config.description !== undefined
-          ? [description<ParentMessage>(config.description)]
-          : []),
-      ])
+    ? header<ParentMessage>(
+        [
+          ...(config.title !== undefined
+            ? [title<ParentMessage>(config.title, h)]
+            : []),
+          ...(config.description !== undefined
+            ? [description<ParentMessage>(config.description, h)]
+            : []),
+        ],
+        h,
+      )
     : undefined
 
-  const body = content<ParentMessage>(config.children)
+  const body = content<ParentMessage>(config.children, h)
 
-  return root<ParentMessage>([
-    ...(headerBlock !== undefined ? [headerBlock] : []),
-    body,
-  ])
+  return root<ParentMessage>(
+    [...(headerBlock !== undefined ? [headerBlock] : []), body],
+    h,
+  )
 }

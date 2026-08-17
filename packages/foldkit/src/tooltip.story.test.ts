@@ -3,10 +3,10 @@ import * as Story from 'foldkit/story'
 
 import { describe, expect, it } from '@effect/vitest'
 import {
-  ElapsedShowDelay,
+  CompletedWaitBeforeShowing,
   EnteredTrigger,
   PressedEscape,
-  ShowAfterDelay,
+  WaitBeforeShowing,
   update,
 } from '@foldkit/ui/tooltip'
 
@@ -20,9 +20,12 @@ describe('SidebarTooltip', () => {
   it('opens on hover after the show-delay command resolves', () => {
     Story.story(
       update,
-      Story.with(init('sidebar-tip')),
+      Story.given(init('sidebar-tip')),
       Story.message(EnteredTrigger()),
-      Story.Command.resolve(ShowAfterDelay, ElapsedShowDelay({ version: 1 })),
+      Story.Command.resolve(
+        WaitBeforeShowing,
+        CompletedWaitBeforeShowing({ version: 1 }),
+      ),
       Story.model(model => {
         expect(model.isOpen).toBe(true)
         expect(model.isHovered).toBe(true)
@@ -34,9 +37,12 @@ describe('SidebarTooltip', () => {
   it('dismisses an open tooltip on Escape without lying about hover state', () => {
     Story.story(
       update,
-      Story.with(init('sidebar-tip')),
+      Story.given(init('sidebar-tip')),
       Story.message(EnteredTrigger()),
-      Story.Command.resolve(ShowAfterDelay, ElapsedShowDelay({ version: 1 })),
+      Story.Command.resolve(
+        WaitBeforeShowing,
+        CompletedWaitBeforeShowing({ version: 1 }),
+      ),
       Story.model(model => {
         expect(model.isOpen).toBe(true)
       }),

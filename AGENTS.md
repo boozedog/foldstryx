@@ -131,9 +131,13 @@ material. Checks and CI must not require that checkout.
 
 ## First primitive APIs
 
-- `Button.view({ label, variant, size, onClick, isDisabled })` supports `primary`, `secondary`, `ghost`, and `danger`; sizes are `md`, `sm`, and `icon`.
-- `Stack.view` uses `xs`, `sm`, `md`, and `lg` token gaps. `Row.view` uses `between`, `baseline`, `startBetween`, `wrap`, `wrapCenter`, and `center` alignment presets.
-- `Text.view` starts with `body`, `bodySm`, `muted`, `mutedSm`, `error`, `success`, `mono`, `sectionTitle`, and `title` variants.
+Composition views take the frame's `HtmlBuilder` as their last parameter
+(`Button.view({ label, variant, size, onClick, isDisabled }, h)`), matching the
+Foldkit 0.145 builder-threading model.
+
+- `Button.view(config, h)` supports `primary`, `secondary`, `ghost`, and `danger` variants; sizes are `md`, `sm`, and `icon`.
+- `Stack.view(config, h)` uses `xs`, `sm`, `md`, and `lg` token gaps. `Row.view(config, h)` uses `between`, `baseline`, `startBetween`, `wrap`, `wrapCenter`, and `center` alignment presets.
+- `Text.view(config, h)` starts with `body`, `bodySm`, `muted`, `mutedSm`, `error`, `success`, `mono`, `sectionTitle`, and `title` variants.
 - `Card.root`, `Card.header`, and `Card.content` are composable chrome slots; `Card.section` composes them with optional title and description.
 - Interactive controls require a Foldkit Story or Scene test covering messages and disabled behavior.
 - Visual changes require browser verification at `http://localhost:5173/`, including computed font family, layout gaps, button states, and shell padding.

@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -17,9 +16,10 @@ export type AttentionViewConfig = Readonly<{
 }>
 
 /** Non-alert soft callout (warning-tinted surface). */
-export const view = <ParentMessage>(config: AttentionViewConfig): Html => {
-  const h = html<ParentMessage>()
-
+export const view = <ParentMessage>(
+  config: AttentionViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, layoutStyles.attentionCard)), [
     ...(config.title !== undefined
       ? [

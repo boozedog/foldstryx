@@ -2,7 +2,11 @@ import type { Html } from 'foldkit/html'
 
 import { describe, expect, it } from '@effect/vitest'
 
-import { view as emptyView } from './emptyState.js'
+import { view as emptyViewFn } from './emptyState.js'
+import { renderWithBuilder } from './renderHelper.js'
+
+const emptyView = (config: Parameters<typeof emptyViewFn>[0]) =>
+  renderWithBuilder(h => emptyViewFn(config, h))
 
 type Node = Readonly<{
   sel?: string | undefined

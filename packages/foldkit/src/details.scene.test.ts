@@ -1,5 +1,5 @@
 import { Match as M, Schema as S } from 'effect'
-import { html } from 'foldkit/html'
+import type { HtmlBuilder } from 'foldkit/html'
 import { m } from 'foldkit/message'
 import * as Scene from 'foldkit/scene'
 import * as Story from 'foldkit/story'
@@ -24,17 +24,19 @@ const update = (
     }),
   )
 
-const view = (model: Model) => {
-  const h = html<Message>()
+const view = (model: Model, h: HtmlBuilder<Message>) => {
   return h.div(
     [],
     [
-      Details.view({
-        summary: 'More info',
-        children: ['Hidden details'],
-        open: model.open,
-        onToggle: isOpen => Toggled({ isOpen }),
-      }),
+      Details.view(
+        {
+          summary: 'More info',
+          children: ['Hidden details'],
+          open: model.open,
+          onToggle: isOpen => Toggled({ isOpen }),
+        },
+        h,
+      ),
     ],
   )
 }
@@ -43,7 +45,7 @@ describe('Details scene', () => {
   it('renders the disclosure open when open is true', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ open: true }),
+      Scene.given({ open: true }),
       Scene.expect(Scene.selector('details')).toHaveAttr('open', 'true'),
       Scene.expect(Scene.selector('details')).toContainText('Hidden details'),
     )
@@ -52,7 +54,7 @@ describe('Details scene', () => {
   it('renders the disclosure closed by default', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ open: false }),
+      Scene.given({ open: false }),
       Scene.expect(Scene.selector('details')).toHaveAttr('open', 'false'),
     )
   })
@@ -60,7 +62,7 @@ describe('Details scene', () => {
   it('wires the OnToggle handler on the mounted details element', () => {
     Scene.scene(
       { update, view },
-      Scene.with({ open: false }),
+      Scene.given({ open: false }),
       Scene.expect(Scene.selector('details')).toHaveHandler('toggle'),
     )
   })
@@ -68,7 +70,7 @@ describe('Details scene', () => {
   it('drives open/closed from the OnToggle message', () => {
     Story.story(
       update,
-      Story.with({ open: false }),
+      Story.given({ open: false }),
       Story.message(Toggled({ isOpen: true })),
       Story.model(model => {
         expect(model.open).toBe(true)

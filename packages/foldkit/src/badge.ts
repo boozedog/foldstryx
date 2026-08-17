@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { badgeStyles } from '@foldstryx/styles'
 
@@ -51,8 +50,10 @@ const sizeStyle = (size: BadgeSize) => {
 }
 
 /** Renders an Astryx-styled status/metadata badge. */
-export const view = <ParentMessage>(config: BadgeViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: BadgeViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const variant = config.variant ?? 'default'
   const size = config.size ?? 'default'
 

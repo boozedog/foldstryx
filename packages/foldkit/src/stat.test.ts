@@ -2,7 +2,11 @@ import type { Html } from 'foldkit/html'
 
 import { describe, expect, it } from '@effect/vitest'
 
-import { Failed, Loading, Ready, card } from './stat.js'
+import { renderWithBuilder } from './renderHelper.js'
+import { Failed, Loading, Ready, card as cardFn } from './stat.js'
+
+const card = (config: Parameters<typeof cardFn>[0]) =>
+  renderWithBuilder(h => cardFn(config, h))
 
 type Node = Readonly<{
   sel?: string

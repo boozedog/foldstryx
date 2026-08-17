@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Icon, Sidebar, Text, elAttrs, sxAttrs } from '@foldstryx/foldkit'
 import { Mount } from '@foldstryx/kitchen-sink'
@@ -55,8 +54,7 @@ const toSidebarItem = (item: DocsNavItem): Sidebar.SidebarNavItem<Message> => ({
     : {}),
 })
 
-const renderRoute = (model: Model): Html => {
-  const h = html<Message>()
+const renderRoute = (model: Model, h: HtmlBuilder<Message>): Html => {
   switch (model.route._tag) {
     case 'overview':
     case 'layout':
@@ -69,21 +67,21 @@ const renderRoute = (model: Model): Html => {
       const page = (() => {
         switch (model.route._tag) {
           case 'overview':
-            return OverviewPage.view()
+            return OverviewPage.view(h)
           case 'layout':
-            return LayoutPage.view()
+            return LayoutPage.view(h)
           case 'forms':
-            return FormsPage.view()
+            return FormsPage.view(h)
           case 'feedback':
-            return FeedbackPage.view()
+            return FeedbackPage.view(h)
           case 'data':
-            return DataPage.view()
+            return DataPage.view(h)
           case 'media':
-            return MediaPage.view()
+            return MediaPage.view(h)
           case 'gettingStarted':
-            return GettingStartedPage.view()
+            return GettingStartedPage.view(h)
           case 'principles':
-            return PrinciplesPage.view()
+            return PrinciplesPage.view(h)
         }
       })()
       return h.div(elAttrs<Message>(sxAttrs(h, layoutStyles.catalogShell)), [
@@ -100,8 +98,10 @@ const renderRoute = (model: Model): Html => {
   }
 }
 
-export const view = (model: Model): Readonly<{ title: string; body: Html }> => {
-  const h = html<Message>()
+export const view = (
+  model: Model,
+  h: HtmlBuilder<Message>,
+): Readonly<{ title: string; body: Html }> => {
   const groups = navigation.map(group => ({
     label: group.label,
     items: group.items.map(toSidebarItem),
@@ -128,17 +128,24 @@ export const view = (model: Model): Readonly<{ title: string; body: Html }> => {
           user: { name: 'Foldkit team', detail: 'Design systems' },
         },
         { isCollapsed: model.collapsed },
+        h,
       ),
-      Sidebar.inset<Message>({
-        isCollapsed: model.collapsed,
-        headerChildren: [
-          Text.view({
-            variant: 'sectionTitle',
-            children: routeTitle(model.route),
-          }),
-        ],
-        children: renderRoute(model),
-      }),
+      Sidebar.inset<Message>(
+        {
+          isCollapsed: model.collapsed,
+          headerChildren: [
+            Text.view(
+              {
+                variant: 'sectionTitle',
+                children: routeTitle(model.route),
+              },
+              h,
+            ),
+          ],
+          children: renderRoute(model, h),
+        },
+        h,
+      ),
     ]),
   }
 }

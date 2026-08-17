@@ -2,6 +2,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from 'vitest'
 
 import * as Grid from './grid.js'
+import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
   sel?: string
@@ -29,7 +30,9 @@ const hasSx = (node: Node, key: string): boolean =>
 
 describe('Grid.view', () => {
   it('renders children in a div with the base grid style', () => {
-    const node = asNode(Grid.view({ children: ['A', 'B'] }))
+    const node = asNode(
+      renderWithBuilder(h => Grid.view({ children: ['A', 'B'] }, h)),
+    )
     expect(node.sel).toBe('div')
     expect(hasSx(node, 'base')).toBe(true)
     expect(text(node)).toContain('A')
@@ -37,7 +40,9 @@ describe('Grid.view', () => {
   })
 
   it('defaults to two columns and md gap', () => {
-    const node = asNode(Grid.view({ children: ['A'] }))
+    const node = asNode(
+      renderWithBuilder(h => Grid.view({ children: ['A'] }, h)),
+    )
     expect(hasSx(node, 'grid2')).toBe(true)
     expect(hasSx(node, 'gapMd')).toBe(true)
   })
@@ -50,7 +55,9 @@ describe('Grid.view', () => {
       ['summary', 'gridSummary'],
     ]
     for (const [columns, key] of cases) {
-      const node = asNode(Grid.view({ columns, children: ['A'] }))
+      const node = asNode(
+        renderWithBuilder(h => Grid.view({ columns, children: ['A'] }, h)),
+      )
       expect(hasSx(node, key)).toBe(true)
     }
   })
@@ -62,13 +69,17 @@ describe('Grid.view', () => {
       ['lg', 'gapLg'],
     ]
     for (const [gap, key] of cases) {
-      const node = asNode(Grid.view({ gap, children: ['A'] }))
+      const node = asNode(
+        renderWithBuilder(h => Grid.view({ gap, children: ['A'] }, h)),
+      )
       expect(hasSx(node, key)).toBe(true)
     }
   })
 
   it('applies the top margin style when mt is provided', () => {
-    const node = asNode(Grid.view({ mt: '2', children: ['A'] }))
+    const node = asNode(
+      renderWithBuilder(h => Grid.view({ mt: '2', children: ['A'] }, h)),
+    )
     expect(hasSx(node, 'mt2')).toBe(true)
   })
 })

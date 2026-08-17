@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Input as UiInput } from '@foldkit/ui'
 import { fieldStyles, formDensityStyles, inputStyles } from '@foldstryx/styles'
@@ -55,8 +54,11 @@ const axis = (d: InputDensity, w?: InputWidth, a?: InputAlign) =>
     widthStyle(w),
     alignStyle(a),
   ] as const
-export const control = <M>(c: InputControlConfig<M>): Html => {
-  const h = html<M>()
+export const control = <M>(
+  config: InputControlConfig<M>,
+  h: HtmlBuilder<M>,
+): Html => {
+  const c = config
   const input = h.input(
     elAttrs<M>(
       sxAttrs(h, ...axis(c.density ?? 'default', c.width, c.align)),
@@ -92,32 +94,39 @@ export const view = <M>(
     width?: InputWidth
     align?: InputAlign
   }>,
-): Html => {
-  const h = html<M>()
-  return UiInput.view<M>({
-    id: c.id,
-    ...(c.value !== undefined ? { value: c.value } : {}),
-    ...(c.onInput ? { onInput: c.onInput } : {}),
-    ...(c.placeholder ? { placeholder: c.placeholder } : {}),
-    ...(c.isDisabled ? { isDisabled: true } : {}),
-    ...(c.type ? { type: c.type } : {}),
-    toView: a =>
-      h.div(elAttrs<M>(sxAttrs(h, fieldStyles.field)), [
-        h.label(elAttrs<M>(a.label, sxAttrs(h, fieldStyles.label)), [c.label]),
-        h.input(
-          elAttrs<M>(
-            a.input,
-            sxAttrs(h, ...axis(c.density ?? 'default', c.width, c.align)),
+  h: HtmlBuilder<M>,
+): Html =>
+  UiInput.view<M>(
+    {
+      id: c.id,
+      ...(c.value !== undefined ? { value: c.value } : {}),
+      ...(c.onInput ? { onInput: c.onInput } : {}),
+      ...(c.placeholder ? { placeholder: c.placeholder } : {}),
+      ...(c.isDisabled ? { isDisabled: true } : {}),
+      ...(c.type ? { type: c.type } : {}),
+      toView: a =>
+        h.div(elAttrs<M>(sxAttrs(h, fieldStyles.field)), [
+          h.label(elAttrs<M>(a.label, sxAttrs(h, fieldStyles.label)), [
+            c.label,
+          ]),
+          h.input(
+            elAttrs<M>(
+              a.input,
+              sxAttrs(h, ...axis(c.density ?? 'default', c.width, c.align)),
+            ),
           ),
-        ),
-        ...(c.description
-          ? [
-              h.p(
-                elAttrs<M>(a.description, sxAttrs(h, fieldStyles.description)),
-                [c.description],
-              ),
-            ]
-          : []),
-      ]),
-  })
-}
+          ...(c.description
+            ? [
+                h.p(
+                  elAttrs<M>(
+                    a.description,
+                    sxAttrs(h, fieldStyles.description),
+                  ),
+                  [c.description],
+                ),
+              ]
+            : []),
+        ]),
+    },
+    h,
+  )

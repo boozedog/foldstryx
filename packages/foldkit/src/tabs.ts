@@ -1,16 +1,15 @@
 import { Array } from 'effect'
 import { Option } from 'effect'
 import { Command } from 'foldkit'
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
-import type { Reflect2, View } from 'foldkit/submodel'
+import type { Html, HtmlBuilder } from 'foldkit/html'
+import type { View } from 'foldkit/submodel'
 
 import { Tabs as UiTabs } from '@foldkit/ui'
 import type {
+  Bundle,
   Message,
   Model,
   OutMessage,
-  Message as TabsMessage,
   ViewInputs,
 } from '@foldkit/ui/tabs'
 import { tabsStyles } from '@foldstryx/styles'
@@ -20,6 +19,8 @@ import { elAttrs, sxAttrs } from './sx.js'
 export { init, Model, Message } from '@foldkit/ui/tabs'
 
 export type TabsStyledConfig<Value extends string> = Readonly<{
+  /** Parent-owned active tab, read straight from the parent model. */
+  selectedValue: Value
   tabs: ReadonlyArray<Value>
   ariaLabel: string
   renderPanel: (value: Value) => Html
@@ -27,7 +28,11 @@ export type TabsStyledConfig<Value extends string> = Readonly<{
   orientation?: 'Horizontal' | 'Vertical'
 }>
 
-/** Pairs Tabs.create with Astryx-styled view inputs. */
+/**
+ * Pairs `Tabs.create` (parent-owned selection) with Astryx-styled view
+ * inputs. The parent stores the `Selected` OutMessage value and passes it
+ * back in as `selectedValue`.
+ */
 export const create = <Value extends string = string>(): Readonly<{
   view: View<Model, Message, ViewInputs<Value>>
   update: (
@@ -38,23 +43,18 @@ export const create = <Value extends string = string>(): Readonly<{
     ReadonlyArray<Command.Command<Message>>,
     Option.Option<OutMessage<Value>>,
   ]
-  selectTab: (
-    model: Model,
-    value: Value,
-    index: number,
-  ) => readonly [
-    Model,
-    ReadonlyArray<Command.Command<Message>>,
-    Option.Option<OutMessage<Value>>,
-  ]
-  reflectSelectedTab: Reflect2<Model, Value, ReadonlyArray<Value>>
-  styledViewInputs: (config: TabsStyledConfig<Value>) => ViewInputs<Value>
-}> => {
-  const Ui = UiTabs.create<Value>()
-
-  const styledViewInputs = (
+  styledViewInputs: <ParentMessage>(
     config: TabsStyledConfig<Value>,
+    h: HtmlBuilder<ParentMessage>,
+  ) => ViewInputs<Value>
+}> => {
+  const Ui: Bundle<Value> = UiTabs.create<Value>()
+
+  const styledViewInputs = <ParentMessage>(
+    config: TabsStyledConfig<Value>,
+    h: HtmlBuilder<ParentMessage>,
   ): ViewInputs<Value> => ({
+    selectedValue: config.selectedValue,
     tabs: config.tabs,
     ariaLabel: config.ariaLabel,
     ...(config.isTabDisabled !== undefined
@@ -63,15 +63,13 @@ export const create = <Value extends string = string>(): Readonly<{
     ...(config.orientation !== undefined
       ? { orientation: config.orientation }
       : {}),
-    toView: ({ tablist, tabs, activeIndex }) => {
-      const h = html<TabsMessage>()
-
-      return h.div(elAttrs<TabsMessage>(sxAttrs(h, tabsStyles.root)), [
+    toView: ({ tablist, tabs, activeIndex }) =>
+      h.div(elAttrs<ParentMessage>(sxAttrs(h, tabsStyles.root)), [
         h.div(
-          elAttrs<TabsMessage>(tablist, sxAttrs(h, tabsStyles.list)),
+          elAttrs<ParentMessage>(tablist, sxAttrs(h, tabsStyles.list)),
           tabs.map(tab =>
             h.button(
-              elAttrs<TabsMessage>(
+              elAttrs<ParentMessage>(
                 tab.tab,
                 sxAttrs(
                   h,
@@ -87,19 +85,16 @@ export const create = <Value extends string = string>(): Readonly<{
           Array.filter(tabs, tab => tab.index === activeIndex),
           tab =>
             h.div(
-              elAttrs<TabsMessage>(tab.panel, sxAttrs(h, tabsStyles.content)),
+              elAttrs<ParentMessage>(tab.panel, sxAttrs(h, tabsStyles.content)),
               [config.renderPanel(tab.value)],
             ),
         ),
-      ])
-    },
+      ]),
   })
 
   return {
     view: Ui.view,
     update: Ui.update,
-    selectTab: Ui.selectTab,
-    reflectSelectedTab: Ui.reflectSelectedTab,
     styledViewInputs,
   }
 }

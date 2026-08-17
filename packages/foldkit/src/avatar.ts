@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { avatarStyles } from '@foldstryx/styles'
 
@@ -36,8 +35,10 @@ const sizeStyle = (size: AvatarSize) => {
 }
 
 /** Semantic media primitive with token-faithful sizes and accessible labeling. */
-export const view = <ParentMessage>(config: AvatarViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: AvatarViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const size = config.size ?? 'default'
   const shape = config.shape ?? 'circle'
 

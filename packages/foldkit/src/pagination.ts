@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -19,9 +18,10 @@ export type PaginationViewConfig = Readonly<{
 }>
 
 /** Pagination bar: previous | status | next. */
-export const view = <ParentMessage>(config: PaginationViewConfig): Html => {
-  const h = html<ParentMessage>()
-
+export const view = <ParentMessage>(
+  config: PaginationViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   return h.div(
     elAttrs<ParentMessage>(
       sxAttrs(h, layoutStyles.pagination),

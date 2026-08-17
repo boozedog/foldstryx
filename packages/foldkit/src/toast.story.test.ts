@@ -3,16 +3,10 @@ import * as Story from 'foldkit/story'
 
 import { describe, expect, it } from '@effect/vitest'
 import {
-  AdvancedAnimationFrame,
-  EndedAnimation,
-  RequestFrame,
-  WaitForAnimationSettled,
-} from '@foldkit/ui/animation'
-import {
+  CompletedWaitBeforeDismissal,
   Dismissed,
   DismissedAll,
-  ElapsedDuration,
-  GotAnimationMessage,
+  test as ToastTest,
 } from '@foldkit/ui/toast'
 
 import * as Toast from './toast.js'
@@ -39,18 +33,9 @@ describe('Toast lifecycle', () => {
     const entryId = initial.entries[0]!.id
     Story.story(
       DemoToast.update,
-      Story.with(initial),
+      Story.given(initial),
       Story.message(Dismissed({ entryId })),
-      Story.Command.resolveAll(
-        [
-          RequestFrame,
-          GotAnimationMessage({ entryId, message: AdvancedAnimationFrame() }),
-        ],
-        [
-          WaitForAnimationSettled,
-          GotAnimationMessage({ entryId, message: EndedAnimation() }),
-        ],
-      ),
+      ToastTest.drainEntry({ entryId }),
       Story.expectOutMessage(DemoToast.DismissedToast({ payload })),
       Story.model(model => {
         expect(model.entries).toHaveLength(0)
@@ -69,18 +54,10 @@ describe('Toast lifecycle', () => {
 
     Story.story(
       DemoToast.update,
-      Story.with(initial),
-      Story.message(ElapsedDuration({ entryId, version })),
-      Story.Command.resolveAll(
-        [
-          RequestFrame,
-          GotAnimationMessage({ entryId, message: AdvancedAnimationFrame() }),
-        ],
-        [
-          WaitForAnimationSettled,
-          GotAnimationMessage({ entryId, message: EndedAnimation() }),
-        ],
-      ),
+      Story.given(initial),
+      Story.message(CompletedWaitBeforeDismissal({ entryId, version })),
+      ToastTest.drainEntry({ entryId, version }),
+      Story.expectOutMessage(DemoToast.DismissedToast({ payload })),
       Story.model(model => {
         expect(model.entries).toHaveLength(0)
       }),
@@ -96,8 +73,13 @@ describe('Toast lifecycle', () => {
 
     Story.story(
       DemoToast.update,
-      Story.with(initial),
-      Story.message(ElapsedDuration({ entryId, version: entryId.length + 99 })),
+      Story.given(initial),
+      Story.message(
+        CompletedWaitBeforeDismissal({
+          entryId,
+          version: entryId.length + 99,
+        }),
+      ),
       Story.model(model => {
         expect(model.entries).toHaveLength(1)
       }),
@@ -117,38 +99,10 @@ describe('Toast lifecycle', () => {
 
     Story.story(
       DemoToast.update,
-      Story.with(two),
+      Story.given(two),
       Story.message(DismissedAll()),
-      Story.Command.resolveAll(
-        [
-          RequestFrame,
-          GotAnimationMessage({
-            entryId: two.entries[0]!.id,
-            message: AdvancedAnimationFrame(),
-          }),
-        ],
-        [
-          RequestFrame,
-          GotAnimationMessage({
-            entryId: two.entries[1]!.id,
-            message: AdvancedAnimationFrame(),
-          }),
-        ],
-        [
-          WaitForAnimationSettled,
-          GotAnimationMessage({
-            entryId: two.entries[0]!.id,
-            message: EndedAnimation(),
-          }),
-        ],
-        [
-          WaitForAnimationSettled,
-          GotAnimationMessage({
-            entryId: two.entries[1]!.id,
-            message: EndedAnimation(),
-          }),
-        ],
-      ),
+      ToastTest.drainEntry({ entryId: two.entries[0]!.id }),
+      ToastTest.drainEntry({ entryId: two.entries[1]!.id }),
       Story.model(model => {
         expect(model.entries).toHaveLength(0)
       }),

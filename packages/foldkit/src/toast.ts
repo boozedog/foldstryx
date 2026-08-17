@@ -1,5 +1,5 @@
 import { Match as M, Option, Schema as S } from 'effect'
-import { html } from 'foldkit/html'
+import { inertHtml } from 'foldkit/html'
 
 import { Toast as UiToast } from '@foldkit/ui'
 import type { EntryHandlers, Variant } from '@foldkit/ui/toast'
@@ -31,32 +31,31 @@ export type ToastStyledViewInputsConfig = Readonly<{
 export const create = () => {
   const Toast = UiToast.make(ToastPayload)
   type Entry = typeof Toast.Entry.Type
-  type ToastMessage = typeof Toast.Message.Type
 
   const styledViewInputs = (config: ToastStyledViewInputsConfig = {}) => ({
     position: 'BottomRight' as const,
     ...(config.ariaLabel !== undefined ? { ariaLabel: config.ariaLabel } : {}),
     entryToView: (entry: Entry, handlers: EntryHandlers) => {
-      const h = html<ToastMessage>()
+      const h = inertHtml
 
       return h.div(
-        elAttrs<ToastMessage>(
+        elAttrs<never>(
           sxAttrs(h, toastStyles.entry, entryStyle(entry.variant)),
         ),
         [
-          h.p(elAttrs<ToastMessage>(sxAttrs(h, toastStyles.title)), [
+          h.p(elAttrs<never>(sxAttrs(h, toastStyles.title)), [
             entry.payload.title,
           ]),
           ...Option.match(entry.payload.maybeDescription, {
             onNone: () => [],
             onSome: description => [
-              h.p(elAttrs<ToastMessage>(sxAttrs(h, toastStyles.description)), [
+              h.p(elAttrs<never>(sxAttrs(h, toastStyles.description)), [
                 description,
               ]),
             ],
           }),
           h.button(
-            elAttrs<ToastMessage>(
+            elAttrs<never>(
               handlers.dismiss,
               h.AriaLabel('Close'),
               sxAttrs(h, toastStyles.dismiss),

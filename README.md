@@ -8,14 +8,18 @@ intent-shaped UI with a token-faithful Astryx look.
 
 ```ts
 // Prefer named primitives (Foldkit governs the API)…
-Button.view({ label: 'Save', variant: 'primary' })
-Stack.view({
-  gap: 'md',
-  children: [
-    Text.view({ variant: 'title', children: 'Overview' }),
-    Card.section({ children: [Text.view({ children: 'Content' })] }),
-  ],
-})
+// Views receive the frame's HtmlBuilder and thread it through:
+Button.view({ label: 'Save', variant: 'primary' }, h)
+Stack.view(
+  {
+    gap: 'md',
+    children: [
+      Text.view({ variant: 'title', children: 'Overview' }, h),
+      Card.section({ children: [Text.view({ children: 'Content' }, h)] }, h),
+    ],
+  },
+  h,
+)
 
 // …not React JSX and not anonymous StyleX key salads on every div
 ```
@@ -45,9 +49,9 @@ Token foundations are lifted from Astryx at the pinned revision in `NOTICE`. The
 composition primitives and kitchen-sink catalog are available on the issue #2 branch.
 
 ```ts
-Button.view({ label: 'Save', variant: 'primary', onClick: Saved() })
-Stack.view({ gap: 'md', children: [Text.view({ children: 'Body' })] })
-Card.section({ title: 'Details', children: ['Content'] })
+Button.view({ label: 'Save', variant: 'primary', onClick: Saved() }, h)
+Stack.view({ gap: 'md', children: [Text.view({ children: 'Body' }, h)] }, h)
+Card.section({ title: 'Details', children: ['Content'] }, h)
 ```
 
 ## Packages
@@ -198,8 +202,32 @@ The reviewed Phase 2–4 audit baseline is recorded in
 
 ## Effect
 
-This repo targets **Effect v4** (`effect@4.0.0-beta.x`), same lineage as foldstylex / foldkit.
+This repo targets the **Foldkit 0.145 / Effect RC compatibility line**:
+
+- `foldkit` and `@foldkit/ui` at `0.145.0`
+- `effect` at `4.0.0-rc.108` (exact peer of Foldkit 0.145)
+- `@effect/vitest` at `4.0.0-rc.108` for the test suite
+
 Effect usage stays at the Foldkit boundary: `Schema` for models, `Match` for updates.
+
+### Foldkit 0.145 migration notes
+
+- `foldkit/html` no longer exposes the `html<Message>()` builder factory.
+  Views receive an `HtmlBuilder<Message>` and thread it through closures;
+  message-free module-level markup uses `inertHtml`.
+- `@foldkit/ui/switch` and `checkbox` are stateless controlled views. The
+  parent owns the checked state and handles `onToggle` messages.
+- `@foldkit/ui/tabs` selection is parent-owned: the parent stores the
+  `Selected` OutMessage value and passes it back in as `selectedValue`.
+- Foldstryx composition views take the frame's builder as their last
+  parameter: `Button.view(config, h)`.
+
+### Effect rc.109 follow-up (deferred)
+
+The latest npm Effect RC is `4.0.0-rc.109`, but `foldkit@0.145.0` and
+`@foldkit/ui@0.145.0` require the exact `4.0.0-rc.108` peer. Do not force
+`rc.109` or create duplicate unsupported Effect peer instances. Revisit
+`rc.109` when Foldkit publishes a compatible release.
 
 ## Upstream / license
 

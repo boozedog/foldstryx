@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { cardStyles, layoutStyles } from '@foldstryx/styles'
 
@@ -16,8 +15,10 @@ export type EmptyStateViewConfig = Readonly<{
 }>
 
 /** Centered empty / zero-results panel with optional action. */
-export const view = <ParentMessage>(config: EmptyStateViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: EmptyStateViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const useCard = config.card !== false
 
   const content = h.div(

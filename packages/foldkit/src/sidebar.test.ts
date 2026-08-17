@@ -2,6 +2,7 @@ import type { Html } from 'foldkit/html'
 import { describe, expect, it } from 'vitest'
 
 import * as Icon from './icon.js'
+import { renderWithBuilder } from './renderHelper.js'
 import * as Sidebar from './sidebar.js'
 
 type Node = Readonly<{
@@ -19,26 +20,32 @@ const descendants = (value: unknown): Node[] => {
 describe('Sidebar', () => {
   it('renders active and expanded navigation semantics', () => {
     const node = asNode(
-      Sidebar.desktop({
-        brand: { name: 'App' },
-        activeItemId: 'child',
-        expandedItemIds: ['parent'],
-        onToggleItem: id => ({ _tag: 'Toggle', id }),
-        groups: [
+      renderWithBuilder(h =>
+        Sidebar.desktop(
           {
-            label: 'Main',
-            items: [
+            brand: { name: 'App' },
+            activeItemId: 'child',
+            expandedItemIds: ['parent'],
+            onToggleItem: id => ({ _tag: 'Toggle', id }),
+            groups: [
               {
-                id: 'parent',
-                label: 'Parent',
-                icon: Icon.folder,
-                onClick: { _tag: 'Navigate', id: 'parent' },
-                children: [{ id: 'child', label: 'Child' }],
+                label: 'Main',
+                items: [
+                  {
+                    id: 'parent',
+                    label: 'Parent',
+                    icon: Icon.folder,
+                    onClick: { _tag: 'Navigate', id: 'parent' },
+                    children: [{ id: 'child', label: 'Child' }],
+                  },
+                ],
               },
             ],
           },
-        ],
-      }),
+          {},
+          h,
+        ),
+      ),
     )
     const nodes = descendants(node)
     expect(
@@ -57,30 +64,36 @@ describe('Sidebar', () => {
 
   it('expands a parent from the row when it has no onClick', () => {
     const node = asNode(
-      Sidebar.desktop({
-        brand: { name: 'App' },
-        expandedItemIds: [],
-        onToggleItem: id => ({ _tag: 'Toggle', id }),
-        groups: [
+      renderWithBuilder(h =>
+        Sidebar.desktop(
           {
-            label: 'Main',
-            items: [
+            brand: { name: 'App' },
+            expandedItemIds: [],
+            onToggleItem: id => ({ _tag: 'Toggle', id }),
+            groups: [
               {
-                id: 'parent',
-                label: 'Parent',
-                icon: Icon.folder,
-                children: [
+                label: 'Main',
+                items: [
                   {
-                    id: 'child',
-                    label: 'Child',
-                    onClick: { _tag: 'Navigate', id: 'child' },
+                    id: 'parent',
+                    label: 'Parent',
+                    icon: Icon.folder,
+                    children: [
+                      {
+                        id: 'child',
+                        label: 'Child',
+                        onClick: { _tag: 'Navigate', id: 'child' },
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
-        ],
-      }),
+          {},
+          h,
+        ),
+      ),
     )
     const nodes = descendants(node)
     const parent = nodes.find(
@@ -91,24 +104,27 @@ describe('Sidebar', () => {
 
   it('hides iconless items when collapsed', () => {
     const node = asNode(
-      Sidebar.desktop(
-        {
-          brand: { name: 'App' },
-          groups: [
-            {
-              label: 'Main',
-              items: [
-                {
-                  id: 'parent',
-                  label: 'Parent',
-                  icon: Icon.folder,
-                  children: [{ id: 'child', label: 'Child' }],
-                },
-              ],
-            },
-          ],
-        },
-        { isCollapsed: true },
+      renderWithBuilder(h =>
+        Sidebar.desktop(
+          {
+            brand: { name: 'App' },
+            groups: [
+              {
+                label: 'Main',
+                items: [
+                  {
+                    id: 'parent',
+                    label: 'Parent',
+                    icon: Icon.folder,
+                    children: [{ id: 'child', label: 'Child' }],
+                  },
+                ],
+              },
+            ],
+          },
+          { isCollapsed: true },
+          h,
+        ),
       ),
     )
     const nodes = descendants(node)
@@ -122,34 +138,37 @@ describe('Sidebar', () => {
 
   it('opens a flyout for a hovered collapsed parent', () => {
     const node = asNode(
-      Sidebar.desktop(
-        {
-          brand: { name: 'App' },
-          hoveredItemId: 'parent',
-          onHoverItem: id => ({ _tag: 'Hover', id }),
-          openItemId: 'parent',
-          onOpenItem: id => ({ _tag: 'Open', id }),
-          groups: [
-            {
-              label: 'Main',
-              items: [
-                {
-                  id: 'parent',
-                  label: 'Parent',
-                  icon: Icon.folder,
-                  children: [
-                    {
-                      id: 'child',
-                      label: 'Child',
-                      onClick: { _tag: 'Navigate', id: 'child' },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        { isCollapsed: true },
+      renderWithBuilder(h =>
+        Sidebar.desktop(
+          {
+            brand: { name: 'App' },
+            hoveredItemId: 'parent',
+            onHoverItem: id => ({ _tag: 'Hover', id }),
+            openItemId: 'parent',
+            onOpenItem: id => ({ _tag: 'Open', id }),
+            groups: [
+              {
+                label: 'Main',
+                items: [
+                  {
+                    id: 'parent',
+                    label: 'Parent',
+                    icon: Icon.folder,
+                    children: [
+                      {
+                        id: 'child',
+                        label: 'Child',
+                        onClick: { _tag: 'Navigate', id: 'child' },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          { isCollapsed: true },
+          h,
+        ),
       ),
     )
     const nodes = descendants(node)

@@ -6,6 +6,7 @@ import {
   AnchorMenu,
   CompletedAnchorMenu,
   CompletedPortalMenuBackdrop,
+  Message,
   PortalMenuBackdrop,
 } from '@foldkit/ui/menu'
 
@@ -63,20 +64,24 @@ const render = () => {
   Scene.scene(
     {
       update: DemoMenu.update,
-      view: m =>
+      view: (m, h) =>
         DemoMenu.view(
           m,
-          DropdownMenu.styledViewInputs<Item, never>({
-            items: ['edit', 'delete'],
-            buttonContent: 'Actions' as unknown as Html,
-            itemSpec: item =>
-              item === 'delete'
-                ? { label: 'Delete', variant: 'destructive' }
-                : { label: 'Edit' },
-          }),
+          DropdownMenu.styledViewInputs<Item, Message>(
+            {
+              items: ['edit', 'delete'],
+              buttonContent: 'Actions' as unknown as Html,
+              itemSpec: item =>
+                item === 'delete'
+                  ? { label: 'Delete', variant: 'destructive' }
+                  : { label: 'Edit' },
+            },
+            h,
+          ),
+          h,
         ),
     },
-    Scene.with(model),
+    Scene.given(model),
     Scene.Mount.resolve(
       AnchorMenu({
         buttonId: 'm-button',

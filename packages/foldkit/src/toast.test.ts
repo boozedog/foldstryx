@@ -60,7 +60,7 @@ const render = (
   })
   return asNode(
     renderSubmodel(
-      m => DemoToast.view(m, DemoToast.styledViewInputs()),
+      (m, h) => DemoToast.view(m, DemoToast.styledViewInputs(), h),
       withEntry,
       DemoToast.update,
     ),

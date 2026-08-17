@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -17,9 +16,10 @@ export type ListRowViewConfig = Readonly<{
 }>
 
 /** Title + actions list row for responsive list layouts. */
-export const view = <ParentMessage>(config: ListRowViewConfig): Html => {
-  const h = html<ParentMessage>()
-
+export const view = <ParentMessage>(
+  config: ListRowViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const titleBlock = h.div(
     [],
     [

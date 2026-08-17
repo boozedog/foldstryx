@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { alertStyles } from '@foldstryx/styles'
 
@@ -32,8 +31,10 @@ const variantStyle = (variant: AlertVariant) => {
 }
 
 /** Renders an Astryx-styled alert / banner. */
-export const view = <ParentMessage>(config: AlertViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: AlertViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const variant = config.variant ?? 'default'
   const compact = config.compact === true
 

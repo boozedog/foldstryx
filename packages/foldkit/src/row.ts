@@ -1,5 +1,4 @@
-import type { Html } from 'foldkit/html'
-import { html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { layoutStyles } from '@foldstryx/styles'
 
@@ -45,8 +44,10 @@ const mtStyle = (mt: '2' | '3' | undefined) => {
 }
 
 /** Horizontal flex row with closed align variants. Prefer over raw layoutStyles.row*. */
-export const view = <ParentMessage>(config: RowViewConfig): Html => {
-  const h = html<ParentMessage>()
+export const view = <ParentMessage>(
+  config: RowViewConfig,
+  h: HtmlBuilder<ParentMessage>,
+): Html => {
   const align = config.align ?? 'between'
 
   return h.div(

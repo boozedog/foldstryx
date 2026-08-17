@@ -100,6 +100,7 @@ const EXPECTED = {
   fallowThresholdFiles: [
     'packages/docs/src/view.ts',
     'packages/foldkit/src/card.ts',
+    'packages/foldkit/src/checkbox.ts',
     'packages/foldkit/src/nativeSelect.ts',
     'packages/foldkit/src/row.ts',
     'packages/foldkit/src/sidebar.ts',
