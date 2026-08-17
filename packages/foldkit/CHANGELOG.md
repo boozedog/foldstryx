@@ -1,5 +1,34 @@
 # @foldstryx/foldkit
 
+## 0.2.0
+
+### Minor Changes
+
+- a604de1: Migrate to the Foldkit 0.145 / Effect rc.108 compatibility line.
+
+  - Thread `HtmlBuilder<Message>` through all composition views (`view(config, h)`).
+  - Port Switch, Checkbox, and Tabs to the stateless controlled APIs (parent-owned state and toggle messages).
+  - Migrate Scene/Story tests to `given()` and the current step pipeline.
+  - Rename tooltip/toast/animation messages to the current vocabulary.
+  - Peer ranges move to `foldkit >=0.145.0`, `@foldkit/ui >=0.145.0`, `effect >=4.0.0-rc.108`.
+
+  Effect rc.109 is deferred until Foldkit publishes a compatible release.
+
+- 321519d: Move the product graph to the Foldkit 0.147 / Effect rc.109 compatibility line.
+
+  - `foldkit`/`@foldkit/ui` 0.147.0, `effect` 4.0.0-rc.109, `@effect/vitest` rc.109, `@foldkit/vite-plugin` 0.14.0 (0.15.0 is npm-deprecated; 0.14.0 is the non-deprecated plugin on the rc.109 line).
+  - The sidebar demo declares `effect` as a direct dependency so Vite's
+    `optimizeDeps.include` resolves the `effect/*` namespaces the plugin lists;
+    `pnpm dev` starts without unresolved-dependency warnings.
+  - Update the Effect Lens documentation to the resolved rc.109 baseline, the
+    missing-reference-pack advisory, and the successful CI run `31987528189`.
+  - Peers move to `foldkit >=0.147.0`, `@foldkit/ui >=0.147.0`, `effect >=4.0.0-rc.109`.
+
+### Patch Changes
+
+- 41f03b8: Tooling-only: migrate the repository package manager from pnpm to Nub
+  (foldstryx#31). No runtime, API, or behavior change.
+
 ## 0.1.0
 
 ### Minor Changes
