@@ -64,7 +64,16 @@
         "files": ["packages/kitchen-sink/src/index.ts"],
         "maxCrap": 200,
         "maxUnitSize": 140,
+        "maxCognitive": 30,
+        "maxCyclomatic": 30,
         "reason": "Kitchen-sink catalog view intentionally composes all primitive demonstrations in one vertical page."
+      },
+      {
+        "files": ["packages/foldkit/src/gridFocus.ts"],
+        "maxCognitive": 35,
+        "maxCyclomatic": 30,
+        "maxCrap": 140,
+        "reason": "Grid keyboard navigation step keeps donor geometry together; covered by gridFocus unit and scene tests."
       },
       {
         "files": ["packages/docs/src/view.ts"],

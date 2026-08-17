@@ -101,6 +101,7 @@ const EXPECTED = {
     'packages/docs/src/view.ts',
     'packages/foldkit/src/card.ts',
     'packages/foldkit/src/checkbox.ts',
+    'packages/foldkit/src/gridFocus.ts',
     'packages/foldkit/src/row.ts',
     'packages/foldkit/src/selector.ts',
     'packages/foldkit/src/sidebar.ts',
