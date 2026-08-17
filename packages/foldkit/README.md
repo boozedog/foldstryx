@@ -14,14 +14,13 @@ notes.
 
 ## Compatibility
 
-Requires the Foldkit 0.145 / Effect RC compatibility line:
+Requires the Foldkit 0.147 / Effect RC compatibility line:
 
-- `foldkit@>=0.145.0`, `@foldkit/ui@>=0.145.0`
-- `effect@>=4.0.0-rc.108`
+- `foldkit@>=0.147.0`, `@foldkit/ui@>=0.147.0`
+- `effect@>=4.0.0-rc.109`
 
 Since Foldkit 0.145, `foldkit/html` threads an `HtmlBuilder<Message>` into
 every view instead of exposing an `html<Message>()` factory. Foldstryx
 composition views mirror that: views take the frame's builder as their last
 parameter (`Button.view(config, h)`). Switch, Checkbox, and Tabs are
 stateless controlled views with parent-owned state and toggle messages.
-Effect `rc.109` is deferred until Foldkit publishes a compatible release.

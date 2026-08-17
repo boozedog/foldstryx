@@ -11,6 +11,14 @@ Baseline HEAD: `3b5eee9` (Phase 4a scoped hook). Verified 2026-08-16 with
 no changes to CI, hooks, config, or dependencies beyond the documented Phases 2–4
 commits already on master.
 
+Post-adoption refresh (2026-08-17): re-verified in the working tree on top of
+`a604de1` after adopting the Foldkit 0.147 / Effect rc.109 compatibility line
+([foldstryx#30](https://github.com/boozedog/foldstryx/issues/30); the rc.109
+adoption itself is the uncommitted post-RC cleanup, to land as the next commit).
+The product graph now resolves `effect@4.0.0-rc.109`; the gate behavior,
+provider set, and exit model are unchanged. The refreshed facts below replace
+the beta.83 baseline values where they conflict.
+
 ## Artifact pin
 
 | Item               | Value                                                                                     |
@@ -25,17 +33,19 @@ use.
 
 ## Effect resolution and reference-pack status
 
-| Field              | Value                                                        |
-| ------------------ | ------------------------------------------------------------ |
-| Effect (lockfile)  | `4.0.0-beta.83`                                              |
-| Effect (installed) | `4.0.0-beta.83`                                              |
-| Reference pack     | none (missing)                                               |
-| Diagnostic         | `[warning] no reference pack found for effect 4.0.0-beta.83` |
+| Field              | Value                                                       |
+| ------------------ | ----------------------------------------------------------- |
+| Effect (lockfile)  | `4.0.0-rc.109`                                              |
+| Effect (installed) | `4.0.0-rc.109`                                              |
+| Reference pack     | none (missing)                                              |
+| Diagnostic         | `[warning] no reference pack found for effect 4.0.0-rc.109` |
 
 Resolution is per workspace: the external-consumer packages (including
-`packages/foldkit`) resolve `4.0.0-beta.83`. The `packages/oxlint-plugin-foldstryx`
-tooling workspace resolves `4.0.0-beta.100` in the lockfile; it is excluded from
-lint and is not part of the Lens pilot.
+`packages/foldkit`) resolve `4.0.0-rc.109`. The `packages/oxlint-plugin-foldstryx`
+tooling workspace keeps its frozen `4.0.0-beta.100` baseline in the lockfile
+(`effect` devDependency and `effect-oxlint`); it is excluded from lint and is not
+part of the Lens pilot. That beta.100 exception is the tooling baseline for the
+retired foldstryx async rules and is unchanged by the RC migration.
 
 `effect-lens doctor --project . --workspace packages/foldkit` reports the
 workspace's lockfile version, installed version, and reference-pack status. The
@@ -128,33 +138,36 @@ are still clean under the full unified provider set (lens + foldstryx + stylex
   `pnpm lint`. These checks are evaluation-only; neither workspace is part of the
   gate and no workspace-scoped CI or hook step was added for them.
 
-Residual risk: GitHub Actions on `master` had not executed the dedicated Lens
-step for any Phase 3–5 push at closeout — the `pnpm check` job fails before it
-at the pre-existing `check:demo` stage (`vite preview did not report a URL`),
-an unrelated flake that predates the adoption. The gate is evidenced locally
-(this document and the closeout re-verification); Actions will exercise the
-Lens step once the `check:demo` flake is fixed.
+The dedicated Lens job now runs in CI. GitHub Actions run
+`31987528189` executed the "Effect Lens (foldkit)" step successfully (0
+findings, exit 0) on master at HEAD `a604de1` (the 0.145 / rc.108 migration
+commit) — that run is the 0.145-era CI evidence that the gate executes end to
+end. The pre-existing `check:demo` flake that blocked earlier runs (`vite
+preview did not report a URL`) was fixed in `aa8bf31` (ANSI-safe Vite preview
+readiness), so the Lens step is exercised on every push.
 
 ## Baseline result
 
-`effect-lens adoption audit --project . --workspace packages/foldkit` at baseline:
+`effect-lens adoption audit --project . --workspace packages/foldkit` at the
+rc.109 working tree (uncommitted post-RC cleanup):
 
-- effect: `4.0.0-beta.83` (lockfile); reference pack missing; oxlint
+- effect: `4.0.0-rc.109` (lockfile); reference pack missing; oxlint
   `.oxlintrc.json` configured; 3 override blocks; all providers above active.
 - unified gate: 0 findings (0 errors, 0 warnings).
 - recommendations: `[fetch-pack]` — advisory, the missing reference pack.
 - audit is read-only; no files were changed.
 
-`pnpm check:effect-lens` at baseline: linted 71 files (config: project),
-findings 0 (0 errors, 0 warnings), exit 0.
+`pnpm check:effect-lens` on the rc.109 graph: linted 72 files (config:
+project), findings 0 (0 errors, 0 warnings), exit 0.
 
 Exit model, check gate: any finding fails automation — `Ok = 0`, `Warning = 1`
-(warnings), `Error = 2` (errors). `pnpm check:effect-lens` exits 0 at baseline
+(warnings), `Error = 2` (errors). `pnpm check:effect-lens` exits 0 on the
+rc.109 graph
 because there are no findings.
 
 Diagnostic commands: the missing-pack advisory is not a `check` finding, but
 `doctor` and `adoption audit` surface it as a non-zero diagnostic — both exit 1
-(`Warning`) at this baseline even though `pnpm check:effect-lens` exits 0. The
+(`Warning`) for `effect@4.0.0-rc.109` even though `pnpm check:effect-lens` exits 0. The
 unified CI/hook gate relies on the check, not on doctor/audit.
 
 ## Node requirement

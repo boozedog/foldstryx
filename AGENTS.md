@@ -13,7 +13,7 @@ is a later product decision, not a day-1 merge.
 ## Stack
 
 - **Foldkit** — MVU UI (`Runtime`, `Schema`, `Match`, view helpers)
-- **Effect v4** — `effect@4.0.0-beta.x`
+- **Effect v4** — `effect@4.0.0-rc.109` (Foldkit 0.147 compatibility line)
 - **StyleX** — component styles and design tokens (Astryx-faithful)
 - **Vite** — demo / kitchen-sink bundler (when examples land)
 

@@ -56,13 +56,16 @@ importers:
       '@foldstryx/styles':
         specifier: workspace:*
         version: link:../../packages/styles
+      effect:
+        specifier: 4.0.0-rc.109
+        version: 4.0.0-rc.109
       foldkit:
-        specifier: 0.145.0
-        version: 0.145.0(effect@4.0.0-rc.108)
+        specifier: 0.147.0
+        version: 0.147.0(effect@4.0.0-rc.109)
     devDependencies:
       '@foldkit/vite-plugin':
-        specifier: 0.13.1
-        version: 0.13.1(effect@4.0.0-rc.108)(foldkit@0.145.0(effect@4.0.0-rc.108))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))
+        specifier: 0.14.0
+        version: 0.14.0(effect@4.0.0-rc.109)(foldkit@0.147.0(effect@4.0.0-rc.109))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))
       '@stylexjs/unplugin':
         specifier: ^0.19.0
         version: 0.19.0(unplugin@2.3.11)
@@ -89,17 +92,17 @@ importers:
         version: link:../styles
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-rc.108
-        version: 4.0.0-rc.108(effect@4.0.0-rc.108)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))
+        specifier: 4.0.0-rc.109
+        version: 4.0.0-rc.109(effect@4.0.0-rc.109)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))
       '@foldkit/ui':
-        specifier: 0.145.0
-        version: 0.145.0(effect@4.0.0-rc.108)(foldkit@0.145.0(effect@4.0.0-rc.108))
+        specifier: 0.147.0
+        version: 0.147.0(effect@4.0.0-rc.109)(foldkit@0.147.0(effect@4.0.0-rc.109))
       effect:
-        specifier: 4.0.0-rc.108
-        version: 4.0.0-rc.108
+        specifier: 4.0.0-rc.109
+        version: 4.0.0-rc.109
       foldkit:
-        specifier: 0.145.0
-        version: 0.145.0(effect@4.0.0-rc.108)
+        specifier: 0.147.0
+        version: 0.147.0(effect@4.0.0-rc.109)
       happy-dom:
         specifier: ^20.10.4
         version: 20.11.2
@@ -120,17 +123,17 @@ importers:
         version: 0.19.0
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-rc.108
-        version: 4.0.0-rc.108(effect@4.0.0-rc.108)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))
+        specifier: 4.0.0-rc.109
+        version: 4.0.0-rc.109(effect@4.0.0-rc.109)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))
       '@foldkit/ui':
-        specifier: 0.145.0
-        version: 0.145.0(effect@4.0.0-rc.108)(foldkit@0.145.0(effect@4.0.0-rc.108))
+        specifier: 0.147.0
+        version: 0.147.0(effect@4.0.0-rc.109)(foldkit@0.147.0(effect@4.0.0-rc.109))
       effect:
-        specifier: 4.0.0-rc.108
-        version: 4.0.0-rc.108
+        specifier: 4.0.0-rc.109
+        version: 4.0.0-rc.109
       foldkit:
-        specifier: 0.145.0
-        version: 0.145.0(effect@4.0.0-rc.108)
+        specifier: 0.147.0
+        version: 0.147.0(effect@4.0.0-rc.109)
       happy-dom:
         specifier: ^20.10.4
         version: 20.11.2
@@ -151,11 +154,11 @@ importers:
         version: link:../styles
     devDependencies:
       effect:
-        specifier: 4.0.0-rc.108
-        version: 4.0.0-rc.108
+        specifier: 4.0.0-rc.109
+        version: 4.0.0-rc.109
       foldkit:
-        specifier: 0.145.0
-        version: 0.145.0(effect@4.0.0-rc.108)
+        specifier: 0.147.0
+        version: 0.147.0(effect@4.0.0-rc.109)
       happy-dom:
         specifier: ^20.10.4
         version: 20.11.2
@@ -410,10 +413,10 @@ packages:
     resolution: {integrity: sha512-bsctKj3pcr/pz6mzGq/AGpFoa8LFkKukmpYmXKxdCRbPybC2EBJHOLag8mAKkr64ZqKpjHthgb2X4xXEKV+McA==}
     hasBin: true
 
-  '@effect/vitest@4.0.0-rc.108':
-    resolution: {integrity: sha512-XD2GP1JATN28wnIeFGsBqYMuQDCHIodKKgFulGyG91GvuHqgf2gz+WxR2LPdyNoKMtr7lsbRzVj07niSYtIKzA==}
+  '@effect/vitest@4.0.0-rc.109':
+    resolution: {integrity: sha512-vu5ZkidJ/gM/+a0M07Jnq1PV4duFlYc+4Vj9TsJysK4Us7LL5bwV6uXiT7mi1/IM/3HgfAwc7Q9ROj8M65G4pA==}
     peerDependencies:
-      effect: ^4.0.0-rc.108
+      effect: ^4.0.0-rc.109
       vitest: '>=4.1.0 <5.0.0'
 
   '@esbuild/aix-ppc64@0.28.2':
@@ -625,18 +628,18 @@ packages:
     resolution: {integrity: sha512-wp4a1ogiTiYpOW+O9zoBFy1r/y/KyWOCoDuUhzKC0UpAkNYc3zWYpCEtUaTC/IyIMEWw+9dCZWYuoer4WorAuA==}
     engines: {node: '>=20.19.0 || >=22.12.0'}
 
-  '@foldkit/ui@0.145.0':
-    resolution: {integrity: sha512-FOOwQrpuAsVBcD97S/KSgtSB85pS4yWPoQR0fgEpd0tGG6v6BIPxgZH4SS+s8fmQpw9gTnkXyz3eEuphU63uig==}
+  '@foldkit/ui@0.147.0':
+    resolution: {integrity: sha512-iT1S8IvDMPbZwW95sQfomYlM8liVswmh5MzuNhoeUGLIex0YjiJS/p30fKKYsG0RsomsehCMG0M6PUDHCGvg0Q==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: 4.0.0-rc.108
+      effect: 4.0.0-rc.109
       foldkit: ^0
 
-  '@foldkit/vite-plugin@0.13.1':
-    resolution: {integrity: sha512-IrLwzMolg0Isd1NYXn5ykbKBrwJ9JRchdgN6eLppBv9iXjjzpYkT5aCf76VK4wyHuIRrKRwKFCwXajeuIa3U5w==}
+  '@foldkit/vite-plugin@0.14.0':
+    resolution: {integrity: sha512-TxcSCTh+vWlOn54B13WOPDbqwYmGHLmoK6wAvzDFFRVjqNWkE/bb+XR/jKcseNf95ykSWxQJx9uXg5Qkp51Gzg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: 4.0.0-rc.108
+      effect: 4.0.0-rc.109
       foldkit: ^0
       vite: ^7.0.0 || ^8.0.0
 
@@ -1251,9 +1254,6 @@ packages:
   effect@4.0.0-beta.100:
     resolution: {integrity: sha512-K4ed+BS3HyE+NoAZ8pJss2DpuK41mb856IO7ZlPfnwBXbq8oTtAAurrsVnwe2hzPamIuaZp/Pq4/xp9qORYv8Q==}
 
-  effect@4.0.0-rc.108:
-    resolution: {integrity: sha512-KmI3DlKZWPvCL4QQ2FMaPOuxMt/7DrKMENCY/gQ+MkDR5QYw25wgU5Zmh/wVLboNjIci1gNOgNCFe4xqgxli3A==}
-
   effect@4.0.0-rc.109:
     resolution: {integrity: sha512-6ubcOCtfdbmFO5+vgcT2HsTw5s+n3aMUj4eAIbVpUxP7+VYCwXxxcBHgiWgizOrGO1eGmuOBFek3mM0dFcwaWA==}
 
@@ -1267,6 +1267,10 @@ packages:
   entities@7.0.1:
     resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
     engines: {node: '>=0.12'}
+
+  entities@8.0.0:
+    resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
+    engines: {node: '>=20.19.0'}
 
   es-module-lexer@2.3.1:
     resolution: {integrity: sha512-shc1dbU90Yl/xq1QrC7QRtfcwURZuVRfPhZbDoldJ1cn1gzDvBaBWlv0eFolj5+0znnPJz5TXLxsN77X/12KTA==}
@@ -1336,11 +1340,12 @@ packages:
     resolution: {integrity: sha512-PpOwAdQ/YlXQ2vj8a3h8IipDuYRi3wceVQQGYWxNINccq40Anw7BlsEXCMbt1Zt+OLA6Fq9suIpIWD0OsnISlw==}
     engines: {node: '>=8'}
 
-  foldkit@0.145.0:
-    resolution: {integrity: sha512-gAWg5UMtdGhPPp55EOCDE2p/B02YUMRzT0XENb7cQx21akUYcnbgs0SsjC5L5NLiL0BGp7873BoJqRy2jsvYFQ==}
+  foldkit@0.147.0:
+    resolution: {integrity: sha512-RCyvuRjEXiMP62XCO5A+ati2kb+Na+HOQeTmDJU8dbtWuqHrU+0jSbWos4GPaxshOJ/V1kxP9X8nj63cBXu7Dw==}
     engines: {node: '>=18.0.0'}
+    deprecated: Server-rendering security fix incoming in the next release. Safe for SPA use; prefer the next version if you use foldkit/experimental/server.
     peerDependencies:
-      effect: 4.0.0-rc.108
+      effect: 4.0.0-rc.109
 
   fs-extra@7.0.1:
     resolution: {integrity: sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==}
@@ -1630,6 +1635,9 @@ packages:
 
   parse-statements@1.0.11:
     resolution: {integrity: sha512-HlsyYdMBnbPQ9Jr/VgJ1YF4scnldvJpJxCVx6KgqPL4dxppsWrJHCIIxQXMJrqGnsRkNPATbeMJ8Yxu7JMsYcA==}
+
+  parse5@8.0.1:
+    resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
 
   path-exists@4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
@@ -2254,9 +2262,9 @@ snapshots:
       '@effect/tsgo-win32-arm64': 0.21.0
       '@effect/tsgo-win32-x64': 0.21.0
 
-  '@effect/vitest@4.0.0-rc.108(effect@4.0.0-rc.108)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))':
+  '@effect/vitest@4.0.0-rc.109(effect@4.0.0-rc.109)(vitest@4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)))':
     dependencies:
-      effect: 4.0.0-rc.108
+      effect: 4.0.0-rc.109
       vitest: 4.1.10(@types/node@26.2.0)(happy-dom@20.11.2)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))
 
   '@esbuild/aix-ppc64@0.28.2':
@@ -2378,16 +2386,16 @@ snapshots:
     transitivePeerDependencies:
       - effect
 
-  '@foldkit/ui@0.145.0(effect@4.0.0-rc.108)(foldkit@0.145.0(effect@4.0.0-rc.108))':
+  '@foldkit/ui@0.147.0(effect@4.0.0-rc.109)(foldkit@0.147.0(effect@4.0.0-rc.109))':
     dependencies:
       '@floating-ui/dom': 1.8.0
-      effect: 4.0.0-rc.108
-      foldkit: 0.145.0(effect@4.0.0-rc.108)
+      effect: 4.0.0-rc.109
+      foldkit: 0.147.0(effect@4.0.0-rc.109)
 
-  '@foldkit/vite-plugin@0.13.1(effect@4.0.0-rc.108)(foldkit@0.145.0(effect@4.0.0-rc.108))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))':
+  '@foldkit/vite-plugin@0.14.0(effect@4.0.0-rc.109)(foldkit@0.147.0(effect@4.0.0-rc.109))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0))':
     dependencies:
-      effect: 4.0.0-rc.108
-      foldkit: 0.145.0(effect@4.0.0-rc.108)
+      effect: 4.0.0-rc.109
+      foldkit: 0.147.0(effect@4.0.0-rc.109)
       magic-string: 0.30.21
       vite: 8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(yaml@2.9.0)
       ws: 8.21.3
@@ -2848,14 +2856,6 @@ snapshots:
       uuid: 14.0.1
       yaml: 2.9.0
 
-  effect@4.0.0-rc.108:
-    dependencies:
-      '@standard-schema/spec': 1.1.0
-      fast-check: 4.9.0
-      kubernetes-types: 1.30.0
-      msgpackr: 2.0.5
-      uuid: 14.0.1
-
   effect@4.0.0-rc.109:
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -2870,6 +2870,8 @@ snapshots:
       strip-ansi: 6.0.1
 
   entities@7.0.1: {}
+
+  entities@8.0.0: {}
 
   es-module-lexer@2.3.1: {}
 
@@ -2964,9 +2966,10 @@ snapshots:
       locate-path: 5.0.0
       path-exists: 4.0.0
 
-  foldkit@0.145.0(effect@4.0.0-rc.108):
+  foldkit@0.147.0(effect@4.0.0-rc.109):
     dependencies:
-      effect: 4.0.0-rc.108
+      effect: 4.0.0-rc.109
+      parse5: 8.0.1
 
   fs-extra@7.0.1:
     dependencies:
@@ -3228,6 +3231,10 @@ snapshots:
       parse-statements: 1.0.11
 
   parse-statements@1.0.11: {}
+
+  parse5@8.0.1:
+    dependencies:
+      entities: 8.0.0
 
   path-exists@4.0.0: {}
 

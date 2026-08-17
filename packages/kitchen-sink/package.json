@@ -37,12 +37,12 @@
     "@foldstryx/styles": "workspace:*"
   },
   "peerDependencies": {
-    "effect": ">=4.0.0-rc.108",
-    "foldkit": ">=0.145.0"
+    "effect": ">=4.0.0-rc.109",
+    "foldkit": ">=0.147.0"
   },
   "devDependencies": {
-    "effect": "4.0.0-rc.108",
-    "foldkit": "0.145.0",
+    "effect": "4.0.0-rc.109",
+    "foldkit": "0.147.0",
     "happy-dom": "^20.10.4",
     "typescript": "^7.0.2",
     "vitest": "^4.1.9"

@@ -183,7 +183,7 @@ provider (consumer-side pilot for
 Unified mode aggregates the `lens`, `foldstryx`, and `stylex` providers plus the
 Foldkit MVU rules over the workspace. Any finding (warning or error) fails the
 check gate; advisory diagnostics such as the expected missing
-`effect@4.0.0-beta.83` reference pack are not findings and do not fail the check.
+`effect@4.0.0-rc.109` reference pack are not findings and do not fail the check.
 
 | Provider    | Owns                                                                                                 |
 | ----------- | ---------------------------------------------------------------------------------------------------- |
@@ -202,15 +202,15 @@ The reviewed Phase 2–4 audit baseline is recorded in
 
 ## Effect
 
-This repo targets the **Foldkit 0.145 / Effect RC compatibility line**:
+This repo targets the **Foldkit 0.147 / Effect RC compatibility line**:
 
-- `foldkit` and `@foldkit/ui` at `0.145.0`
-- `effect` at `4.0.0-rc.108` (exact peer of Foldkit 0.145)
-- `@effect/vitest` at `4.0.0-rc.108` for the test suite
+- `foldkit` and `@foldkit/ui` at `0.147.0`
+- `effect` at `4.0.0-rc.109` (exact peer of Foldkit 0.147)
+- `@effect/vitest` at `4.0.0-rc.109` for the test suite
 
 Effect usage stays at the Foldkit boundary: `Schema` for models, `Match` for updates.
 
-### Foldkit 0.145 migration notes
+### Foldkit 0.147 migration notes
 
 - `foldkit/html` no longer exposes the `html<Message>()` builder factory.
   Views receive an `HtmlBuilder<Message>` and thread it through closures;
@@ -221,13 +221,6 @@ Effect usage stays at the Foldkit boundary: `Schema` for models, `Match` for upd
   `Selected` OutMessage value and passes it back in as `selectedValue`.
 - Foldstryx composition views take the frame's builder as their last
   parameter: `Button.view(config, h)`.
-
-### Effect rc.109 follow-up (deferred)
-
-The latest npm Effect RC is `4.0.0-rc.109`, but `foldkit@0.145.0` and
-`@foldkit/ui@0.145.0` require the exact `4.0.0-rc.108` peer. Do not force
-`rc.109` or create duplicate unsupported Effect peer instances. Revisit
-`rc.109` when Foldkit publishes a compatible release.
 
 ## Upstream / license
 
