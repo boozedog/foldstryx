@@ -1,7 +1,9 @@
+import { Predicate } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { tableStyles } from '@foldstryx/styles'
 
+import * as Checkbox from './checkbox.js'
 import { elAttrs, sxAttrs } from './sx.js'
 
 /** Scrollable card chrome around a table. */
@@ -93,11 +95,13 @@ export type TdAlign = 'left' | 'right' | 'narrow' | 'plain' | 'plainRight'
 /** Generic cell tone — consumers map domain meaning onto these axes. */
 export type TdTone = 'destructive' | 'success' | 'warning'
 
-export type TdConfig = Readonly<{
+export type TdConfig<ParentMessage = never> = Readonly<{
   align?: TdAlign
   /** Presentation tone (color). Independent of alignment. */
   tone?: TdTone
   children: ReadonlyArray<Html | string> | string
+  onClick?: ParentMessage
+  isPressed?: boolean
 }>
 
 const tdStyle = (align: TdAlign = 'left') => {
@@ -128,9 +132,9 @@ const tdToneStyle = (tone: TdTone | undefined) => {
   }
 }
 
-const normalizeTd = (
-  config: TdConfig | string | ReadonlyArray<Html | string>,
-): TdConfig => {
+const normalizeTd = <ParentMessage>(
+  config: TdConfig<ParentMessage> | string | ReadonlyArray<Html | string>,
+): TdConfig<ParentMessage> => {
   if (typeof config === 'string') return { children: config }
   if (isArray(config)) return { children: config }
   return config
@@ -138,7 +142,7 @@ const normalizeTd = (
 
 /** Styled table data cell. */
 export const td = <ParentMessage>(
-  config: TdConfig | string | ReadonlyArray<Html | string>,
+  config: TdConfig<ParentMessage> | string | ReadonlyArray<Html | string>,
   h: HtmlBuilder<ParentMessage>,
 ): Html => {
   const normalized = normalizeTd(config)
@@ -147,11 +151,34 @@ export const td = <ParentMessage>(
       ? [normalized.children]
       : normalized.children
 
+  const interactive =
+    normalized.onClick !== undefined
+      ? h.button(
+          elAttrs<ParentMessage>(
+            sxAttrs(
+              h,
+              tableStyles.cellInteractive,
+              normalized.isPressed === true
+                ? tableStyles.cellPressed
+                : undefined,
+            ),
+            h.Type('button'),
+            ...(normalized.isPressed !== undefined
+              ? [h.AriaPressed(normalized.isPressed ? 'true' : 'false')]
+              : []),
+            ...(Predicate.isNotUndefined(normalized.onClick)
+              ? [h.OnClick(normalized.onClick)]
+              : []),
+          ),
+          children,
+        )
+      : undefined
+
   return h.td(
     elAttrs<ParentMessage>(
       sxAttrs(h, tdStyle(normalized.align), tdToneStyle(normalized.tone)),
     ),
-    children,
+    interactive !== undefined ? [interactive] : children,
   )
 }
 
@@ -160,6 +187,7 @@ export type TrPresentation = 'warning' | 'accent' | 'summary'
 
 export type TrConfig = Readonly<{
   presentation?: TrPresentation
+  isSelected?: boolean
   children: ReadonlyArray<Html | string>
 }>
 
@@ -181,8 +209,84 @@ export const tr = <ParentMessage>(
   config: TrConfig,
   h: HtmlBuilder<ParentMessage>,
 ): Html => {
+  const isSelected = config.isSelected === true
   return h.tr(
-    elAttrs<ParentMessage>(sxAttrs(h, trStyle(config.presentation))),
+    elAttrs<ParentMessage>(
+      sxAttrs(
+        h,
+        trStyle(config.presentation),
+        isSelected ? tableStyles.rowSelected : undefined,
+      ),
+      ...(isSelected ? [h.AriaSelected(true)] : []),
+    ),
     config.children,
   )
+}
+
+export type SelectionHeaderConfig<ParentMessage> = Readonly<{
+  checked: boolean
+  isIndeterminate?: boolean
+  onChange: (checked: boolean) => ParentMessage
+  ariaLabel?: string
+  isDisabled?: boolean
+}>
+
+/** Select-all checkbox header cell (dense). */
+export const selectionHeader = <ParentMessage>(
+  config: SelectionHeaderConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
+  toSyncParent: (
+    message: typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type,
+  ) => ParentMessage,
+): Html => {
+  return h.th(elAttrs<ParentMessage>(sxAttrs(h, tableStyles.selectionCell)), [
+    Checkbox.control(
+      {
+        checked: config.checked,
+        onChange: config.onChange,
+        ariaLabel: config.ariaLabel ?? 'Select all',
+        ...(config.isDisabled === true ? { isDisabled: true } : {}),
+        ...(config.isIndeterminate === true ? { isIndeterminate: true } : {}),
+      },
+      h,
+      toSyncParent,
+    ),
+  ])
+}
+
+export type SelectionCellConfig<ParentMessage> = Readonly<{
+  rowId: string
+  rowLabel: string
+  checked: boolean
+  onChange: (checked: boolean) => ParentMessage
+  isSelectable?: boolean
+  isDisabled?: boolean
+}>
+
+/** Per-row selection checkbox cell (dense). */
+export const selectionCell = <ParentMessage>(
+  config: SelectionCellConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
+  toSyncParent: (
+    message: typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type,
+  ) => ParentMessage,
+): Html => {
+  const isSelectable = config.isSelectable ?? true
+  if (!isSelectable) {
+    return h.td(elAttrs<ParentMessage>(sxAttrs(h, tableStyles.selectionCell)))
+  }
+
+  return h.td(elAttrs<ParentMessage>(sxAttrs(h, tableStyles.selectionCell)), [
+    Checkbox.control(
+      {
+        id: `select-${config.rowId}`,
+        checked: config.checked,
+        onChange: config.onChange,
+        ariaLabel: `Select ${config.rowLabel}`,
+        ...(config.isDisabled === true ? { isDisabled: true } : {}),
+      },
+      h,
+      toSyncParent,
+    ),
+  ])
 }

@@ -71,7 +71,7 @@ const renderRoute = (model: Model, h: HtmlBuilder<Message>): Html => {
           case 'layout':
             return LayoutPage.view(h)
           case 'forms':
-            return FormsPage.view(h)
+            return FormsPage.view(model, h)
           case 'feedback':
             return FeedbackPage.view(h)
           case 'data':

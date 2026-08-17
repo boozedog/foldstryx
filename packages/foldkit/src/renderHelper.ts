@@ -38,6 +38,7 @@ export const renderSubmodel = <Model, Message, OutMessage>(
  */
 export const renderWithBuilder = <Message>(
   build: (h: HtmlBuilder<Message>) => Html,
+  ...afterGiven: ReadonlyArray<Scene.SceneStep<undefined, Message, undefined>>
 ): Html => {
   let result: Html = null
   const update = (
@@ -53,6 +54,7 @@ export const renderWithBuilder = <Message>(
       },
     },
     Scene.given(undefined),
+    ...afterGiven,
   )
   return result
 }

@@ -1,6 +1,8 @@
 import {
   borderVars,
   colorVars,
+  durationVars,
+  easeVars,
   radiusVars,
   shadowVars,
   sizeVars,
@@ -9,6 +11,49 @@ import {
   typographyVars,
 } from '@foldstryx/tokens/index.stylex.ts'
 import * as stylex from '@stylexjs/stylex'
+
+/**
+ * Shared input wrapper (Astryx `inputWrapperStyles.base`). Border, surface fill,
+ * hover inset, and `:focus-within` ring live on the wrapper; the inner control
+ * stays borderless.
+ */
+export const inputWrapperStyles = stylex.create({
+  base: {
+    boxSizing: 'border-box',
+    position: 'relative',
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacingVars['--spacing-2'],
+    width: '100%',
+    minWidth: 0,
+    height: sizeVars['--size-element-md'],
+    paddingBlock: spacingVars['--spacing-1'],
+    paddingInline: spacingVars['--spacing-2'],
+    borderWidth: borderVars['--border-width'],
+    borderStyle: 'solid',
+    borderColor: {
+      default: colorVars['--color-border-emphasized'],
+      ':focus-within': colorVars['--color-accent'],
+    },
+    borderRadius: radiusVars['--radius-element'],
+    backgroundColor: colorVars['--color-background-surface'],
+    transitionProperty: 'border-color, box-shadow',
+    transitionDuration: durationVars['--duration-fast'],
+    transitionTimingFunction: easeVars['--ease-standard'],
+    boxShadow: {
+      default: 'none',
+      ':hover:not(:focus-within)': shadowVars['--shadow-inset-hover'],
+      ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
+    },
+    outline: 'none',
+  },
+  disabled: {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+    borderColor: colorVars['--color-border-emphasized'],
+  },
+})
 
 export const inputStyles = stylex.create({
   input: {

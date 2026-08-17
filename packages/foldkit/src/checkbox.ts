@@ -1,5 +1,8 @@
+import { Effect, Schema as S } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { inertHtml } from 'foldkit/html'
+import { m } from 'foldkit/message'
+import * as Mount from 'foldkit/mount'
 
 import { Checkbox as UiCheckbox } from '@foldkit/ui'
 import type {
@@ -10,6 +13,29 @@ import { checkboxStyles, fieldStyles, layoutStyles } from '@foldstryx/styles'
 
 import * as Field from './field.js'
 import { elAttrs, sxAttrs } from './sx.js'
+
+/** Fired when the native indeterminate sync mount attaches. */
+export const CompletedSyncCheckboxIndeterminate = m(
+  'CompletedSyncCheckboxIndeterminate',
+)
+
+export const syncIndeterminateMount = Mount.define(
+  'SyncCheckboxIndeterminate',
+  { indeterminate: S.Boolean },
+  CompletedSyncCheckboxIndeterminate,
+)(
+  ({ indeterminate }) =>
+    element =>
+      Effect.sync(() => {
+        if (
+          element instanceof HTMLInputElement &&
+          element.type === 'checkbox'
+        ) {
+          element.indeterminate = indeterminate
+        }
+        return CompletedSyncCheckboxIndeterminate()
+      }),
+)
 
 const noChildren: ReadonlyArray<never> = []
 
@@ -30,6 +56,7 @@ export type CheckboxControlConfig<ParentMessage> = Readonly<{
   label?: string
   id?: string
   isDisabled?: boolean
+  isIndeterminate?: boolean
   /** Accessible name when no visible label. */
   ariaLabel?: string
 }>
@@ -38,14 +65,26 @@ export type CheckboxControlConfig<ParentMessage> = Readonly<{
 export const control = <ParentMessage>(
   config: CheckboxControlConfig<ParentMessage>,
   h: HtmlBuilder<ParentMessage>,
+  toSyncParent: (
+    message: typeof CompletedSyncCheckboxIndeterminate.Type,
+  ) => ParentMessage,
 ): Html => {
   const accessibleName = config.ariaLabel ?? config.label
 
   const input = h.input(
     elAttrs<ParentMessage>(
-      sxAttrs(h, layoutStyles.checkbox),
+      sxAttrs(
+        h,
+        layoutStyles.checkbox,
+        config.isIndeterminate === true
+          ? layoutStyles.checkboxIndeterminate
+          : undefined,
+      ),
       h.Type('checkbox'),
       h.Checked(config.checked),
+      ...(config.isIndeterminate === true
+        ? [h.AriaChecked('mixed'), h.DataAttribute('indeterminate', '')]
+        : []),
       ...(config.id !== undefined ? [h.Id(config.id)] : []),
       ...(accessibleName !== undefined ? [h.AriaLabel(accessibleName)] : []),
       ...(config.isDisabled === true
@@ -54,6 +93,14 @@ export const control = <ParentMessage>(
       ...(config.isDisabled !== true
         ? [h.OnClick(config.onChange(!config.checked))]
         : []),
+      h.OnMount(
+        Mount.mapMessage(
+          syncIndeterminateMount({
+            indeterminate: config.isIndeterminate === true,
+          }),
+          toSyncParent,
+        ),
+      ),
     ),
   )
 

@@ -45,4 +45,35 @@ export const gridStyles = stylex.create({
   mt3: {
     marginTop: spacingVars['--spacing-3'],
   },
+  alignStart: {
+    alignItems: 'start',
+  },
+  alignCenter: {
+    alignItems: 'center',
+  },
+  alignEnd: {
+    alignItems: 'end',
+  },
+  alignStretch: {
+    alignItems: 'stretch',
+  },
+  justifyStart: {
+    justifyItems: 'start',
+  },
+  justifyCenter: {
+    justifyItems: 'center',
+  },
+  justifyEnd: {
+    justifyItems: 'end',
+  },
+  justifyStretch: {
+    justifyItems: 'stretch',
+  },
+})
+
+/** Dynamic track templates via CSS-var indirection (Astryx Grid parity). */
+export const gridDynamicStyles = stylex.create({
+  templateColumns: (value: string) => ({
+    gridTemplateColumns: value,
+  }),
 })

@@ -1,7 +1,9 @@
 import type { Html } from 'foldkit/html'
+import * as Scene from 'foldkit/scene'
 import { describe, expect, it } from 'vitest'
 
 import * as Grid from './grid.js'
+import { CompletedGridFocus, mount as gridFocusMount } from './gridFocus.js'
 import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
@@ -81,5 +83,92 @@ describe('Grid.view', () => {
       renderWithBuilder(h => Grid.view({ mt: '2', children: ['A'] }, h)),
     )
     expect(hasSx(node, 'mt2')).toBe(true)
+  })
+
+  it('resolves a fixed six-column track template', () => {
+    expect(Grid.templateColumnsFor(6, 'md')).toBe('repeat(6, 1fr)')
+  })
+
+  it('resolves capped responsive columns with auto-fill', () => {
+    const template = Grid.templateColumnsFor(
+      { minWidth: 280, max: 4, repeat: 'fill' },
+      'md',
+    )
+    expect(template).toContain('auto-fill')
+    expect(template).toContain('280px')
+    expect(template).toContain('var(--spacing-4)')
+  })
+
+  it('uses dynamic column styles for columns={6}', () => {
+    const node = asNode(
+      renderWithBuilder(h => Grid.view({ columns: 6, children: ['A'] }, h)),
+    )
+    expect(hasSx(node, 'base')).toBe(true)
+    expect(hasSx(node, 'grid2')).toBe(false)
+    expect(hasSx(node, 'dynamicTemplateColumns')).toBe(true)
+  })
+
+  it('uses dynamic column styles for responsive minWidth + max', () => {
+    const node = asNode(
+      renderWithBuilder(h =>
+        Grid.view(
+          {
+            columns: { minWidth: 280, max: 4, repeat: 'fill' },
+            gap: 'md',
+            children: ['A'],
+          },
+          h,
+        ),
+      ),
+    )
+    expect(hasSx(node, 'dynamicTemplateColumns')).toBe(true)
+    expect(hasSx(node, 'grid2')).toBe(false)
+  })
+
+  it('applies align and justify style keys', () => {
+    const node = asNode(
+      renderWithBuilder(h =>
+        Grid.view(
+          {
+            columns: 3,
+            align: 'center',
+            justify: 'end',
+            children: ['A'],
+          },
+          h,
+        ),
+      ),
+    )
+    expect(hasSx(node, 'alignCenter')).toBe(true)
+    expect(hasSx(node, 'justifyEnd')).toBe(true)
+  })
+})
+
+describe('Grid.matrix', () => {
+  const acknowledgeGridFocus = Scene.Mount.resolve(
+    gridFocusMount,
+    CompletedGridFocus(),
+  )
+
+  it('renders role=grid with column template and gridcells', () => {
+    const node = asNode(
+      renderWithBuilder(
+        h =>
+          Grid.matrix(
+            {
+              columns: 3,
+              ariaLabel: 'Demo matrix',
+              children: [Grid.gridcell(['A'], h), Grid.gridcell(['B'], h)],
+            },
+            h,
+            message => message,
+          ),
+        acknowledgeGridFocus,
+      ),
+    )
+    expect(node.data?.attrs?.['role']).toBe('grid')
+    expect(node.data?.attrs?.['aria-label']).toBe('Demo matrix')
+    expect(hasSx(node, 'dynamicTemplateColumns')).toBe(true)
+    expect(hasSx(node, 'gapMd')).toBe(true)
   })
 })

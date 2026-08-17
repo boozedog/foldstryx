@@ -6,10 +6,15 @@ import { evo } from 'foldkit/struct'
 
 import { describe, it } from '@effect/vitest'
 
-import { control, view as styledCheckboxView } from './checkbox.js'
+import {
+  CompletedSyncCheckboxIndeterminate,
+  control,
+  view as styledCheckboxView,
+  syncIndeterminateMount,
+} from './checkbox.js'
 
 const Toggled = m('Toggled', { checked: S.Boolean })
-const Message = S.Union([Toggled])
+const Message = S.Union([Toggled, CompletedSyncCheckboxIndeterminate])
 type Message = typeof Message.Type
 
 type Model = Readonly<{ checked: boolean }>
@@ -22,8 +27,14 @@ const update = (
     M.withReturnType<readonly [Model, ReadonlyArray<never>]>(),
     M.tagsExhaustive({
       Toggled: ({ checked }) => [evo(model, { checked: () => checked }), []],
+      CompletedSyncCheckboxIndeterminate: () => [model, []],
     }),
   )
+
+const acknowledgeSyncIndeterminate = Scene.Mount.resolve(
+  syncIndeterminateMount,
+  CompletedSyncCheckboxIndeterminate(),
+)
 
 const controlView = (model: Model, h: HtmlBuilder<Message>) =>
   h.div(
@@ -37,6 +48,7 @@ const controlView = (model: Model, h: HtmlBuilder<Message>) =>
           onChange: checked => Toggled({ checked }),
         },
         h,
+        message => message,
       ),
       h.span([h.Id('state')], [model.checked ? 'checked' : 'unchecked']),
     ],
@@ -47,6 +59,7 @@ describe('Checkbox.control scene', () => {
     Scene.scene(
       { update, view: controlView },
       Scene.given({ checked: false }),
+      acknowledgeSyncIndeterminate,
       Scene.expect(Scene.role('checkbox', { name: 'I agree' })).toExist(),
       Scene.expect(Scene.selector('#state')).toHaveText('unchecked'),
     )
@@ -56,6 +69,7 @@ describe('Checkbox.control scene', () => {
     Scene.scene(
       { update, view: controlView },
       Scene.given({ checked: false }),
+      acknowledgeSyncIndeterminate,
       Scene.click(Scene.role('checkbox', { name: 'I agree' })),
       Scene.expect(Scene.selector('#state')).toHaveText('checked'),
     )

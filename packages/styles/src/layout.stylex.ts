@@ -14,6 +14,9 @@ export const layoutStyles = stylex.create({
     width: '16px',
     height: '16px',
   },
+  checkboxIndeterminate: {
+    accentColor: colorVars['--color-accent'],
+  },
   checkboxLabel: {
     display: 'inline-flex',
     alignItems: 'center',

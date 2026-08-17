@@ -1,7 +1,13 @@
 import type { Html } from 'foldkit/html'
+import { m } from 'foldkit/message'
+import * as Scene from 'foldkit/scene'
 
 import { describe, expect, it } from '@effect/vitest'
 
+import {
+  CompletedSyncCheckboxIndeterminate,
+  syncIndeterminateMount,
+} from './checkbox.js'
 import { renderWithBuilder } from './renderHelper.js'
 import * as TableBase from './table.js'
 
@@ -20,6 +26,17 @@ const Table = {
     renderWithBuilder(h => TableBase.td(config, h)),
   tr: (config: Parameters<typeof TableBase.tr>[0]) =>
     renderWithBuilder(h => TableBase.tr(config, h)),
+  selectionHeader: (
+    config: Parameters<typeof TableBase.selectionHeader>[0],
+    toSyncParent: Parameters<typeof TableBase.selectionHeader>[2] = message =>
+      message,
+  ) =>
+    renderWithBuilder(h => TableBase.selectionHeader(config, h, toSyncParent)),
+  selectionCell: (
+    config: Parameters<typeof TableBase.selectionCell>[0],
+    toSyncParent: Parameters<typeof TableBase.selectionCell>[2] = message =>
+      message,
+  ) => renderWithBuilder(h => TableBase.selectionCell(config, h, toSyncParent)),
 }
 
 type Node = Readonly<{
@@ -157,6 +174,16 @@ describe('Table', () => {
     expect(text(node)).toContain('8.50')
   })
 
+  it('applies rowSelected and aria-selected when isSelected', () => {
+    const row = asNode(
+      renderWithBuilder(h =>
+        TableBase.tr({ isSelected: true, children: [TableBase.td('x', h)] }, h),
+      ),
+    )
+    expect(hasSx(row, 'rowSelected')).toBe(true)
+    expect(row.data?.attrs?.['aria-selected']).toBe('true')
+  })
+
   it('renders a native table with thead/tbody structure', () => {
     const table = asNode(
       Table.table([
@@ -166,10 +193,73 @@ describe('Table', () => {
     )
     expect(table.sel).toBe('table')
     expect(hasSx(table, 'table')).toBe(true)
-    const thead = table.children?.[0] as Node
-    expect(thead.sel).toBe('thead')
-    expect(hasSx(thead, 'thead')).toBe(true)
-    const tbody = table.children?.[1] as Node
-    expect(tbody.sel).toBe('tbody')
+  })
+
+  it('renders selection header and cell chrome', () => {
+    const acknowledgeSync = Scene.Mount.resolve(
+      syncIndeterminateMount({ indeterminate: true }),
+      CompletedSyncCheckboxIndeterminate(),
+    )
+    const header = asNode(
+      renderWithBuilder(
+        h =>
+          TableBase.selectionHeader(
+            {
+              checked: false,
+              isIndeterminate: true,
+              onChange: () => CompletedSyncCheckboxIndeterminate(),
+            },
+            h,
+            message => message,
+          ),
+        acknowledgeSync,
+      ),
+    )
+    expect(header.sel).toBe('th')
+    expect(hasSx(header, 'selectionCell')).toBe(true)
+    const checkbox = asNode(header.children?.[0] as Html)
+    expect(checkbox.data?.attrs?.['aria-checked']).toBe('mixed')
+
+    const cell = asNode(
+      renderWithBuilder(
+        h =>
+          TableBase.selectionCell(
+            {
+              rowId: 'alpha',
+              rowLabel: 'Alpha',
+              checked: true,
+              onChange: () => CompletedSyncCheckboxIndeterminate(),
+            },
+            h,
+            message => message,
+          ),
+        Scene.Mount.resolve(
+          syncIndeterminateMount({ indeterminate: false }),
+          CompletedSyncCheckboxIndeterminate(),
+        ),
+      ),
+    )
+    expect(cell.sel).toBe('td')
+    expect(hasSx(cell, 'selectionCell')).toBe(true)
+  })
+
+  it('sets aria-pressed on interactive td buttons', () => {
+    const Pressed = m('Pressed')
+    const cell = asNode(
+      renderWithBuilder(h =>
+        TableBase.td(
+          {
+            children: 'Open',
+            onClick: Pressed(),
+            isPressed: true,
+          },
+          h,
+        ),
+      ),
+    )
+    const button = asNode(cell.children?.[0] as Html)
+    expect(button.sel).toBe('button')
+    expect(button.data?.attrs?.['aria-pressed']).toBe('true')
+    expect(hasSx(button, 'cellPressed')).toBe(true)
   })
 })

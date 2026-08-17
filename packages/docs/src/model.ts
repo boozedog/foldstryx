@@ -1,9 +1,13 @@
-import { Schema as S } from 'effect'
+import { Option, Schema as S } from 'effect'
 import { Command, Runtime } from 'foldkit'
 
+import { Selector } from '@foldstryx/foldkit'
 import { Mount, type Message as SinkMessage } from '@foldstryx/kitchen-sink'
 
 import { Route, RouteSchema } from './routes.js'
+
+const FormsKindSelector = Selector.create<'all' | 'active'>()
+export { FormsKindSelector }
 
 export const Model = S.Struct({
   route: RouteSchema,
@@ -11,6 +15,8 @@ export const Model = S.Struct({
   expanded: S.Array(S.String),
   hovered: S.NullOr(S.String),
   open: S.NullOr(S.String),
+  formsKind: S.Literals(['all', 'active']),
+  formsKindSelector: Selector.Model,
   sink: Mount.Model,
 })
 export type Model = typeof Model.Type
@@ -41,11 +47,20 @@ export const Message = S.Union([
   S.Struct({ _tag: S.Literal('HoverNav'), id: S.optional(S.NullOr(S.String)) }),
   S.Struct({ _tag: S.Literal('OpenNav'), id: S.optional(S.NullOr(S.String)) }),
   S.Struct({ _tag: S.Literal('Noop') }),
+  S.Struct({ _tag: S.Literal('CompletedSyncCheckboxIndeterminate') }),
+  S.Struct({
+    _tag: S.Literal('GotFormsKindSelectorMessage'),
+    message: S.Any,
+  }),
   S.Struct({ _tag: S.Literal('Sink'), message: S.Any }),
 ])
 export type Message =
-  | Exclude<typeof Message.Type, { _tag: 'Sink' }>
+  | Exclude<
+      typeof Message.Type,
+      { _tag: 'Sink' } | { _tag: 'GotFormsKindSelectorMessage' }
+    >
   | { _tag: 'Sink'; message: SinkMessage }
+  | { _tag: 'GotFormsKindSelectorMessage'; message: Selector.Message }
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => {
   const [sink] = Mount.init()
@@ -56,6 +71,8 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => {
       expanded: ['components'],
       hovered: null,
       open: null,
+      formsKind: 'all',
+      formsKindSelector: Selector.init({ id: 'docs-kind' }),
       sink,
     },
     [],
@@ -87,6 +104,29 @@ export const update = (
       return [{ ...model, open: message.id ?? null }, []]
     case 'Noop':
       return [model, []]
+    case 'CompletedSyncCheckboxIndeterminate':
+      return [model, []]
+    case 'GotFormsKindSelectorMessage': {
+      const [formsKindSelector, commands, maybeOut] = FormsKindSelector.update(
+        model.formsKindSelector,
+        message.message,
+      )
+      const formsKind = Option.match(maybeOut, {
+        onNone: () => model.formsKind,
+        onSome: out => out.value,
+      })
+      return [
+        {
+          ...model,
+          formsKindSelector,
+          formsKind,
+        },
+        Command.mapMessages(commands, m => ({
+          _tag: 'GotFormsKindSelectorMessage' as const,
+          message: m,
+        })),
+      ]
+    }
     case 'Sink': {
       const [sink, commands] = Mount.update(model.sink, message.message)
       return [

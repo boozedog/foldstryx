@@ -13,6 +13,12 @@ const make = new Proxy(
 export const avatarStyles = make
 export const buttonStyles = make
 export const gridStyles = make
+export const gridDynamicStyles = {
+  templateColumns: (_value: string) => ({
+    $$css: true,
+    dynamicTemplateColumns: 'sx-dynamicTemplateColumns',
+  }),
+}
 export const layoutStyles = make
 export const pageStyles = make
 export const cardStyles = make
@@ -20,6 +26,8 @@ export const badgeStyles = make
 export const alertStyles = make
 export const tooltipStyles = make
 export const inputStyles = { input: make['input'] }
+export const inputWrapperStyles = make
+export const selectorStyles = make
 export const formDensityStyles = make
 export const fieldStyles = make
 export const checkboxStyles = make
@@ -31,3 +39,5 @@ export const dialogStyles = make
 export const tabsStyles = make
 export const dropdownMenuStyles = make
 export const toastStyles = make
+export const toggleButtonStyles = make
+export const toggleButtonGroupStyles = make

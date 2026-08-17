@@ -55,7 +55,7 @@
         "files": [
           "packages/foldkit/src/checkbox.ts",
           "packages/foldkit/src/switch.ts",
-          "packages/foldkit/src/nativeSelect.ts"
+          "packages/foldkit/src/selector.ts"
         ],
         "maxCrap": 100,
         "reason": "Small closed-union form dispatchers mirror the donor API and are covered by sink/browser verification."

@@ -95,4 +95,35 @@ export const tableStyles = stylex.create({
     borderTopWidth: borderVars['--border-width'],
     fontWeight: fontWeightVars['--font-weight-semibold'],
   },
+  /** Selected row background (Astryx table selection). */
+  rowSelected: {
+    backgroundColor: colorVars['--color-accent-muted'],
+  },
+  /** Full-bleed interactive cell control at table density. */
+  cellInteractive: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderStyle: 'none',
+    color: 'inherit',
+    cursor: 'pointer',
+    display: 'flex',
+    font: 'inherit',
+    height: '100%',
+    justifyContent: 'flex-start',
+    margin: 0,
+    minHeight: spacingVars['--spacing-10'],
+    paddingBlock: spacingVars['--spacing-3'],
+    paddingInline: spacingVars['--spacing-4'],
+    textAlign: 'inherit',
+    width: '100%',
+  },
+  cellPressed: {
+    backgroundColor: colorVars['--color-overlay-pressed'],
+  },
+  selectionCell: {
+    paddingBlock: spacingVars['--spacing-3'],
+    paddingInline: spacingVars['--spacing-2'],
+    verticalAlign: 'middle',
+    width: spacingVars['--spacing-8'],
+  },
 })

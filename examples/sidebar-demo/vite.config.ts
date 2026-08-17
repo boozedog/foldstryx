@@ -34,7 +34,7 @@ const foldkitSubpathDeps = [
 export default defineConfig({
   plugins: [
     stylex.vite({ lightningcssOptions: { exclude: Features.LightDark } }),
-    foldkit(),
+    foldkit({ devToolsMcpPort: 9988 }),
   ],
   optimizeDeps: {
     include: [...foldkitSubpathDeps],

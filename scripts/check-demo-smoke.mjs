@@ -661,8 +661,21 @@ const pageProbe = `async (negative) => {
   if (document.querySelector('[role="img"]') === null) {
     failures.push('missing role=img avatar')
   }
-  if (document.querySelector('img') === null) {
-    failures.push('missing avatar image')
+  // Phase F catalog roles (issues #32–#35).
+  if (document.querySelector('[aria-pressed]') === null) {
+    failures.push('missing aria-pressed toggle button')
+  }
+  if (document.querySelector('table [aria-selected="true"]') === null) {
+    failures.push('missing table aria-selected row')
+  }
+  if (document.querySelector('[role="grid"]') === null) {
+    failures.push('missing role=grid matrix')
+  }
+  const phaseFSections = ['ToggleButton', 'Grid matrix']
+  for (const heading of phaseFSections) {
+    if (!bodyText.includes(heading)) {
+      failures.push('missing catalog section heading: ' + heading)
+    }
   }
   const openDialog = [...document.querySelectorAll('button')].find(
     button => (button.textContent ?? '').trim() === 'Open dialog',

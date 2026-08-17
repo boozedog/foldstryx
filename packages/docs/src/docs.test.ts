@@ -1,9 +1,10 @@
 import { Schema as S } from 'effect'
-import type { Html } from 'foldkit/html'
+import type { Html, HtmlBuilder } from 'foldkit/html'
 import * as Scene from 'foldkit/scene'
 
 import { describe, expect, it } from '@effect/vitest'
 import { AnchorTooltip, CompletedAnchorTooltip } from '@foldkit/ui/tooltip'
+import { Checkbox, GridFocus } from '@foldstryx/foldkit'
 
 import { Message, init, update } from './model.js'
 import type { Model } from './model.js'
@@ -46,26 +47,74 @@ const acknowledgeTooltip = Scene.Mount.resolve(
   CompletedAnchorTooltip(),
 )
 
-const render = (model: Model, resolveTooltip = false): Node => {
+const acknowledgeFormsMounts = Scene.Mount.resolve(
+  Checkbox.syncIndeterminateMount({ indeterminate: false }),
+  Checkbox.CompletedSyncCheckboxIndeterminate(),
+)
+
+const acknowledgeDataMounts = Scene.Mount.resolveAll(
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+)
+
+const acknowledgeKitchenSinkMounts = Scene.Mount.resolveAll(
+  [GridFocus.mount, GridFocus.CompletedGridFocus()],
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    Checkbox.syncIndeterminateMount,
+    Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+)
+
+type RenderStep =
+  | ReturnType<typeof Scene.Mount.resolve>
+  | ReturnType<typeof Scene.Mount.resolveAll>
+
+const sceneView = (m: Model, h: HtmlBuilder<Message>) => view(m, h).body
+
+const render = (model: Model): Node => {
   let result: Html = null
-  if (resolveTooltip) {
-    Scene.scene(
-      { update, view: (m, h) => view(m, h).body },
-      Scene.given(model),
-      acknowledgeTooltip,
-      Scene.tap(simulation => {
-        result = simulation.html
-      }),
-    )
-  } else {
-    Scene.scene(
-      { update, view: (m, h) => view(m, h).body },
-      Scene.given(model),
-      Scene.tap(simulation => {
-        result = simulation.html
-      }),
-    )
-  }
+  Scene.scene(
+    { update, view: sceneView },
+    Scene.given(model),
+    Scene.tap(simulation => {
+      result = simulation.html
+    }),
+  )
+  return asNode(result)
+}
+
+const renderWithSteps = (model: Model, ...steps: RenderStep[]): Node => {
+  let result: Html = null
+  Scene.scene(
+    { update, view: sceneView },
+    Scene.given(model),
+    ...steps,
+    Scene.tap(simulation => {
+      result = simulation.html
+    }),
+  )
   return asNode(result)
 }
 
@@ -104,11 +153,14 @@ describe('docs view', () => {
     const layout = render(withRoute(Route.layout))
     expect(collectText(layout)).toContain('Stack')
     expect(collectText(layout)).toContain('Row')
-    const forms = render(withRoute(Route.forms))
-    expect(collectText(forms)).toContain('Native select')
+    const forms = renderWithSteps(
+      withRoute(Route.forms),
+      acknowledgeFormsMounts,
+    )
+    expect(collectText(forms)).toContain('Selector')
     const feedback = render(withRoute(Route.feedback))
     expect(collectText(feedback)).toContain('Alerts')
-    const data = render(withRoute(Route.data))
+    const data = renderWithSteps(withRoute(Route.data), acknowledgeDataMounts)
     expect(collectText(data)).toContain('Data display')
     expect(collectText(data)).toContain('Table')
     const media = render(withRoute(Route.media))
@@ -120,7 +172,11 @@ describe('docs view', () => {
   })
 
   it('renders the kitchen-sink submodel on the kitchen-sink route', () => {
-    const root = render(withRoute(Route.kitchenSink), true)
+    const root = renderWithSteps(
+      withRoute(Route.kitchenSink),
+      acknowledgeTooltip,
+      acknowledgeKitchenSinkMounts,
+    )
     expect(collectText(root)).toContain('Foldstryx catalog')
     expect(collectText(root)).toContain('Stack and Row')
   })

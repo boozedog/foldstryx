@@ -1,8 +1,22 @@
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
-import { Card, ListRow, Stack, Stat, Table, Text } from '@foldstryx/foldkit'
+import {
+  Card,
+  Checkbox,
+  ListRow,
+  Stack,
+  Stat,
+  Table,
+  Text,
+} from '@foldstryx/foldkit'
 
 import type { Message } from '../model.js'
+
+const noop = (): Message => ({ _tag: 'Noop' })
+
+const mapSyncCheckbox = (
+  message: typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type,
+): Message => message
 
 export const view = (h: HtmlBuilder<Message>): Html =>
   Stack.view(
@@ -13,14 +27,16 @@ export const view = (h: HtmlBuilder<Message>): Html =>
         Text.view(
           {
             variant: 'muted',
-            children: 'Tables, stats, and list rows for structured data.',
+            children:
+              'Tables, stats, and list rows. Row selection chrome follows Astryx table selection semantics.',
           },
           h,
         ),
         Card.section(
           {
             title: 'Table',
-            description: 'Accessible table with alignment and tone.',
+            description:
+              'Accessible table with selection column helpers and aria-selected rows.',
             padded: true,
             children: [
               Table.wrap(
@@ -32,6 +48,16 @@ export const view = (h: HtmlBuilder<Message>): Html =>
                           Table.tr(
                             {
                               children: [
+                                Table.selectionHeader(
+                                  {
+                                    checked: false,
+                                    isIndeterminate: true,
+                                    onChange: noop,
+                                    isDisabled: true,
+                                  },
+                                  h,
+                                  mapSyncCheckbox,
+                                ),
                                 Table.th('Project', h),
                                 Table.th(
                                   { align: 'right', children: 'Value' },
@@ -48,7 +74,19 @@ export const view = (h: HtmlBuilder<Message>): Html =>
                         [
                           Table.tr(
                             {
+                              isSelected: true,
                               children: [
+                                Table.selectionCell(
+                                  {
+                                    rowId: 'foldstryx',
+                                    rowLabel: 'Foldstryx',
+                                    checked: true,
+                                    onChange: noop,
+                                    isDisabled: true,
+                                  },
+                                  h,
+                                  mapSyncCheckbox,
+                                ),
                                 Table.td('Foldstryx', h),
                                 Table.td(
                                   { align: 'right', children: '1,240' },

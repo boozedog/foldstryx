@@ -15,21 +15,24 @@ import {
   EmptyState,
   Field,
   Grid,
+  GridFocus,
   Input,
   ListRow,
   LoadingPanel,
-  NativeSelect,
   Page,
   Pagination,
   Row,
+  Selector,
   Separator,
   Stack,
   Stat,
   Switch,
   Table,
+  TableSelection,
   Tabs,
   Text,
   Toast,
+  ToggleButton,
   Tooltip,
   elAttrs,
   sxAttrs,
@@ -41,6 +44,12 @@ const DemoTabs = Tabs.create<CatalogTab>()
 type CatalogItem = 'edit' | 'duplicate' | 'delete'
 const DemoMenu = DropdownMenu.create<CatalogItem>()
 const DemoToast = Toast.create()
+type KindItem = 'all' | 'active'
+const KindSelector = Selector.create<KindItem>()
+const KIND_OPTIONS: ReadonlyArray<Selector.SelectorOption<KindItem>> = [
+  { value: 'all', label: 'All kinds' },
+  { value: 'active', label: 'Active' },
+]
 
 export const Model = S.Struct({
   clicks: S.Finite,
@@ -49,7 +58,8 @@ export const Model = S.Struct({
   email: S.String,
   filter: S.String,
   includeInactive: S.Boolean,
-  kind: S.String,
+  kind: S.Literals(['all', 'active']),
+  kindSelector: Selector.Model,
   menu: DropdownMenu.Model,
   notifications: S.Boolean,
   page: S.Finite,
@@ -57,13 +67,19 @@ export const Model = S.Struct({
   tabs: Tabs.Model,
   toast: DemoToast.Model,
   tooltip: Tooltip.Model,
+  toggleBold: S.Boolean,
+  toggleView: S.NullOr(S.String),
+  toggleMulti: S.Array(S.String),
+  tableSelected: S.Array(S.String),
+  matrixPressed: S.Array(S.Boolean),
 })
 export type Model = typeof Model.Type
 export const Clicked = () => ({ _tag: 'Clicked' as const })
-export const FieldChanged = (
-  field: 'email' | 'filter' | 'kind',
-  value: string,
-) => ({ _tag: 'FieldChanged' as const, field, value })
+export const FieldChanged = (field: 'email' | 'filter', value: string) => ({
+  _tag: 'FieldChanged' as const,
+  field,
+  value,
+})
 export const IncludeInactiveChanged = (checked: boolean) => ({
   _tag: 'IncludeInactiveChanged' as const,
   checked,
@@ -92,6 +108,10 @@ export const GotTabsMessage = (message: Tabs.Message) => ({
   _tag: 'GotTabsMessage' as const,
   message,
 })
+export const GotKindSelectorMessage = (message: Selector.Message) => ({
+  _tag: 'GotKindSelectorMessage' as const,
+  message,
+})
 export const GotMenuMessage = (message: DropdownMenu.Message) => ({
   _tag: 'GotMenuMessage' as const,
   message,
@@ -106,9 +126,35 @@ export const ShowToast = (
   _tag: 'ShowToast' as const,
   variant,
 })
+export const ToggleBoldChanged = (pressed: boolean) => ({
+  _tag: 'ToggleBoldChanged' as const,
+  pressed,
+})
+export const ToggleViewChanged = (value: string | null) => ({
+  _tag: 'ToggleViewChanged' as const,
+  value,
+})
+export const ToggleMultiChanged = (value: ReadonlyArray<string>) => ({
+  _tag: 'ToggleMultiChanged' as const,
+  value,
+})
+export const TableRowSelectionChanged = (id: string, checked: boolean) => ({
+  _tag: 'TableRowSelectionChanged' as const,
+  id,
+  checked,
+})
+export const TableSelectAllChanged = (checked: boolean) => ({
+  _tag: 'TableSelectAllChanged' as const,
+  checked,
+})
+export const MatrixCellPressed = (index: number, next: boolean) => ({
+  _tag: 'MatrixCellPressed' as const,
+  index,
+  next,
+})
 export type Message = Readonly<
   | { _tag: 'Clicked' }
-  | { _tag: 'FieldChanged'; field: 'email' | 'filter' | 'kind'; value: string }
+  | { _tag: 'FieldChanged'; field: 'email' | 'filter'; value: string }
   | { _tag: 'IncludeInactiveChanged'; checked: boolean }
   | { _tag: 'NotificationsChanged'; checked: boolean }
   | { _tag: 'DetailsToggled'; isOpen: boolean }
@@ -116,10 +162,28 @@ export type Message = Readonly<
   | { _tag: 'PageChanged'; delta: number }
   | { _tag: 'GotTooltipMessage'; message: Tooltip.Message }
   | { _tag: 'GotTabsMessage'; message: Tabs.Message }
+  | { _tag: 'GotKindSelectorMessage'; message: Selector.Message }
   | { _tag: 'GotMenuMessage'; message: DropdownMenu.Message }
   | { _tag: 'GotToastMessage'; message: typeof DemoToast.Message.Type }
   | { _tag: 'ShowToast'; variant: 'Info' | 'Success' | 'Warning' | 'Error' }
+  | { _tag: 'ToggleBoldChanged'; pressed: boolean }
+  | { _tag: 'ToggleViewChanged'; value: string | null }
+  | { _tag: 'ToggleMultiChanged'; value: ReadonlyArray<string> }
+  | { _tag: 'TableRowSelectionChanged'; id: string; checked: boolean }
+  | { _tag: 'TableSelectAllChanged'; checked: boolean }
+  | { _tag: 'MatrixCellPressed'; index: number; next: boolean }
+  | typeof GridFocus.CompletedGridFocus.Type
+  | typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type
 >
+
+const mapCompletedGridFocus = (
+  message: typeof GridFocus.CompletedGridFocus.Type,
+): Message => message
+
+const mapSyncCheckbox = (
+  message: typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type,
+): Message => message
+
 export const init: Runtime.ApplicationInit<Model, Message> = () => [
   {
     clicks: 0,
@@ -129,6 +193,7 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => [
     filter: '',
     includeInactive: false,
     kind: 'all',
+    kindSelector: Selector.init({ id: 'catalog-kind' }),
     menu: DropdownMenu.init({ id: 'catalog-menu' }),
     notifications: false,
     page: 1,
@@ -136,6 +201,21 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => [
     tabs: Tabs.init({ id: 'catalog-tabs' }),
     toast: DemoToast.init({ id: 'catalog-toast' }),
     tooltip: Tooltip.init('catalog-tooltip'),
+    toggleBold: false,
+    toggleView: 'grid',
+    toggleMulti: ['filters'],
+    tableSelected: ['foldstryx'],
+    matrixPressed: [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ],
   },
   [],
 ]
@@ -168,6 +248,20 @@ export const update = (
       return [
         { ...model, tabs, selectedTab },
         Command.mapMessages(commands, m => GotTabsMessage(m)),
+      ]
+    }
+    case 'GotKindSelectorMessage': {
+      const [kindSelector, commands, maybeOut] = KindSelector.update(
+        model.kindSelector,
+        message.message,
+      )
+      const kind = Option.match(maybeOut, {
+        onNone: () => model.kind,
+        onSome: out => out.value,
+      })
+      return [
+        { ...model, kindSelector, kind },
+        Command.mapMessages(commands, m => GotKindSelectorMessage(m)),
       ]
     }
     case 'GotMenuMessage': {
@@ -215,6 +309,47 @@ export const update = (
         },
         [],
       ]
+    case 'ToggleBoldChanged':
+      return [{ ...model, toggleBold: message.pressed }, []]
+    case 'ToggleViewChanged':
+      return [{ ...model, toggleView: message.value }, []]
+    case 'ToggleMultiChanged':
+      return [{ ...model, toggleMulti: message.value }, []]
+    case 'TableRowSelectionChanged': {
+      const selected = new Set(model.tableSelected)
+      if (message.checked) {
+        selected.add(message.id)
+      } else {
+        selected.delete(message.id)
+      }
+      return [{ ...model, tableSelected: [...selected] }, []]
+    }
+    case 'TableSelectAllChanged': {
+      const rows = [
+        { id: 'foldstryx', isEnabled: true },
+        { id: 'sidebar', isEnabled: true },
+        { id: 'docs', isEnabled: false },
+      ]
+      const selectedSet = new Set(model.tableSelected)
+      const next = message.checked
+        ? TableSelection.selectAll(rows, selectedSet)
+        : TableSelection.deselectAll(rows, selectedSet)
+      return [{ ...model, tableSelected: [...next] }, []]
+    }
+    case 'MatrixCellPressed':
+      return [
+        {
+          ...model,
+          matrixPressed: model.matrixPressed.map((pressed, index) =>
+            index === message.index ? message.next : pressed,
+          ),
+        },
+        [],
+      ]
+    case 'CompletedGridFocus':
+      return [model, []]
+    case 'CompletedSyncCheckboxIndeterminate':
+      return [model, []]
   }
 }
 
@@ -347,16 +482,34 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
           Card.section(
             {
               title: 'Grid',
-              description: 'Responsive columns with a token gap scale.',
+              description: 'Fixed, preset, and responsive column APIs.',
               padded: true,
               children: [
-                Grid.view(
+                Stack.view(
                   {
-                    columns: 3,
+                    gap: 'md',
                     children: [
-                      Text.view({ children: 'Cell one' }, h),
-                      Text.view({ children: 'Cell two' }, h),
-                      Text.view({ children: 'Cell three' }, h),
+                      Grid.view(
+                        {
+                          columns: 6,
+                          gap: 'sm',
+                          children: Array.from({ length: 6 }, (_, index) =>
+                            Text.view({ children: `Col ${index + 1}` }, h),
+                          ),
+                        },
+                        h,
+                      ),
+                      Grid.view(
+                        {
+                          columns: { minWidth: 280, max: 4 },
+                          children: [
+                            Text.view({ children: 'Responsive one' }, h),
+                            Text.view({ children: 'Responsive two' }, h),
+                            Text.view({ children: 'Responsive three' }, h),
+                          ],
+                        },
+                        h,
+                      ),
                     ],
                   },
                   h,
@@ -425,6 +578,92 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
           ),
           Card.section(
             {
+              title: 'ToggleButton',
+              description: 'Pressed ghost buttons and selection groups.',
+              padded: true,
+              children: [
+                Row.view(
+                  {
+                    align: 'wrap',
+                    children: [
+                      ToggleButton.view(
+                        {
+                          label: 'Bold',
+                          isPressed: model.toggleBold,
+                          onPressedChange: pressed =>
+                            ToggleBoldChanged(pressed),
+                        },
+                        h,
+                      ),
+                      ToggleButton.groupView(
+                        {
+                          label: 'View mode',
+                          value: model.toggleView,
+                          onChange: value => ToggleViewChanged(value),
+                          items: [
+                            { value: 'list', label: 'List' },
+                            { value: 'grid', label: 'Grid' },
+                          ],
+                        },
+                        h,
+                      ),
+                      ToggleButton.groupView(
+                        {
+                          label: 'Filters',
+                          type: 'multiple',
+                          value: model.toggleMulti,
+                          onChange: value => ToggleMultiChanged(value),
+                          items: [
+                            { value: 'filters', label: 'Filters' },
+                            { value: 'sort', label: 'Sort' },
+                          ],
+                        },
+                        h,
+                      ),
+                    ],
+                  },
+                  h,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Grid matrix',
+              description: 'role=grid keyboard navigation with ToggleButtons.',
+              padded: true,
+              children: [
+                Grid.matrix(
+                  {
+                    columns: 3,
+                    ariaLabel: 'Selection matrix',
+                    children: model.matrixPressed.map((isPressed, index) =>
+                      Grid.gridcell(
+                        [
+                          ToggleButton.view(
+                            {
+                              label: `Cell ${index}`,
+                              isPressed,
+                              onPressedChange: next =>
+                                MatrixCellPressed(index, next),
+                            },
+                            h,
+                          ),
+                        ],
+                        h,
+                      ),
+                    ),
+                  },
+                  h,
+                  mapCompletedGridFocus,
+                ),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
               title: 'Card',
               description:
                 'Root, header, and body slots compose surface chrome.',
@@ -478,6 +717,7 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                         onChange: checked => IncludeInactiveChanged(checked),
                       },
                       h,
+                      mapSyncCheckbox,
                     ),
                   ],
                 }),
@@ -499,7 +739,7 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
           Card.section(
             {
               title: 'Dense controls',
-              description: 'Compact inputs and native select for filters.',
+              description: 'Compact inputs and selector for filters.',
               padded: true,
               children: [
                 Row.view(
@@ -519,19 +759,33 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                         },
                         h,
                       ),
-                      NativeSelect.view<Message>(
+                      Selector.labeledField<Message>(
                         {
                           id: 'catalog-kind',
-                          ariaLabel: 'Kind',
-                          density: 'compact',
-                          width: 'sm',
-                          value: model.kind,
-                          options: [
-                            { value: 'all', label: 'All kinds' },
-                            { value: 'active', label: 'Active' },
-                          ],
-                          onChange: value => FieldChanged('kind', value),
                           label: 'Kind',
+                          children: [
+                            h.submodel({
+                              slotId: 'catalog-kind',
+                              model: model.kindSelector,
+                              view: KindSelector.view,
+                              viewInputs: Selector.styledViewInputs<
+                                KindItem,
+                                Message
+                              >(
+                                {
+                                  options: KIND_OPTIONS,
+                                  selectedValue: model.kind,
+                                  density: 'compact',
+                                  width: 'sm',
+                                  ariaLabel: 'Kind',
+                                  isOpen: model.kindSelector.isOpen,
+                                },
+                                h,
+                              ),
+                              toParentMessage: message =>
+                                GotKindSelectorMessage(message),
+                            }),
+                          ],
                         },
                         h,
                       ),
@@ -746,6 +1000,50 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                                   Table.tr(
                                     {
                                       children: [
+                                        Table.selectionHeader(
+                                          {
+                                            checked:
+                                              TableSelection.getIsAllSelected(
+                                                [
+                                                  {
+                                                    id: 'foldstryx',
+                                                    isEnabled: true,
+                                                  },
+                                                  {
+                                                    id: 'sidebar',
+                                                    isEnabled: true,
+                                                  },
+                                                  {
+                                                    id: 'docs',
+                                                    isEnabled: false,
+                                                  },
+                                                ],
+                                                new Set(model.tableSelected),
+                                              ),
+                                            isIndeterminate:
+                                              TableSelection.getIsIndeterminate(
+                                                [
+                                                  {
+                                                    id: 'foldstryx',
+                                                    isEnabled: true,
+                                                  },
+                                                  {
+                                                    id: 'sidebar',
+                                                    isEnabled: true,
+                                                  },
+                                                  {
+                                                    id: 'docs',
+                                                    isEnabled: false,
+                                                  },
+                                                ],
+                                                new Set(model.tableSelected),
+                                              ),
+                                            onChange: checked =>
+                                              TableSelectAllChanged(checked),
+                                          },
+                                          h,
+                                          mapSyncCheckbox,
+                                        ),
                                         Table.th('Project', h),
                                         Table.th(
                                           { align: 'right', children: 'Value' },
@@ -769,10 +1067,34 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                                 [
                                   Table.tr(
                                     {
+                                      isSelected:
+                                        model.tableSelected.includes(
+                                          'foldstryx',
+                                        ),
                                       children: [
+                                        Table.selectionCell(
+                                          {
+                                            rowId: 'foldstryx',
+                                            rowLabel: 'Foldstryx',
+                                            checked:
+                                              model.tableSelected.includes(
+                                                'foldstryx',
+                                              ),
+                                            onChange: checked =>
+                                              TableRowSelectionChanged(
+                                                'foldstryx',
+                                                checked,
+                                              ),
+                                          },
+                                          h,
+                                          mapSyncCheckbox,
+                                        ),
                                         Table.td('Foldstryx', h),
                                         Table.td(
-                                          { align: 'right', children: '1,240' },
+                                          {
+                                            align: 'right',
+                                            children: '1,240',
+                                          },
                                           h,
                                         ),
                                         Table.td(
@@ -789,7 +1111,26 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                                   ),
                                   Table.tr(
                                     {
+                                      isSelected:
+                                        model.tableSelected.includes('sidebar'),
                                       children: [
+                                        Table.selectionCell(
+                                          {
+                                            rowId: 'sidebar',
+                                            rowLabel: 'Sidebar',
+                                            checked:
+                                              model.tableSelected.includes(
+                                                'sidebar',
+                                              ),
+                                            onChange: checked =>
+                                              TableRowSelectionChanged(
+                                                'sidebar',
+                                                checked,
+                                              ),
+                                          },
+                                          h,
+                                          mapSyncCheckbox,
+                                        ),
                                         Table.td('Sidebar', h),
                                         Table.td(
                                           { align: 'right', children: '860' },
@@ -809,15 +1150,37 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                                   ),
                                   Table.tr(
                                     {
-                                      presentation: 'summary',
+                                      isSelected:
+                                        model.tableSelected.includes('docs'),
                                       children: [
-                                        Table.td('Total', h),
+                                        Table.selectionCell(
+                                          {
+                                            rowId: 'docs',
+                                            rowLabel: 'Docs',
+                                            checked:
+                                              model.tableSelected.includes(
+                                                'docs',
+                                              ),
+                                            onChange: checked =>
+                                              TableRowSelectionChanged(
+                                                'docs',
+                                                checked,
+                                              ),
+                                            isDisabled: true,
+                                          },
+                                          h,
+                                          mapSyncCheckbox,
+                                        ),
+                                        Table.td('Docs', h),
                                         Table.td(
-                                          { align: 'right', children: '2,100' },
+                                          { align: 'right', children: '420' },
                                           h,
                                         ),
                                         Table.td(
-                                          { align: 'right', children: '' },
+                                          {
+                                            align: 'right',
+                                            children: 'Paused',
+                                          },
                                           h,
                                         ),
                                       ],

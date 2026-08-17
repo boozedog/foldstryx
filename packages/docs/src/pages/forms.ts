@@ -5,14 +5,29 @@ import {
   Checkbox,
   Field,
   Input,
-  NativeSelect,
+  Selector,
   Stack,
   Text,
 } from '@foldstryx/foldkit'
 
-import type { Message } from '../model.js'
+import type { Message, Model } from '../model.js'
+import { FormsKindSelector } from '../model.js'
 
-export const view = (h: HtmlBuilder<Message>): Html =>
+const KIND_OPTIONS: ReadonlyArray<Selector.SelectorOption<'all' | 'active'>> = [
+  { value: 'all', label: 'All kinds' },
+  { value: 'active', label: 'Active' },
+]
+
+const mapSyncCheckbox = (
+  message: typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type,
+): Message => message
+
+const GotFormsKindSelectorMessage = (message: Selector.Message): Message => ({
+  _tag: 'GotFormsKindSelectorMessage',
+  message,
+})
+
+export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
   Stack.view(
     {
       gap: 'lg',
@@ -62,6 +77,7 @@ export const view = (h: HtmlBuilder<Message>): Html =>
                       onChange: (): Message => ({ _tag: 'Noop' }),
                     },
                     h,
+                    mapSyncCheckbox,
                   ),
                 ],
               }),
@@ -71,23 +87,37 @@ export const view = (h: HtmlBuilder<Message>): Html =>
         ),
         Card.section(
           {
-            title: 'Native select',
-            description: 'Compact native select for filters.',
+            title: 'Selector',
+            description:
+              'Closed option list with Astryx Selector look and keyboard navigation.',
             padded: true,
             children: [
-              NativeSelect.view(
+              Selector.labeledField(
                 {
                   id: 'docs-kind',
-                  ariaLabel: 'Kind',
-                  density: 'compact',
-                  width: 'sm',
-                  value: 'all',
-                  options: [
-                    { value: 'all', label: 'All kinds' },
-                    { value: 'active', label: 'Active' },
-                  ],
-                  onChange: (): Message => ({ _tag: 'Noop' }),
                   label: 'Kind',
+                  children: [
+                    h.submodel({
+                      slotId: 'docs-kind',
+                      model: model.formsKindSelector,
+                      view: FormsKindSelector.view,
+                      viewInputs: Selector.styledViewInputs<
+                        'all' | 'active',
+                        Message
+                      >(
+                        {
+                          options: KIND_OPTIONS,
+                          selectedValue: model.formsKind,
+                          density: 'compact',
+                          width: 'sm',
+                          ariaLabel: 'Kind',
+                          isOpen: model.formsKindSelector.isOpen,
+                        },
+                        h,
+                      ),
+                      toParentMessage: GotFormsKindSelectorMessage,
+                    }),
+                  ],
                 },
                 h,
               ),

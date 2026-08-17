@@ -11,7 +11,13 @@ const application = Runtime.makeApplication({
   container: document.getElementById('root'),
   devTools: {
     Message,
-    excludeFromHistory: ['HoverNav', 'OpenNav', 'Noop'],
+    excludeFromHistory: [
+      'HoverNav',
+      'OpenNav',
+      'Noop',
+      'CompletedGridFocus',
+      'CompletedSyncCheckboxIndeterminate',
+    ],
   },
 })
 Runtime.run(application)
