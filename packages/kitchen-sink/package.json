@@ -1,6 +1,6 @@
 {
   "name": "@foldstryx/kitchen-sink",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Self-contained, mountable foldkit submodel kitchen sink for foldstryx primitives",
   "license": "MIT",
   "repository": {

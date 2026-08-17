@@ -1,5 +1,18 @@
 # @foldstryx/docs
 
+## 0.4.0
+
+### Minor Changes
+
+- 0f23064: Add GridFocus, ToggleButton, table selection helpers, and an Astryx-style Listbox Selector; remove NativeSelect.
+
+### Patch Changes
+
+- Updated dependencies [0f23064]
+  - @foldstryx/foldkit@0.3.0
+  - @foldstryx/styles@0.2.0
+  - @foldstryx/kitchen-sink@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes

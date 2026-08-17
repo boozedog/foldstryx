@@ -1,5 +1,11 @@
 # @foldstryx/styles
 
+## 0.2.0
+
+### Minor Changes
+
+- 0f23064: Add GridFocus, ToggleButton, table selection helpers, and an Astryx-style Listbox Selector; remove NativeSelect.
+
 ## 0.1.0
 
 ### Minor Changes
