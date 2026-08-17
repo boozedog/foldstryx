@@ -9,9 +9,9 @@ import { describe, expect, it } from 'vitest'
 //     lens/no-new-promise
 //
 // The `.oxlintrc.json` test override disables the lens family for
-// `**/*.test.ts` / `**/*.test.tsx`. `pnpm lint` MUST accept this file; if the
+// `**/*.test.ts` / `**/*.test.tsx`. `nub run lint` MUST accept this file; if the
 // lens exemption is removed, lint fails here. The `lens/*` exemption is held
-// by the frozen override baseline (`pnpm check:waivers`) and by
+// by the frozen override baseline (`nub run check:waivers`) and by
 // `effect-lens check --mode unified`. This file is the parity regression
 // guard for the test policy.
 describe('async test-policy parity', () => {

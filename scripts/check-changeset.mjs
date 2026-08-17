@@ -7,8 +7,8 @@
  * commit, not a missing-changeset error. This script passes in that state
  * while still failing on genuine missing-changeset errors in the dev flow.
  *
- * Wired through `pnpm check:changeset` (and thus `pnpm check`, hk pre-push,
- * and GitHub Actions CI).
+ * Wired through `nub run check:changeset` (and thus `nub run check`, hk
+ * pre-push, and GitHub Actions CI).
  */
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -24,7 +24,7 @@ const run = (cmd, args) => {
 }
 
 // 1. Run the real changeset status gate.
-const cs = run('pnpm', ['changeset', 'status', '--since=origin/master'])
+const cs = run('nub', ['exec', 'changeset', 'status', '--since=origin/master'])
 if (cs.status === 0) {
   console.log('check-changeset: OK (changeset status clean)')
   process.exit(0)

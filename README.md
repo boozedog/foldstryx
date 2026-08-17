@@ -82,7 +82,7 @@ dedicated docs route rather than making `Mount` itself route-aware.
 
 The five external-consumer packages (`@foldstryx/tokens`, `@foldstryx/styles`,
 `@foldstryx/foldkit`, `@foldstryx/kitchen-sink`, `@foldstryx/docs`) build ESM
-JavaScript plus TypeScript declarations to `dist/` (`pnpm build`). In the
+JavaScript plus TypeScript declarations to `dist/` (`nub run build`). In the
 workspace, `exports` point at `src/` so tests and the demo never depend on a
 stale `dist/`; `publishConfig.exports` points at `dist/` so packed and
 published artifacts expose the built output. `prepack` rebuilds `dist/` for
@@ -99,15 +99,15 @@ them from Vite pre-bundling).
 
 ```bash
 # Build all packages to dist/
-pnpm build
+nub run build
 
 # Pack all five external-consumer packages and verify a throwaway Vite
 # consumer that installs the tarballs (no workspace links) builds, renders
 # the docs shell, transitions routes, and loads the fonts from package assets.
-pnpm check:packed
+nub run check:packed
 ```
 
-`pnpm check:packed` is the external-boundary gate. It packs the five packages,
+`nub run check:packed` is the external-boundary gate. It packs the five packages,
 builds `dist/` first, scaffolds a temporary Vite consumer that installs the
 tarballs, builds it, and drives headless Chrome to assert the docs shell, a
 route transition, and font loading. It never uses workspace source aliases, so
@@ -123,35 +123,41 @@ URL integration.
 
 The five external-consumer packages publish together as one coordinated
 release. See [RELEASING.md](./RELEASING.md) for the exact, repeatable
-procedure: prepare metadata and Changesets, run `pnpm check`, version with
-`pnpm version-packages`, review the generated diff, re-run the gate, then
-publish with `pnpm release` (`changeset publish`). Credentials are configured
+procedure: prepare metadata and Changesets, run `nub run check`, version with
+`nub run version-packages`, review the generated diff, re-run the gate, then
+publish with `nub run release` (`changeset publish`). Credentials are configured
 locally and never committed.
 
 ## Develop
 
-Requires Node `>=20.19` or `>=22.12`, [pnpm](https://pnpm.io), and [mise](https://mise.jdx.dev)
-(optional but used for task runners).
+Requires Node `>=20.19` or `>=22.12`, [Nub](https://github.com/nubjs/nub)
+(pinned `0.7.5`, declared in the `packageManager` and
+`devEngines.packageManager` fields of `package.json`), and
+[mise](https://mise.jdx.dev) (optional but used for task runners).
 
 ```bash
-pnpm install
+nub install --frozen-lockfile
 
 mise run typecheck   # tsc across packages
 mise run test        # vitest
 mise run lint        # oxlint (foldkit MVU + Effect-async lens rules + StyleX jsPlugins)
-pnpm check:tokens    # in-repo NOTICE pin + lifted token spot-check
-pnpm check:demo      # vite preview (ephemeral port) + computed-style smoke
-pnpm check:lint-fixtures  # negative StyleX / token / clobber fixtures
-pnpm check:waivers   # frozen disable-comment + config waiver ratchet
-pnpm check:effect-lens  # unified Effect Lens gate over packages/foldkit
+nub run check:tokens    # in-repo NOTICE pin + lifted token spot-check
+nub run check:demo      # vite preview (ephemeral port) + computed-style smoke
+nub run check:lint-fixtures  # negative StyleX / token / clobber fixtures
+nub run check:waivers   # frozen disable-comment + config waiver ratchet
+nub run check:effect-lens  # unified Effect Lens gate over packages/foldkit
 mise run check       # full gate (format, lint, tsc, fallow, test, tokens, fixtures, demo, waivers)
 mise run pre-commit  # hk changed-file hooks (includes waiver ratchet)
 ```
 
+All scripts are invoked through `nub run`; pnpm is neither required nor
+supported. The canonical validation path is `nub run check` (see
+[RELEASING.md](./RELEASING.md)).
+
 The visual catalog runs at `http://localhost:5173/`. UI and StyleX changes require a
 browser check for computed fonts, layout spacing, button states, and page shell padding.
-`pnpm check:demo` builds the demo, starts a fresh Vite preview on an ephemeral port (it does not
-reuse `pnpm dev`), and drives headless Chrome (`google-chrome` or `CHROME_PATH`) for the
+`nub run check:demo` builds the demo, starts a fresh Vite preview on an ephemeral port (it does not
+reuse `nub run dev`), and drives headless Chrome (`google-chrome` or `CHROME_PATH`) for the
 automated computed-style subset. Astryx _feel_ stays human.
 
 `mise run check` is the authoritative full verifier for the project checks; the
@@ -161,10 +167,10 @@ Official StyleX rules run through oxlint `jsPlugins` (`@stylexjs/eslint-plugin@0
 alias `stylex`) — there is no second ESLint runner. Token-hardcode / null-override /
 Foldkit className clobber live in `@foldstryx/oxlint-plugin`.
 
-`pnpm check:waivers` freezes disable comments and oxlint/fallow/changeset exceptions.
+`nub run check:waivers` freezes disable comments and oxlint/fallow/changeset exceptions.
 Install git hooks with `hk install` (or `hk install --mise` if you use mise tools).
-hk is for pre-commit and pre-push only. CI runs `pnpm check` plus the dedicated
-Effect Lens job; `mise run check` runs `pnpm check`.
+hk is for pre-commit and pre-push only. CI runs `nub run check` plus the dedicated
+Effect Lens job; `mise run check` runs `nub run check`.
 
 ## Effect Lens gate
 
@@ -174,11 +180,11 @@ to `@boozedog/effect-lens@0.1.0` and registered as the `lens` oxlint `jsPlugins`
 provider (consumer-side pilot for
 [foldstryx#29](https://github.com/boozedog/foldstryx/issues/29)).
 
-| Gate                       | Command / scope                                                                                                                                         |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CI (mandatory)             | `pnpm check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified`, run as its own job, independent of `pnpm check` |
-| hk pre-commit              | `effect-lens check --mode unified --changed --workspace packages/foldkit` — staged changed files only                                                   |
-| `pnpm check` / hk pre-push | unchanged; they do not run the Lens check                                                                                                               |
+| Gate                          | Command / scope                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI (mandatory)                | `nub run check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified`, run as its own job, independent of `nub run check` |
+| hk pre-commit                 | `effect-lens check --mode unified --changed --workspace packages/foldkit` — staged changed files only                                                         |
+| `nub run check` / hk pre-push | unchanged; they do not run the Lens check                                                                                                                     |
 
 Unified mode aggregates the `lens`, `foldstryx`, and `stylex` providers plus the
 Foldkit MVU rules over the workspace. Any finding (warning or error) fails the

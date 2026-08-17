@@ -5,23 +5,23 @@ import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtin
 local linters = new Mapping<String, Step> {
   ["format"] {
     glob = List("**/*.{ts,tsx,css,mjs,json}")
-    exclude = List("**/node_modules/**", "**/dist/**", "pnpm-lock.yaml")
-    check = "pnpm format:check"
+    exclude = List("**/node_modules/**", "**/dist/**", "nub.lock")
+    check = "nub run format:check"
   }
   ["lint"] {
     glob = List("**/*.{ts,tsx}")
     exclude = List("**/node_modules/**", "**/dist/**")
-    check = "pnpm lint:ci"
+    check = "nub run lint:ci"
   }
   ["typecheck"] {
     glob = List("**/*.{ts,tsx}")
     exclude = List("**/node_modules/**", "**/dist/**")
-    check = "pnpm typecheck"
+    check = "nub run typecheck"
   }
   ["test"] {
     glob = List("**/*.test.ts")
     exclude = List("**/node_modules/**", "**/dist/**")
-    check = "pnpm test"
+    check = "nub run test"
   }
   ["waivers"] {
     glob = List(
@@ -33,49 +33,52 @@ local linters = new Mapping<String, Step> {
       "packages/oxlint-plugin-foldstryx/src/async-allowlist.ts"
     )
     exclude = List("**/node_modules/**", "**/dist/**")
-    check = "pnpm check:waivers"
+    check = "nub run check:waivers"
   }
 }
 
-// hk is local git hooks only. `pnpm check` / CI do not evaluate this file.
+// hk is local git hooks only. `nub run check` / CI do not evaluate this file.
 // Pre-push is the full gate plus `changeset status --since=origin/master`.
 local prePushGate = new Mapping<String, Step> {
   ["format:check"] {
-    check = "pnpm format:check"
+    check = "nub run format:check"
   }
   ["lint"] {
-    check = "pnpm lint"
+    check = "nub run lint"
   }
   ["typecheck"] {
-    check = "pnpm typecheck"
+    check = "nub run typecheck"
   }
   ["fallow"] {
-    check = "pnpm check:fallow"
+    check = "nub run check:fallow"
   }
   ["test"] {
-    check = "pnpm test"
+    check = "nub run test"
   }
   ["async-allowlist"] {
-    check = "pnpm check:async-allowlist"
+    check = "nub run check:async-allowlist"
+  }
+  ["pm-guard"] {
+    check = "nub run check:pm-guard"
   }
   ["waivers"] {
-    check = "pnpm check:waivers"
+    check = "nub run check:waivers"
   }
   ["tokens"] {
-    check = "pnpm check:tokens"
+    check = "nub run check:tokens"
   }
   ["lint-fixtures"] {
     depends = List("lint")
-    check = "pnpm check:lint-fixtures"
+    check = "nub run check:lint-fixtures"
   }
   ["demo"] {
-    check = "pnpm check:demo"
+    check = "nub run check:demo"
   }
   ["packed"] {
-    check = "pnpm check:packed"
+    check = "nub run check:packed"
   }
   ["changeset-since"] {
-    check = "pnpm check:changeset:pre-push"
+    check = "nub run check:changeset:pre-push"
   }
 }
 
@@ -85,9 +88,12 @@ hooks {
     stash = "git"
     steps {
       ...linters
+      ["pm-guard"] {
+        check = "nub run check:pm-guard"
+      }
       // === effect-lens:start ===
       ["effect-lens"] {
-        check = "'node_modules/.bin/effect-lens' check --mode unified --changed --workspace 'packages/foldkit'"
+        check = "nub exec effect-lens check --mode unified --changed --workspace 'packages/foldkit'"
       }
       // === effect-lens:end ===
     }

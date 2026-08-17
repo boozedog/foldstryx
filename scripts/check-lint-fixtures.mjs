@@ -1,6 +1,6 @@
 /**
  * Negative fixtures for official StyleX + foldstryx token/clobber rules.
- * These files are ignored by the main oxlint run so they do not fail `pnpm lint`.
+ * These files are ignored by the main oxlint run so they do not fail `nub run lint`.
  */
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -21,7 +21,7 @@ const waitForPluginDist = async () => {
   while (!existsSync(pluginDist)) {
     if (Date.now() - started > 30_000) {
       throw new Error(
-        `timed out waiting for ${pluginDist}. Run pnpm --filter @foldstryx/oxlint-plugin build first.`,
+        `timed out waiting for ${pluginDist}. Run nub run --filter @foldstryx/oxlint-plugin build first.`,
       )
     }
     await delay(100)

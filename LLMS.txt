@@ -115,7 +115,7 @@ that imports the `@foldstryx/docs` composition and runs it with `Runtime.makeApp
 The `@foldstryx/docs` composition is platform-neutral — it does not import browser globals,
 URL history, Tauri, or native APIs. Hosts supply runtime bootstrap, container lookup,
 DevTools, and URL integration. Taurifold is an external desktop consumer of the packages: the
-same platform-neutral boundary that `pnpm check:packed` exercises lets a desktop host mount
+same platform-neutral boundary that `nub run check:packed` exercises lets a desktop host mount
 `@foldstryx/docs` through host-owned runtime wiring (Foldstryx pointer:
 [#25](https://github.com/boozedog/foldstryx/issues/25); live work:
 [boozedog/taurifold#10](https://github.com/boozedog/taurifold/issues/10)).
@@ -126,7 +126,7 @@ Library contracts are distinct from demo/documentation content:
 - **Kitchen sink** (`@foldstryx/kitchen-sink`) — a mountable regression/catalog submodel.
 - **Docs composition** (`@foldstryx/docs`) — the routed documentation application shell.
 
-The external-boundary gate is `pnpm check:packed`, which packs the five packages, installs the
+The external-boundary gate is `nub run check:packed`, which packs the five packages, installs the
 tarballs into a throwaway Vite consumer (no workspace links), and verifies the docs shell, a
 route transition, and font loading from package assets.
 

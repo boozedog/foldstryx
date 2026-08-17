@@ -58,12 +58,12 @@ package.json`; always use the scoped form.
 
 ## Gate layout
 
-| Gate           | Command / scope                                                                                        | Notes                                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CI (mandatory) | `pnpm check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified` | Dedicated "Effect Lens (foldkit)" job, independent of the `pnpm check` job; whole `packages/foldkit` workspace                                     |
-| hk pre-commit  | `effect-lens check --mode unified --changed --workspace packages/foldkit`                              | Staged changed files only, scoped to `packages/foldkit`; runs on every commit (no glob)                                                            |
-| `pnpm check`   | unchanged                                                                                              | Does not itself run the Lens check                                                                                                                 |
-| hk pre-push    | unchanged `prePushGate`                                                                                | format, lint, typecheck, fallow, test, async-allowlist, waivers, tokens, lint-fixtures, demo, packed, changeset-since; does not run the Lens check |
+| Gate            | Command / scope                                                                                           | Notes                                                                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI (mandatory)  | `nub run check:effect-lens` — `effect-lens check --project . --workspace packages/foldkit --mode unified` | Dedicated "Effect Lens (foldkit)" job, independent of the `nub run check` job; whole `packages/foldkit` workspace                                  |
+| hk pre-commit   | `effect-lens check --mode unified --changed --workspace packages/foldkit`                                 | Staged changed files only, scoped to `packages/foldkit`; runs on every commit (no glob)                                                            |
+| `nub run check` | unchanged                                                                                                 | Does not itself run the Lens check                                                                                                                 |
+| hk pre-push     | unchanged `prePushGate`                                                                                   | format, lint, typecheck, fallow, test, async-allowlist, waivers, tokens, lint-fixtures, demo, packed, changeset-since; does not run the Lens check |
 
 The unified Lens gate runs at CI (whole workspace) and pre-commit (changed files).
 The full pre-push gate keeps its existing validation scope; the Lens check is not
@@ -88,13 +88,13 @@ over the selected workspace and preserves the project's raw oxlint severities.
   duplicates in the active config.
 - The retired rule implementations stay in `packages/oxlint-plugin-foldstryx/` as
   frozen baseline; the directory is excluded from oxlint and fallow analysis, and
-  `pnpm check:waivers` pins the config. Removing them later is a separate,
+  `nub run check:waivers` pins the config. Removing them later is a separate,
   deliberate cleanup.
 - The async `AWAIT_ALLOWLIST` (`/^(?:Effect|Runtime)\.runPromise$/`) stays frozen by
   `scripts/check-async-allowlist.mjs`.
 - `packages/foldkit/src/asyncPolicyParity.test.ts` is the regression guard for the
   test exemption: it intentionally uses `async`/`await`/`new Promise` and MUST keep
-  passing `pnpm lint` and `pnpm check:effect-lens`.
+  passing `nub run lint` and `nub run check:effect-lens`.
 
 ## Overrides and path exclusions
 
@@ -110,11 +110,11 @@ Root oxlint `ignorePatterns` (unchanged by the adoption): `node_modules/`, `dist
 
 ## Scope decisions (Phase 1 evaluation)
 
-| Workspace                                | Status                            | Rationale                                                                                                                                                                                                                               |
-| ---------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/foldkit`                       | primary unified gate target       | interactive MVU widgets; the async / command risk surface                                                                                                                                                                               |
-| `packages/docs`, `packages/kitchen-sink` | evaluated, excluded from the gate | Effect usage is `Schema` / `Command` / `Runtime` at the Foldkit boundary; zero `async`/`await`/`new Promise` in non-test library code; still covered by `pnpm lint` project-wide. Revisit when the docs composition grows async surface |
-| `packages/styles`, `packages/tokens`     | excluded from the gate            | pure StyleX modules, no Effect code; StyleX policy stays enforced by the `stylex` provider, `pnpm check:tokens`, and the lint fixtures                                                                                                  |
+| Workspace                                | Status                            | Rationale                                                                                                                                                                                                                                  |
+| ---------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/foldkit`                       | primary unified gate target       | interactive MVU widgets; the async / command risk surface                                                                                                                                                                                  |
+| `packages/docs`, `packages/kitchen-sink` | evaluated, excluded from the gate | Effect usage is `Schema` / `Command` / `Runtime` at the Foldkit boundary; zero `async`/`await`/`new Promise` in non-test library code; still covered by `nub run lint` project-wide. Revisit when the docs composition grows async surface |
+| `packages/styles`, `packages/tokens`     | excluded from the gate            | pure StyleX modules, no Effect code; StyleX policy stays enforced by the `stylex` provider, `nub run check:tokens`, and the lint fixtures                                                                                                  |
 
 ## Workspace evaluation results (closeout)
 
@@ -124,7 +124,7 @@ record machine-readable results):
 
 | Workspace               | Command                                                                                 | Result                                             |
 | ----------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `packages/foldkit`      | `pnpm check:effect-lens` (CI gate)                                                      | 71 files linted, 0 findings, exit 0                |
+| `packages/foldkit`      | `nub run check:effect-lens` (CI gate)                                                   | 71 files linted, 0 findings, exit 0                |
 | `packages/docs`         | `effect-lens check --project . --workspace packages/docs --mode unified --json`         | 16 files linted, 0 findings, exit 0                |
 | `packages/kitchen-sink` | `effect-lens check --project . --workspace packages/kitchen-sink --mode unified --json` | 1 file linted (`src/index.ts`), 0 findings, exit 0 |
 
@@ -135,7 +135,7 @@ are still clean under the full unified provider set (lens + foldstryx + stylex
 - Foldkit MVU), so keeping the mandatory gate foldkit-only remains correct.
   Kitchen-sink lint counts one file because its `vitest.config.ts` falls under
   the root `**/vitest.config.ts` ignore pattern, matching project-wide
-  `pnpm lint`. These checks are evaluation-only; neither workspace is part of the
+  `nub run lint`. These checks are evaluation-only; neither workspace is part of the
   gate and no workspace-scoped CI or hook step was added for them.
 
 The dedicated Lens job now runs in CI. GitHub Actions run
@@ -157,18 +157,31 @@ rc.109 working tree (uncommitted post-RC cleanup):
 - recommendations: `[fetch-pack]` — advisory, the missing reference pack.
 - audit is read-only; no files were changed.
 
-`pnpm check:effect-lens` on the rc.109 graph: linted 72 files (config:
+`nub run check:effect-lens` on the rc.109 graph: linted 72 files (config:
 project), findings 0 (0 errors, 0 warnings), exit 0.
 
 Exit model, check gate: any finding fails automation — `Ok = 0`, `Warning = 1`
-(warnings), `Error = 2` (errors). `pnpm check:effect-lens` exits 0 on the
+(warnings), `Error = 2` (errors). `nub run check:effect-lens` exits 0 on the
 rc.109 graph
 because there are no findings.
 
 Diagnostic commands: the missing-pack advisory is not a `check` finding, but
 `doctor` and `adoption audit` surface it as a non-zero diagnostic — both exit 1
-(`Warning`) for `effect@4.0.0-rc.109` even though `pnpm check:effect-lens` exits 0. The
+(`Warning`) for `effect@4.0.0-rc.109` even though `nub run check:effect-lens` exits 0. The
 unified CI/hook gate relies on the check, not on doctor/audit.
+
+### Nub lockfile note (foldstryx#31)
+
+This repository's lockfile is `nub.lock` — Nub's native lockfile (pnpm-v9
+format; `nub pm use nub` renamed it from `pnpm-lock.yaml`). Effect Lens 0.1.0's
+`detectLockfile` recognizes only `package-lock.json` and `pnpm-lock.yaml`, so
+the lockfile-resolution diagnostics (`doctor`, `adoption audit`, `drift`,
+`setup --dry-run`, `packs`, `freshness`) report a missing lockfile on this
+repository and exit 1 (`Warning`) before reaching the advisory. The unified
+`check` gate does not read the lockfile and is unaffected — it is the only
+automated gate, so the gap does not block CI or the hooks. Resolution-based
+diagnostics for `packages/foldkit` should be run against a checkout that still
+carries a `pnpm-lock.yaml` (or after Effect Lens learns to read `nub.lock`).
 
 ## Node requirement
 
@@ -180,9 +193,9 @@ The Lens CLI tool declares `node >=22.6`. CI pins Node 22 (`actions/setup-node`
 ## Reproduce (read-only)
 
 ```sh
-pnpm check:effect-lens                # unified gate over packages/foldkit; exit 0
-pnpm exec effect-lens doctor --project . --workspace packages/foldkit  # exit 1 = advisory warning
-pnpm exec effect-lens adoption audit --project . --workspace packages/foldkit  # exit 1 = advisory warning
+nub run check:effect-lens                # unified gate over packages/foldkit; exit 0
+nub exec effect-lens doctor --project . --workspace packages/foldkit  # exit 1 = advisory warning
+nub exec effect-lens adoption audit --project . --workspace packages/foldkit  # exit 1 = advisory warning
 ```
 
 None of these write to the repository.

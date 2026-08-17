@@ -2,36 +2,41 @@
   "name": "foldstryx-monorepo",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@10.33.4",
+  "packageManager": "nub@0.7.5",
+  "allowBuilds": {
+    "esbuild": true,
+    "msgpackr-extract": true
+  },
   "description": "Astryx-inspired styling for Foldkit, powered by StyleX",
   "engines": {
     "node": ">=20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "pnpm --filter sidebar-demo dev",
-    "build": "pnpm -r --if-present build",
+    "dev": "nub run --filter sidebar-demo dev",
+    "build": "nub run -r --if-present build",
     "format": "prettier -w .",
     "format:check": "prettier --check .",
-    "typecheck": "pnpm -r --if-present typecheck",
-    "lint": "pnpm --filter @foldstryx/oxlint-plugin build && oxlint --disable-nested-config",
+    "typecheck": "nub run -r --if-present typecheck",
+    "lint": "nub run --filter @foldstryx/oxlint-plugin build && oxlint --disable-nested-config",
     "lint:ci": "oxlint --disable-nested-config",
     "check:async-allowlist": "node scripts/check-async-allowlist.mjs",
     "check:waivers": "node scripts/check-waiver-allowlist.mjs",
+    "check:pm-guard": "node scripts/package-manager-guard.mjs",
     "check:lint-fixtures": "node scripts/check-lint-fixtures.mjs",
-    "check:effect-lens": "pnpm exec effect-lens check --project . --workspace packages/foldkit --mode unified",
+    "check:effect-lens": "nub exec effect-lens check --project . --workspace packages/foldkit --mode unified",
     "check:demo": "node scripts/check-demo-smoke.mjs",
     "check:packed": "node scripts/check-packed-consumer.mjs",
     "check:fallow": "fallow",
     "check:dead-code": "fallow dead-code",
     "check:circular": "fallow dead-code --only circular-dependencies",
     "check:changeset": "node scripts/check-changeset.mjs",
-    "check:changeset:pre-push": "pnpm check:changeset",
-    "test": "pnpm -r --if-present test",
+    "check:changeset:pre-push": "nub run check:changeset",
+    "test": "nub run -r --if-present test",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:fallow && pnpm test && pnpm check:async-allowlist && pnpm check:waivers && pnpm check:tokens && pnpm check:lint-fixtures && pnpm check:demo && pnpm check:packed && pnpm check:changeset",
-    "prepare": "pnpm --filter @foldstryx/oxlint-plugin build && effect-tsgo patch",
+    "check": "nub run format:check && nub run lint && nub run typecheck && nub run check:fallow && nub run test && nub run check:async-allowlist && nub run check:waivers && nub run check:pm-guard && nub run check:tokens && nub run check:lint-fixtures && nub run check:demo && nub run check:packed && nub run check:changeset",
+    "prepare": "nub run --filter @foldstryx/oxlint-plugin build && effect-tsgo patch",
     "pre-push": "hk run pre-push",
     "check:tokens": "node scripts/check-token-fidelity.mjs"
   },
@@ -41,6 +46,7 @@
     "@effect/language-service": "^0.87.2",
     "@effect/tsgo": "^0.21.0",
     "@foldkit/oxlint-plugin": "0.6.0",
+    "@foldstryx/oxlint-plugin": "workspace:*",
     "@stylexjs/eslint-plugin": "0.19.0",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@tsconfig/strictest": "^2.0.8",
@@ -49,5 +55,16 @@
     "oxlint": "1.78.0",
     "prettier": "^3.8.4",
     "typescript": "^7.0.2"
-  }
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "nub",
+      "version": "^0.7.5",
+      "onFail": "ignore"
+    }
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ]
 }

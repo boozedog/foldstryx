@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check:
-    name: pnpm check
+    name: nub check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,24 +22,39 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install Nub (pinned 0.7.5)
+        env:
+          NUB_VERSION: 0.7.5
+          NUB_SHA256: 34ad027792b7702e88f71eadde9fc2bf4ebade13a1c91b92fa056954f15880eb
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.nub"
+          curl -fsSL "https://github.com/nubjs/nub/releases/download/v${NUB_VERSION}/nub-linux-x64.tar.gz" -o "$HOME/.nub/nub.tar.gz"
+          echo "${NUB_SHA256}  ${HOME}/.nub/nub.tar.gz" | sha256sum -c -
+          tar -xzf "$HOME/.nub/nub.tar.gz" -C "$HOME/.nub"
+          rm "$HOME/.nub/nub.tar.gz"
+          echo "$HOME/.nub/bin" >> "$GITHUB_PATH"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+
+      - name: Cache Nub store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/nub/store/v1
+          key: nub-store-${{ runner.os }}-${{ hashFiles('nub.lock') }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: nub install --frozen-lockfile
 
       - name: Setup Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v1
 
       - name: Full gate
-        run: pnpm check
+        run: nub run check
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
           CHROME_NO_SANDBOX: '1'
@@ -51,17 +66,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install Nub (pinned 0.7.5)
+        env:
+          NUB_VERSION: 0.7.5
+          NUB_SHA256: 34ad027792b7702e88f71eadde9fc2bf4ebade13a1c91b92fa056954f15880eb
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.nub"
+          curl -fsSL "https://github.com/nubjs/nub/releases/download/v${NUB_VERSION}/nub-linux-x64.tar.gz" -o "$HOME/.nub/nub.tar.gz"
+          echo "${NUB_SHA256}  ${HOME}/.nub/nub.tar.gz" | sha256sum -c -
+          tar -xzf "$HOME/.nub/nub.tar.gz" -C "$HOME/.nub"
+          rm "$HOME/.nub/nub.tar.gz"
+          echo "$HOME/.nub/bin" >> "$GITHUB_PATH"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+
+      - name: Cache Nub store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/nub/store/v1
+          key: nub-store-${{ runner.os }}-${{ hashFiles('nub.lock') }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: nub install --frozen-lockfile
 
       - name: Foldkit unified Effect Lens gate
-        run: pnpm check:effect-lens
+        run: nub run check:effect-lens

@@ -5,7 +5,7 @@
  * Effect-async allowlist must match this baseline exactly. Growth fails.
  * Shrink also fails until EXPECTED is updated — that is the review signal.
  *
- * Wired through hk pre-commit / pre-push, `pnpm check`, and GitHub Actions CI.
+ * Wired through hk pre-commit / pre-push, `nub run check`, and GitHub Actions CI.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -116,6 +116,7 @@ const EXPECTED = {
     'packages/oxlint-plugin-foldstryx/src/stylex-ast.ts',
     'scripts/check-demo-smoke.mjs',
     'scripts/check-packed-consumer.mjs',
+    'scripts/package-manager-guard.mjs',
   ],
   changesetIgnore: ['@foldstryx/oxlint-plugin', 'sidebar-demo'],
   awaitAllowlist: ['/^(?:Effect|Runtime)\\.runPromise$/'],

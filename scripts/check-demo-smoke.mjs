@@ -3,7 +3,7 @@
  *
  * Builds `sidebar-demo`, then boots a fresh `vite preview` on an ephemeral
  * port (`--port 0`) and drives Chrome against the reported URL. It never
- * reuses an already-running `pnpm dev` or a stale preview, so it works even
+ * reuses an already-running `nub run dev` or a stale preview, so it works even
  * when the developer has a dev server on 5173. Requires `google-chrome` or
  * `CHROME_PATH`. Pass `--negative=font` or `--negative=concat` to assert the
  * gate fails. GitHub Actions sets `CI=true`; that (or `CHROME_NO_SANDBOX=1`)
@@ -23,6 +23,19 @@ const negative = process.argv
   ?.slice('--negative='.length)
 
 const wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms))
+
+// Kill a spawned launcher (nub exec) and its whole process group. `nub exec`
+// does not forward SIGTERM to the child binary (vite), so killing only the
+// launcher would leave vite alive and holding the piped stdio open, which
+// keeps this probe process from exiting. detached:true makes the child a
+// group leader so a negative pid targets the group.
+const killGroup = child => {
+  try {
+    process.kill(-child.pid, 'SIGTERM')
+  } catch {
+    // already exited
+  }
+}
 
 const run = (command, args, options = {}) =>
   new Promise((resolveRun, reject) => {
@@ -94,9 +107,9 @@ const parsePreviewUrl = output => {
 // killed on any startup failure so nothing leaks.
 const startPreview = async () => {
   const child = spawn(
-    'pnpm',
+    'nub',
     ['exec', 'vite', 'preview', '--host', 'localhost', '--port', '0'],
-    { cwd: demoDir, stdio: ['ignore', 'pipe', 'pipe'] },
+    { cwd: demoDir, stdio: ['ignore', 'pipe', 'pipe'], detached: true },
   )
   let output = ''
   child.stdout.on('data', chunk => {
@@ -120,7 +133,7 @@ const startPreview = async () => {
   // Kill the child (if it is still alive) and await its exit so no preview
   // leaks on any startup failure.
   const fail = reason => {
-    child.kill('SIGTERM')
+    killGroup(child)
     return exited.then(() => {
       const prefix =
         spawnError !== null ? `\nspawn error: ${spawnError.message}` : ''
@@ -721,7 +734,7 @@ const main = async () => {
     return result
   }
 
-  await run('pnpm', ['--filter', 'sidebar-demo', 'build'], { cwd: root })
+  await run('nub', ['run', '--filter', 'sidebar-demo', 'build'], { cwd: root })
   const { child, url } = await startPreview()
   try {
     if (negative === 'font' || negative === 'concat') {
@@ -732,7 +745,7 @@ const main = async () => {
     await runProbe(url, 'font')
     await runProbe(url, 'concat')
   } finally {
-    child.kill('SIGTERM')
+    killGroup(child)
   }
 }
 

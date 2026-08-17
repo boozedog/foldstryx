@@ -12,7 +12,7 @@
  * Requires `google-chrome` or `CHROME_PATH`. GitHub Actions sets `CI=true`;
  * that (or `CHROME_NO_SANDBOX=1`) adds `--no-sandbox`.
  */
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
 import {
   cp,
@@ -39,7 +39,103 @@ const PACKAGES = [
   '@foldstryx/docs',
 ]
 
+// Resolve a workspace package's directory by its declared name. Nub packs the
+// current package (no `--filter` on `nub pack`), so the pack step runs from
+// the package directory rather than the workspace root.
+const workspaceDir = async name => {
+  const entries = await readdir(join(root, 'packages'), {
+    withFileTypes: true,
+  })
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const pkgFile = join(root, 'packages', entry.name, 'package.json')
+    try {
+      const pkg = JSON.parse(await readFile(pkgFile, 'utf8'))
+      if (pkg.name === name) return join(root, 'packages', entry.name)
+    } catch {
+      // not a package directory
+    }
+  }
+  throw new Error(`workspace package not found: ${name}`)
+}
+
+// Normalize a packed tarball manifest to the shape npm's publish / pnpm's
+// pack normalization would produce. `nub pack` ships the source manifest
+// as-is, so the probe applies the two transformations the registry consumers
+// rely on:
+//   1. `publishConfig` fields (exports → `dist/`) are merged onto the top
+//      level, exactly like npm's publish normalization.
+//   2. `workspace:*` internal dependencies are rewritten to the concrete
+//      sibling version (pnpm packs that shape; npm rewrites the protocol too).
+const normalizeTarballManifest = async (tarball, versions) => {
+  const work = join(dirname(tarball), `manifest-${process.pid}-${Date.now()}`)
+  await mkdir(work, { recursive: true })
+  try {
+    const extract = spawnSync('tar', ['-xzf', tarball, '-C', work], {
+      stdio: 'inherit',
+    })
+    if (extract.status !== 0) {
+      throw new Error(
+        `tar extract failed for ${tarball} (exit ${extract.status})`,
+      )
+    }
+    const pkgFile = join(work, 'package', 'package.json')
+    const pkg = JSON.parse(await readFile(pkgFile, 'utf8'))
+    const publishConfig = pkg.publishConfig ?? {}
+    const { access, tag, registry, ...overrides } = publishConfig
+    const published = { ...pkg, ...overrides }
+    for (const field of [
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+      'optionalDependencies',
+    ]) {
+      const deps = published[field]
+      if (deps === undefined) continue
+      for (const [name, spec] of Object.entries(deps)) {
+        if (
+          spec === 'workspace:*' ||
+          spec === 'workspace:^' ||
+          spec === 'workspace:~'
+        ) {
+          const version = versions[name]
+          if (version === undefined) {
+            throw new Error(
+              `cannot rewrite workspace dep ${name} in ${tarball}: sibling tarball not packed`,
+            )
+          }
+          deps[name] = version
+        }
+      }
+    }
+    await writeFile(pkgFile, JSON.stringify(published, null, 2) + '\n')
+    const repack = spawnSync('tar', ['-czf', tarball, '-C', work, 'package'], {
+      stdio: 'inherit',
+    })
+    if (repack.status !== 0) {
+      throw new Error(
+        `tar repack failed for ${tarball} (exit ${repack.status})`,
+      )
+    }
+  } finally {
+    await rm(work, { recursive: true, force: true })
+  }
+}
+
 const wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms))
+
+// Kill a spawned launcher (nub exec) and its whole process group. `nub exec`
+// does not forward SIGTERM to the child binary (vite), so killing only the
+// launcher would leave vite alive and holding the piped stdio open, which
+// keeps this probe process from exiting. detached:true makes the child a
+// group leader so a negative pid targets the group.
+const killGroup = child => {
+  try {
+    process.kill(-child.pid, 'SIGTERM')
+  } catch {
+    // already exited
+  }
+}
 
 const run = (command, args, options = {}) =>
   new Promise((resolveRun, reject) => {
@@ -146,9 +242,9 @@ const parsePreviewUrl = output => {
 
 const startPreview = async cwd => {
   const child = spawn(
-    'pnpm',
+    'nub',
     ['exec', 'vite', 'preview', '--host', 'localhost', '--port', '0'],
-    { cwd, stdio: ['ignore', 'pipe', 'pipe'] },
+    { cwd, stdio: ['ignore', 'pipe', 'pipe'], detached: true },
   )
   let output = ''
   child.stdout.on('data', chunk => {
@@ -170,7 +266,7 @@ const startPreview = async cwd => {
     })
   })
   const fail = reason => {
-    child.kill('SIGTERM')
+    killGroup(child)
     return exited.then(() => {
       const prefix =
         spawnError !== null ? `\nspawn error: ${spawnError.message}` : ''
@@ -412,14 +508,16 @@ const consumerPackageJson = tarballs => ({
     typescript: '^7.0.2',
     vite: '^8.0.16',
   },
-  pnpm: {
-    overrides: {
-      '@foldstryx/docs': `file:${tarballs['@foldstryx/docs']}`,
-      '@foldstryx/foldkit': `file:${tarballs['@foldstryx/foldkit']}`,
-      '@foldstryx/kitchen-sink': `file:${tarballs['@foldstryx/kitchen-sink']}`,
-      '@foldstryx/styles': `file:${tarballs['@foldstryx/styles']}`,
-      '@foldstryx/tokens': `file:${tarballs['@foldstryx/tokens']}`,
-    },
+  // Nub applies the root npm-style `overrides` (pnpm.overrides is rejected).
+  // Pinning every @foldstryx/* name to the freshly packed tarball forces the
+  // packed `@foldstryx/docs` graph to resolve the packed siblings instead of
+  // fetching the published versions from the registry.
+  overrides: {
+    '@foldstryx/docs': `file:${tarballs['@foldstryx/docs']}`,
+    '@foldstryx/foldkit': `file:${tarballs['@foldstryx/foldkit']}`,
+    '@foldstryx/kitchen-sink': `file:${tarballs['@foldstryx/kitchen-sink']}`,
+    '@foldstryx/styles': `file:${tarballs['@foldstryx/styles']}`,
+    '@foldstryx/tokens': `file:${tarballs['@foldstryx/tokens']}`,
   },
 })
 
@@ -431,13 +529,15 @@ const main = async () => {
   await mkdir(consumerDir, { recursive: true })
   try {
     // 0. Build the external-consumer packages to dist/ so the packed artifacts
-    //    carry built JavaScript + declarations. (pnpm pack does not run
-    //    `prepack`.) Scope to the consumer packages only: a root `pnpm build`
-    //    also rebuilds the oxlint-plugin, which races with the `lint` step's
-    //    plugin build when this runs as part of the parallel pre-push gate.
+    //    carry built JavaScript + declarations. (`nub pack --ignore-scripts`
+    //    does not run `prepack`.) Scope to the consumer packages only: a root
+    //    `nub run build` also rebuilds the oxlint-plugin, which races with the
+    //    `lint` step's plugin build when this runs as part of the parallel
+    //    pre-push gate.
     await run(
-      'pnpm',
+      'nub',
       [
+        'run',
         '-r',
         ...PACKAGES.flatMap(pkg => ['--filter', pkg]),
         '--if-present',
@@ -446,19 +546,33 @@ const main = async () => {
       { cwd: root },
     )
 
-    // 1. Pack every external-consumer package.
+    // 1. Pack every external-consumer package, then normalize the tarball
+    //    manifests to the published shape (`publishConfig` applied,
+    //    `workspace:*` rewritten) — `nub pack` ships the source manifest.
     const tarballs = {}
     for (const pkg of PACKAGES) {
       const out = await runCapture(
-        'pnpm',
-        ['--filter', pkg, 'pack', '--pack-destination', packDir],
-        { cwd: root },
+        'nub',
+        ['pack', '--ignore-scripts', '--pack-destination', packDir],
+        { cwd: await workspaceDir(pkg) },
       )
       const match = out.match(/([^/\s]+\.tgz)/)
       if (match === null) {
         throw new Error(`Could not determine tarball name for ${pkg}:\n${out}`)
       }
       tarballs[pkg] = join(packDir, match[1])
+    }
+    const versions = {}
+    for (const pkg of PACKAGES) {
+      const out = await runCapture('tar', [
+        '-xOf',
+        tarballs[pkg],
+        'package/package.json',
+      ])
+      versions[pkg] = JSON.parse(out).version
+    }
+    for (const pkg of PACKAGES) {
+      await normalizeTarballManifest(tarballs[pkg], versions)
     }
 
     // 2. Scaffold the consumer from the fixture.
@@ -469,11 +583,11 @@ const main = async () => {
     )
 
     // 3. Install packed artifacts (no workspace links).
-    await run('pnpm', ['install', '--no-frozen-lockfile'], { cwd: consumerDir })
+    await run('nub', ['install', '--no-frozen-lockfile'], { cwd: consumerDir })
 
     // 4. Typecheck + build the consumer against the packed artifacts.
-    await run('pnpm', ['typecheck'], { cwd: consumerDir })
-    await run('pnpm', ['build'], { cwd: consumerDir })
+    await run('nub', ['run', 'typecheck'], { cwd: consumerDir })
+    await run('nub', ['run', 'build'], { cwd: consumerDir })
     const { cssFile, stylexRules } = await assertStylexCss(consumerDir)
 
     // 5. Preview and drive Chrome.
@@ -487,7 +601,7 @@ const main = async () => {
         `check:packed OK (${url}) body=${result.bodyFont} tarballs=${Object.keys(tarballs).length} css=${cssFile} stylexRules=${stylexRules}`,
       )
     } finally {
-      child.kill('SIGTERM')
+      killGroup(child)
     }
   } finally {
     await rm(work, { recursive: true, force: true })

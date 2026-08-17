@@ -22,7 +22,10 @@ importers:
         version: 0.21.0
       '@foldkit/oxlint-plugin':
         specifier: 0.6.0
-        version: 0.6.0(effect@4.0.0-rc.109)
+        version: 0.6.0(effect@4.0.0-beta.100)
+      '@foldstryx/oxlint-plugin':
+        specifier: workspace:*
+        version: link:packages/oxlint-plugin-foldstryx
       '@stylexjs/eslint-plugin':
         specifier: 0.19.0
         version: 0.19.0
@@ -2139,8 +2142,6 @@ snapshots:
       semver: 7.8.5
       spawndamnit: 3.0.1
       term-size: 2.2.1
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@changesets/config@3.1.4':
     dependencies:
@@ -2380,11 +2381,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@foldkit/oxlint-plugin@0.6.0(effect@4.0.0-rc.109)':
+  '@foldkit/oxlint-plugin@0.6.0(effect@4.0.0-beta.100)':
     dependencies:
-      effect-oxlint: 0.3.3(effect@4.0.0-rc.109)
-    transitivePeerDependencies:
-      - effect
+      effect-oxlint: 0.3.3(effect@4.0.0-beta.100)
 
   '@foldkit/ui@0.147.0(effect@4.0.0-rc.109)(foldkit@0.147.0(effect@4.0.0-rc.109))':
     dependencies:
@@ -2837,11 +2836,6 @@ snapshots:
     dependencies:
       '@oxlint/plugins': 1.78.0
       effect: 4.0.0-beta.100
-
-  effect-oxlint@0.3.3(effect@4.0.0-rc.109):
-    dependencies:
-      '@oxlint/plugins': 1.78.0
-      effect: 4.0.0-rc.109
 
   effect@4.0.0-beta.100:
     dependencies:

@@ -1,36 +1,36 @@
 [tools]
 node = "system"
-pnpm = "10.33.4"
+nub = "0.7.5"
 hk = "latest"
 pkl = "latest"
 
 [tasks.dev]
 description = "Start the sidebar demo dev server"
-run = "pnpm dev"
+run = "nub run dev"
 
 [tasks.typecheck]
 description = "Typecheck all workspace packages"
-run = "pnpm typecheck"
+run = "nub run typecheck"
 
 [tasks.lint]
 description = "Lint all workspace packages (oxlint + plugins)"
-run = "pnpm lint"
+run = "nub run lint"
 
 [tasks.format]
 description = "Check formatting (prettier, foldkit style)"
-run = "pnpm format:check"
+run = "nub run format:check"
 
 [tasks.fallow]
 description = "Codebase intelligence (dead code, circular deps, dupes, health)"
-run = "pnpm check:fallow"
+run = "nub run check:fallow"
 
 [tasks.test]
 description = "Run vitest across workspace packages"
-run = "pnpm test"
+run = "nub run test"
 
 [tasks.waivers]
 description = "Frozen waiver / disable-comment ratchet"
-run = "pnpm check:waivers"
+run = "nub run check:waivers"
 
 [tasks.pre-commit]
 description = "Run pre-commit hooks"
@@ -42,8 +42,8 @@ run = "hk run pre-push"
 
 [tasks.check]
 description = "Full workspace quality gate"
-run = "pnpm check"
+run = "nub run check"
 
 [tasks.check-packed]
 description = "Pack all external-consumer packages and smoke a throwaway Vite consumer"
-run = "pnpm check:packed"
+run = "nub run check:packed"

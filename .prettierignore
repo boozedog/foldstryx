@@ -1,5 +1,5 @@
 node_modules
 dist
 *.tsbuildinfo
-pnpm-lock.yaml
+nub.lock
 .effect-lens-check-*.json
