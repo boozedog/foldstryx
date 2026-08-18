@@ -55,7 +55,6 @@
         "files": [
           "scripts/changeset-publish.mjs",
           "scripts/normalize-tarball-manifest.mjs",
-          "scripts/npm-publish-shim.mjs",
           "scripts/nub-pack.mjs",
           "scripts/postpack-restore-workspace-manifest.mjs",
           "scripts/prepack-stage-publish-manifest.mjs",

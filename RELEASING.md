@@ -54,9 +54,8 @@ public surface). `sidebar-demo` is a private example.
    and `scripts/changeset-publish.mjs`) merges `publishConfig.exports` onto
    `exports` and rewrites sibling `workspace:*` ranges to concrete semver in
    packed tarballs only. Plain `nub pack` stages the published manifest during
-   `prepack` and restores the workspace file after the tarball lands; `nub run
-release` publishes those normalized `.tgz` files (not the workspace
-   directory).
+   `prepack` and restores the workspace file after the tarball lands; `nub run release`
+   publishes through `nub publish` (not the workspace directory).
 
 4. **Review the generated diff.** Inspect every `package.json` version and
    dependency range, the new `CHANGELOG.md` files, and the consumed changeset
@@ -86,23 +85,23 @@ release` publishes those normalized `.tgz` files (not the workspace
    nub run release
    ```
 
-   `nub run release` runs `changeset publish` with `scripts/npm` on `PATH`.
-   When Changesets invokes `npm publish <package-dir>`, the shim packs a
-   normalized tarball (`scripts/nub-pack.mjs`) and publishes
-   `npm publish <normalized.tgz>` instead, so registry consumers receive `dist/`
-   exports and concrete sibling semver — not workspace `src/` paths or
-   `workspace:*` protocols. To dry-run a tarball publish locally, pack first
-   then call real npm directly (do not put `scripts/` on PATH before
-   `command -v npm` — that resolves the shim and can recurse):
+   `nub run release` runs `nub publish` for the five public packages (via
+   `scripts/changeset-publish.mjs`). `prepack` rebuilds `dist/` and stages the
+   published manifest so registry consumers receive `dist/` exports and
+   concrete sibling semver — not workspace `src/` paths or `workspace:*`
+   protocols. Pass `--dry-run` to preview without uploading; `--otp` and
+   `--tag` forward to `nub publish`. To dry-run a tarball publish locally,
+   pack first then call `nub publish` on the `.tgz`:
 
    ```sh
    node scripts/nub-pack.mjs --ignore-scripts --pack-destination /tmp/foldstryx-pack
-   npm publish /tmp/foldstryx-pack/foldstryx-foldkit-<version>.tgz --dry-run
+   nub publish /tmp/foldstryx-pack/foldstryx-foldkit-<version>.tgz --dry-run
    ```
 
-   It does not require credentials in the repository. It also creates a git tag
-   per published package (e.g. `@foldstryx/tokens@0.1.0`) locally; push those
-   tags to the remote after publishing.
+   It does not require credentials in the repository. After a successful
+   publish, `changeset tag` creates a git tag per published package (e.g.
+   `@foldstryx/tokens@0.1.0`) locally; push those tags to the remote after
+   publishing.
 
 8. **Verify the published packages.**
 
@@ -123,5 +122,5 @@ release` publishes those normalized `.tgz` files (not the workspace
 
 - Never commit or push without explicit approval.
 - Never embed credentials or tokens in the repository.
-- `nub exec changeset publish` (via `nub run release`) publishes only packages
-  whose version differs from the registry; re-running it is safe.
+- `nub publish` (via `nub run release`) skips packages whose version is
+  already on the registry; re-running it is safe.

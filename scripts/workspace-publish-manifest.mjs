@@ -1,11 +1,12 @@
 /**
- * Stage and restore workspace `package.json` for Nub pack lifecycle.
+ * Stage and restore workspace `package.json` for Nub pack/publish lifecycle.
  *
- * Nub runs `prepack` → `postpack` → `pack`. `postpack` fires before the `.tgz`
- * exists, so tarball rewrite cannot live there. Instead, `prepack` writes the
- * published manifest onto disk for the upcoming archive, and `postpack` spawns
- * a short-lived watcher that restores the workspace manifest once the tarball
- * lands (or on timeout).
+ * `prepack` stages the published manifest on disk. Restore timing depends on
+ * the caller:
+ * - `nub pack` — `postpack` spawns a watcher that restores once the `.tgz`
+ *   lands under the package dir or an explicit pack destination.
+ * - `nub publish` — `postpack` restores immediately (`FOLDSTRYX_NUB_PUBLISH=1`);
+ *   `changeset-publish.mjs` also restores synchronously after publish returns.
  */
 import { spawn } from 'node:child_process'
 import {
@@ -17,7 +18,6 @@ import {
   stat,
   writeFile,
 } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -29,6 +29,9 @@ import {
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '..')
 const backupName = '.foldstryx-package-workspace.json'
+export const NUB_PUBLISH_ENV = 'FOLDSTRYX_NUB_PUBLISH'
+
+export const isNubPublishLifecycle = () => process.env[NUB_PUBLISH_ENV] === '1'
 
 /**
  * @param {string} pkgDir
@@ -61,6 +64,20 @@ export const stagePublishManifest = async pkgDir => {
   await rename(pkgFile, backup)
   await writeFile(pkgFile, JSON.stringify(published, null, 2) + '\n')
   return { pkg, tarballBase: tarballBaseName(pkg) }
+}
+
+/**
+ * @param {string} pkgDir
+ */
+export const restoreWorkspaceManifestIfStaged = async pkgDir => {
+  try {
+    await access(backupPath(pkgDir))
+  } catch (error) {
+    if (error && typeof error === 'object' && error.code === 'ENOENT')
+      return false
+    throw error
+  }
+  return restoreWorkspaceManifest(pkgDir)
 }
 
 /**
@@ -130,9 +147,11 @@ const waitForTarballAndRestore = async (
   packDestination,
   startedAt = Date.now(),
 ) => {
-  const roots = [pkgDir, packDestination, tmpdir()].filter(
+  const roots = [pkgDir, packDestination].filter(
     (value, index, all) =>
-      typeof value === 'string' && all.indexOf(value) === index,
+      typeof value === 'string' &&
+      value.length > 0 &&
+      all.indexOf(value) === index,
   )
   const deadline = startedAt + 120_000
   while (Date.now() < deadline) {

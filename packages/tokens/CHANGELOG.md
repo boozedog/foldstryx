@@ -1,5 +1,11 @@
 # @foldstryx/tokens
 
+## 0.1.1
+
+### Patch Changes
+
+- 177a703: Fix Nub pack and release so registry tarballs expose `dist/` exports and concrete sibling semver instead of `workspace:*`.
+
 ## 0.1.0
 
 ### Minor Changes

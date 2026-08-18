@@ -119,7 +119,6 @@ const EXPECTED = {
     'scripts/check-demo-smoke.mjs',
     'scripts/check-packed-consumer.mjs',
     'scripts/normalize-tarball-manifest.mjs',
-    'scripts/npm-publish-shim.mjs',
     'scripts/nub-pack.mjs',
     'scripts/package-manager-guard.mjs',
     'scripts/postpack-restore-workspace-manifest.mjs',
