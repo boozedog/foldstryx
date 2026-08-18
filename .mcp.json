@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "foldkit-devtools": {
-      "command": "npx",
-      "args": ["-y", "@foldkit/devtools-mcp@0.16.0"]
+      "command": "nub",
+      "args": ["run", "-s", "--no-check", "devtools-mcp"]
     }
   }
 }

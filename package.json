@@ -13,6 +13,7 @@
   },
   "scripts": {
     "dev": "nub run --filter sidebar-demo dev",
+    "devtools-mcp": "foldkit-devtools-mcp",
     "build": "nub run -r --if-present build",
     "format": "prettier -w .",
     "format:check": "prettier --check .",
@@ -48,6 +49,7 @@
     "@changesets/cli": "^2.31.0",
     "@effect/language-service": "^0.87.2",
     "@effect/tsgo": "^0.21.0",
+    "@foldkit/devtools-mcp": "0.16.0",
     "@foldkit/oxlint-plugin": "0.6.0",
     "@foldstryx/oxlint-plugin": "workspace:*",
     "@stylexjs/eslint-plugin": "0.19.0",
