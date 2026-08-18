@@ -1,5 +1,14 @@
 # @foldstryx/kitchen-sink
 
+## 0.3.2
+
+### Patch Changes
+
+- Publish registry packuments from normalized tarballs so `npm install @foldstryx/foldkit` resolves without `workspace:*` overrides.
+- Updated dependencies
+  - @foldstryx/styles@0.2.2
+  - @foldstryx/foldkit@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

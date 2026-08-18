@@ -53,11 +53,15 @@
       },
       {
         "files": [
+          "scripts/assert-release-publishes-tarballs.mjs",
           "scripts/changeset-publish.mjs",
+          "scripts/check-publish-packument.mjs",
           "scripts/normalize-tarball-manifest.mjs",
           "scripts/nub-pack.mjs",
           "scripts/postpack-restore-workspace-manifest.mjs",
           "scripts/prepack-stage-publish-manifest.mjs",
+          "scripts/release-packages.mjs",
+          "scripts/resolve-real-npm.mjs",
           "scripts/workspace-publish-manifest.mjs"
         ],
         "maxCrap": 200,

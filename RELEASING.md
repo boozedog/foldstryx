@@ -38,8 +38,8 @@ public surface). `sidebar-demo` is a private example.
    ```
 
    This runs format, lint, typecheck, fallow, tests, async/waiver/token/lint
-   fixture checks, the demo smoke, the packed-consumer smoke, and the
-   changeset status check.
+   fixture checks, the demo smoke, the packed-consumer smoke, the release
+   packument gate (`check:publish-packument`), and the changeset status check.
 
 3. **Version the packages.**
 
@@ -53,9 +53,10 @@ public surface). `sidebar-demo` is a private example.
    adapter (`scripts/nub-pack.mjs`, `scripts/workspace-publish-manifest.mjs`,
    and `scripts/changeset-publish.mjs`) merges `publishConfig.exports` onto
    `exports` and rewrites sibling `workspace:*` ranges to concrete semver in
-   packed tarballs only. Plain `nub pack` stages the published manifest during
+   packed tarballs. Plain `nub pack` stages the published manifest during
    `prepack` and restores the workspace file after the tarball lands; `nub run release`
-   publishes through `nub publish` (not the workspace directory).
+   packs normalized `.tgz` files and publishes them with `npm publish` so the
+   registry packument matches the tarball (not the workspace directory).
 
 4. **Review the generated diff.** Inspect every `package.json` version and
    dependency range, the new `CHANGELOG.md` files, and the consumed changeset
@@ -85,17 +86,15 @@ public surface). `sidebar-demo` is a private example.
    nub run release
    ```
 
-   `nub run release` runs `nub publish` for the five public packages (via
-   `scripts/changeset-publish.mjs`). `prepack` rebuilds `dist/` and stages the
-   published manifest so registry consumers receive `dist/` exports and
-   concrete sibling semver — not workspace `src/` paths or `workspace:*`
-   protocols. Pass `--dry-run` to preview without uploading; `--otp` and
-   `--tag` forward to `nub publish`. To dry-run a tarball publish locally,
-   pack first then call `nub publish` on the `.tgz`:
+   `nub run release` packs normalized tarballs for the five public packages (via
+   `scripts/changeset-publish.mjs`), asserts each tarball manifest is
+   publishable (`dist/` exports, no `workspace:*`), then uploads with
+   `npm publish <tarball>`. Pass `--dry-run` to preview without uploading;
+   `--otp` and `--tag` forward to `npm publish`. Versions already on the
+   registry are skipped (pass `--force` to re-PUT). To dry-run locally:
 
    ```sh
-   node scripts/nub-pack.mjs --ignore-scripts --pack-destination /tmp/foldstryx-pack
-   nub publish /tmp/foldstryx-pack/foldstryx-foldkit-<version>.tgz --dry-run
+   nub run check:publish-packument
    ```
 
    It does not require credentials in the repository. After a successful
@@ -113,14 +112,23 @@ public surface). `sidebar-demo` is a private example.
 
    Confirm versions, `exports` pointing at `dist/` (CSS subpaths such as
    `@foldstryx/styles/document.global.css` may remain on a published `src/`
-   path), and no `workspace:*` in `dependencies`. Then install the published
-   versions in a clean external consumer and render `@foldstryx/docs` with its
-   CSS and font assets (the `nub run check:packed` harness is the template for
-   this).
+   path), and no `workspace:*` in `dependencies`. Then install from the registry
+   in a clean directory (not this repo; bypass project `.npmrc` if needed):
+
+   ```sh
+   cd /tmp
+   npm install @foldstryx/foldkit@<version> @foldstryx/styles@<version> @foldstryx/tokens@<version> --userconfig /dev/null
+   ```
+
+   The `nub run check:packed` harness proves tarball shape; the clean-directory
+   `npm install` proves the registry packument.
 
 ## Notes
 
 - Never commit or push without explicit approval.
 - Never embed credentials or tokens in the repository.
-- `nub publish` (via `nub run release`) skips packages whose version is
-  already on the registry; re-running it is safe.
+- Do not publish public packages with directory `nub publish`; use
+  `nub run release` (`scripts/changeset-publish.mjs` uploads normalized
+  `.tgz` files via `npm publish`).
+- `nub run release` skips versions already on the registry unless `--force` is
+  passed; re-running after a partial OTP failure is safe.

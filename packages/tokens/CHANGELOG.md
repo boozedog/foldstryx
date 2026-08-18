@@ -1,5 +1,11 @@
 # @foldstryx/tokens
 
+## 0.1.2
+
+### Patch Changes
+
+- Publish registry packuments from normalized tarballs so `npm install @foldstryx/foldkit` resolves without `workspace:*` overrides.
+
 ## 0.1.1
 
 ### Patch Changes

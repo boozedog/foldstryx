@@ -1,12 +1,10 @@
 /**
  * Stage and restore workspace `package.json` for Nub pack/publish lifecycle.
  *
- * `prepack` stages the published manifest on disk. Restore timing depends on
- * the caller:
- * - `nub pack` — `postpack` spawns a watcher that restores once the `.tgz`
- *   lands under the package dir or an explicit pack destination.
- * - `nub publish` — `postpack` restores immediately (`FOLDSTRYX_NUB_PUBLISH=1`);
- *   `changeset-publish.mjs` also restores synchronously after publish returns.
+ * `prepack` stages the published manifest on disk. `postpack` spawns a watcher
+ * that restores once the `.tgz` lands under the package dir or an explicit
+ * pack destination. Public releases publish normalized tarballs via
+ * `scripts/changeset-publish.mjs`; do not use directory `nub publish`.
  */
 import { spawn } from 'node:child_process'
 import {
@@ -29,9 +27,6 @@ import {
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '..')
 const backupName = '.foldstryx-package-workspace.json'
-export const NUB_PUBLISH_ENV = 'FOLDSTRYX_NUB_PUBLISH'
-
-export const isNubPublishLifecycle = () => process.env[NUB_PUBLISH_ENV] === '1'
 
 /**
  * @param {string} pkgDir
@@ -64,20 +59,6 @@ export const stagePublishManifest = async pkgDir => {
   await rename(pkgFile, backup)
   await writeFile(pkgFile, JSON.stringify(published, null, 2) + '\n')
   return { pkg, tarballBase: tarballBaseName(pkg) }
-}
-
-/**
- * @param {string} pkgDir
- */
-export const restoreWorkspaceManifestIfStaged = async pkgDir => {
-  try {
-    await access(backupPath(pkgDir))
-  } catch (error) {
-    if (error && typeof error === 'object' && error.code === 'ENOENT')
-      return false
-    throw error
-  }
-  return restoreWorkspaceManifest(pkgDir)
 }
 
 /**

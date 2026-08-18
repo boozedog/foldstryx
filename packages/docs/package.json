@@ -1,6 +1,6 @@
 {
   "name": "@foldstryx/docs",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Platform-neutral Foldstryx documentation composition (shell, typed routes, navigation)",
   "license": "MIT",
   "repository": {

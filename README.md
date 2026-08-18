@@ -86,8 +86,8 @@ JavaScript plus TypeScript declarations to `dist/` (`nub run build`). In the
 workspace, `exports` point at `src/` so tests and the demo never depend on a
 stale `dist/`; `publishConfig.exports` points at `dist/` so packed and
 published artifacts expose the built output. `prepack` rebuilds `dist/` and
-stages the published manifest for `nub pack`; `nub run release` publishes via
-`nub publish` (`scripts/changeset-publish.mjs`). Runtime dependencies
+stages the published manifest for `nub pack`; `nub run release` packs
+normalized tarballs and publishes them with `npm publish` (`scripts/changeset-publish.mjs`). Runtime dependencies
 live in `dependencies`; `@foldkit/ui`, `effect`, and `foldkit` are `peerDependencies` where a package imports them
 directly, so the host supplies the Foldkit runtime.
 
@@ -126,8 +126,8 @@ The five external-consumer packages publish together as one coordinated
 release. See [RELEASING.md](./RELEASING.md) for the exact, repeatable
 procedure: prepare metadata and Changesets, run `nub run check`, version with
 `nub run version-packages`, review the generated diff, re-run the gate, then
-publish with `nub run release` (`scripts/changeset-publish.mjs` calling
-`nub publish`). Credentials are configured
+publish with `nub run release` (`scripts/changeset-publish.mjs` uploading
+normalized `.tgz` files via `npm publish`). Credentials are configured
 locally and never committed.
 
 ## Develop
