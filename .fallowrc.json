@@ -53,6 +53,21 @@
       },
       {
         "files": [
+          "scripts/changeset-publish.mjs",
+          "scripts/normalize-tarball-manifest.mjs",
+          "scripts/npm-publish-shim.mjs",
+          "scripts/nub-pack.mjs",
+          "scripts/postpack-restore-workspace-manifest.mjs",
+          "scripts/prepack-stage-publish-manifest.mjs",
+          "scripts/workspace-publish-manifest.mjs"
+        ],
+        "maxCrap": 200,
+        "maxUnitSize": 140,
+        "maxCognitive": 20,
+        "reason": "Nub pack/publish adapter scripts verified by nub run check:packed and release tooling, not library code."
+      },
+      {
+        "files": [
           "packages/foldkit/src/checkbox.ts",
           "packages/foldkit/src/switch.ts",
           "packages/foldkit/src/selector.ts"

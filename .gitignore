@@ -4,3 +4,5 @@ dist
 .DS_Store
 .compare-*.png
 compare-*.png
+**/.foldstryx-package-workspace.json
+**/.foldstryx-pack-marker.json

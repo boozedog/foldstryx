@@ -27,7 +27,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepack": "tsc -p tsconfig.build.json",
+    "prepack": "node ../../scripts/prepack-stage-publish-manifest.mjs",
+    "postpack": "node ../../scripts/postpack-restore-workspace-manifest.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

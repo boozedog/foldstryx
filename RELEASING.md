@@ -48,12 +48,15 @@ public surface). `sidebar-demo` is a private example.
    ```
 
    This bumps the five packages to the next coherent version, writes
-   `CHANGELOG.md` files, and consumes the pending changeset files. It does
-   **not** rewrite `workspace:*` internal dependencies — those stay in source
-   and are rewritten to published semver ranges (e.g. `^0.1.0`) by `npm publish`
-   at release time (the `changeset publish` path). Note that `nub pack` ships
-   the source manifest as-is; the `check:packed` probe normalizes its tarballs
-   to that published shape, so the two stay aligned.
+   `CHANGELOG.md` files, and consumes the pending changeset files. Internal
+   `@foldstryx/*` dependencies stay `workspace:*` in source; the Nub pack/publish
+   adapter (`scripts/nub-pack.mjs`, `scripts/workspace-publish-manifest.mjs`,
+   and `scripts/changeset-publish.mjs`) merges `publishConfig.exports` onto
+   `exports` and rewrites sibling `workspace:*` ranges to concrete semver in
+   packed tarballs only. Plain `nub pack` stages the published manifest during
+   `prepack` and restores the workspace file after the tarball lands; `nub run
+release` publishes those normalized `.tgz` files (not the workspace
+   directory).
 
 4. **Review the generated diff.** Inspect every `package.json` version and
    dependency range, the new `CHANGELOG.md` files, and the consumed changeset
@@ -80,29 +83,45 @@ public surface). `sidebar-demo` is a private example.
 7. **Publish to npm.**
 
    ```sh
-   nub run release   # = changeset publish
+   nub run release
    ```
 
-   `@changesets/cli` publishes each package with the `access: public` setting
-   from `publishConfig`. It does not require credentials in the repository.
-   It also creates a git tag per published package (e.g. `@foldstryx/tokens@0.1.0`)
-   locally; push those tags to the remote after publishing.
+   `nub run release` runs `changeset publish` with `scripts/npm` on `PATH`.
+   When Changesets invokes `npm publish <package-dir>`, the shim packs a
+   normalized tarball (`scripts/nub-pack.mjs`) and publishes
+   `npm publish <normalized.tgz>` instead, so registry consumers receive `dist/`
+   exports and concrete sibling semver — not workspace `src/` paths or
+   `workspace:*` protocols. To dry-run a tarball publish locally, pack first
+   then call real npm directly (do not put `scripts/` on PATH before
+   `command -v npm` — that resolves the shim and can recurse):
+
+   ```sh
+   node scripts/nub-pack.mjs --ignore-scripts --pack-destination /tmp/foldstryx-pack
+   npm publish /tmp/foldstryx-pack/foldstryx-foldkit-<version>.tgz --dry-run
+   ```
+
+   It does not require credentials in the repository. It also creates a git tag
+   per published package (e.g. `@foldstryx/tokens@0.1.0`) locally; push those
+   tags to the remote after publishing.
 
 8. **Verify the published packages.**
 
    ```sh
-   npm view @foldstryx/tokens version
-   npm view @foldstryx/docs version
+   npm view @foldstryx/foldkit version exports dependencies
+   npm view @foldstryx/styles version exports dependencies
+   npm view @foldstryx/tokens version exports dependencies
    ```
 
-   Confirm versions, exports, and tarball contents. Then install the
-   published versions in a clean external consumer and render `@foldstryx/docs`
-   with its CSS and font assets (the `nub run check:packed` harness is the
-   template for this).
+   Confirm versions, `exports` pointing at `dist/` (CSS subpaths such as
+   `@foldstryx/styles/document.global.css` may remain on a published `src/`
+   path), and no `workspace:*` in `dependencies`. Then install the published
+   versions in a clean external consumer and render `@foldstryx/docs` with its
+   CSS and font assets (the `nub run check:packed` harness is the template for
+   this).
 
 ## Notes
 
 - Never commit or push without explicit approval.
 - Never embed credentials or tokens in the repository.
-- `nub exec changeset publish` publishes only packages whose version differs from
-  the registry; re-running it is safe.
+- `nub exec changeset publish` (via `nub run release`) publishes only packages
+  whose version differs from the registry; re-running it is safe.

@@ -12,7 +12,7 @@
  * Requires `google-chrome` or `CHROME_PATH`. GitHub Actions sets `CI=true`;
  * that (or `CHROME_NO_SANDBOX=1`) adds `--no-sandbox`.
  */
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import {
   cp,
@@ -26,6 +26,9 @@ import {
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { assertTarballManifest } from './normalize-tarball-manifest.mjs'
+import { packNormalized } from './nub-pack.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '..')
@@ -57,69 +60,6 @@ const workspaceDir = async name => {
     }
   }
   throw new Error(`workspace package not found: ${name}`)
-}
-
-// Normalize a packed tarball manifest to the shape npm's publish / pnpm's
-// pack normalization would produce. `nub pack` ships the source manifest
-// as-is, so the probe applies the two transformations the registry consumers
-// rely on:
-//   1. `publishConfig` fields (exports → `dist/`) are merged onto the top
-//      level, exactly like npm's publish normalization.
-//   2. `workspace:*` internal dependencies are rewritten to the concrete
-//      sibling version (pnpm packs that shape; npm rewrites the protocol too).
-const normalizeTarballManifest = async (tarball, versions) => {
-  const work = join(dirname(tarball), `manifest-${process.pid}-${Date.now()}`)
-  await mkdir(work, { recursive: true })
-  try {
-    const extract = spawnSync('tar', ['-xzf', tarball, '-C', work], {
-      stdio: 'inherit',
-    })
-    if (extract.status !== 0) {
-      throw new Error(
-        `tar extract failed for ${tarball} (exit ${extract.status})`,
-      )
-    }
-    const pkgFile = join(work, 'package', 'package.json')
-    const pkg = JSON.parse(await readFile(pkgFile, 'utf8'))
-    const publishConfig = pkg.publishConfig ?? {}
-    const { access, tag, registry, ...overrides } = publishConfig
-    const published = { ...pkg, ...overrides }
-    for (const field of [
-      'dependencies',
-      'devDependencies',
-      'peerDependencies',
-      'optionalDependencies',
-    ]) {
-      const deps = published[field]
-      if (deps === undefined) continue
-      for (const [name, spec] of Object.entries(deps)) {
-        if (
-          spec === 'workspace:*' ||
-          spec === 'workspace:^' ||
-          spec === 'workspace:~'
-        ) {
-          const version = versions[name]
-          if (version === undefined) {
-            throw new Error(
-              `cannot rewrite workspace dep ${name} in ${tarball}: sibling tarball not packed`,
-            )
-          }
-          deps[name] = version
-        }
-      }
-    }
-    await writeFile(pkgFile, JSON.stringify(published, null, 2) + '\n')
-    const repack = spawnSync('tar', ['-czf', tarball, '-C', work, 'package'], {
-      stdio: 'inherit',
-    })
-    if (repack.status !== 0) {
-      throw new Error(
-        `tar repack failed for ${tarball} (exit ${repack.status})`,
-      )
-    }
-  } finally {
-    await rm(work, { recursive: true, force: true })
-  }
 }
 
 const wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms))
@@ -546,33 +486,18 @@ const main = async () => {
       { cwd: root },
     )
 
-    // 1. Pack every external-consumer package, then normalize the tarball
-    //    manifests to the published shape (`publishConfig` applied,
-    //    `workspace:*` rewritten) — `nub pack` ships the source manifest.
+    // 1. Pack every external-consumer package via the normalized pack wrapper
+    //    (same tarball shape `nub run release` publishes), then assert each raw
+    //    tarball already matches the published shape.
     const tarballs = {}
     for (const pkg of PACKAGES) {
-      const out = await runCapture(
-        'nub',
-        ['pack', '--ignore-scripts', '--pack-destination', packDir],
-        { cwd: await workspaceDir(pkg) },
-      )
-      const match = out.match(/([^/\s]+\.tgz)/)
-      if (match === null) {
-        throw new Error(`Could not determine tarball name for ${pkg}:\n${out}`)
-      }
-      tarballs[pkg] = join(packDir, match[1])
-    }
-    const versions = {}
-    for (const pkg of PACKAGES) {
-      const out = await runCapture('tar', [
-        '-xOf',
-        tarballs[pkg],
-        'package/package.json',
+      const pkgDir = await workspaceDir(pkg)
+      tarballs[pkg] = await packNormalized(pkgDir, [
+        '--ignore-scripts',
+        '--pack-destination',
+        packDir,
       ])
-      versions[pkg] = JSON.parse(out).version
-    }
-    for (const pkg of PACKAGES) {
-      await normalizeTarballManifest(tarballs[pkg], versions)
+      await assertTarballManifest(tarballs[pkg], pkg)
     }
 
     // 2. Scaffold the consumer from the fixture.

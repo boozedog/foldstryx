@@ -85,9 +85,10 @@ The five external-consumer packages (`@foldstryx/tokens`, `@foldstryx/styles`,
 JavaScript plus TypeScript declarations to `dist/` (`nub run build`). In the
 workspace, `exports` point at `src/` so tests and the demo never depend on a
 stale `dist/`; `publishConfig.exports` points at `dist/` so packed and
-published artifacts expose the built output. `prepack` rebuilds `dist/` for
-`npm publish`. Runtime dependencies live in `dependencies`; `@foldkit/ui`,
-`effect`, and `foldkit` are `peerDependencies` where a package imports them
+published artifacts expose the built output. `prepack` rebuilds `dist/` and
+stages the published manifest for `nub pack`; `nub run release` publishes
+normalized tarballs via `scripts/changeset-publish.mjs`. Runtime dependencies
+live in `dependencies`; `@foldkit/ui`, `effect`, and `foldkit` are `peerDependencies` where a package imports them
 directly, so the host supplies the Foldkit runtime.
 
 `@foldstryx/styles` keeps the stable `@foldstryx/styles/document.global.css`
@@ -125,7 +126,8 @@ The five external-consumer packages publish together as one coordinated
 release. See [RELEASING.md](./RELEASING.md) for the exact, repeatable
 procedure: prepare metadata and Changesets, run `nub run check`, version with
 `nub run version-packages`, review the generated diff, re-run the gate, then
-publish with `nub run release` (`changeset publish`). Credentials are configured
+publish with `nub run release` (`scripts/changeset-publish.mjs` wrapping
+`changeset publish`). Credentials are configured
 locally and never committed.
 
 ## Develop
