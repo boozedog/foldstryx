@@ -9,4 +9,13 @@ export default defineConfig({
     stylex.vite({ lightningcssOptions: { exclude: Features.LightDark } }),
     foldkit(),
   ],
+  resolve: {
+    dedupe: [
+      '@foldstryx/docs',
+      '@foldstryx/foldkit',
+      '@foldstryx/kitchen-sink',
+      '@foldstryx/styles',
+      '@foldstryx/tokens',
+    ],
+  },
 })

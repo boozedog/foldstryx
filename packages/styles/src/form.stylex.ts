@@ -217,6 +217,47 @@ export const switchStyles = stylex.create({
   },
   thumbChecked: { transform: 'translateX(12px)' },
 })
+export const textareaStyles = stylex.create({
+  wrapper: {
+    zIndex: 1,
+    alignItems: 'flex-start',
+    height: 'auto',
+    minHeight: sizeVars['--size-element-md'],
+    paddingBlock: spacingVars['--spacing-1'],
+  },
+  textarea: {
+    display: 'block',
+    flexGrow: 1,
+    minWidth: 0,
+    width: '100%',
+    borderWidth: 0,
+    borderStyle: 'none',
+    padding: 0,
+    fontFamily: typographyVars['--font-family-body'],
+    fontSize: typeScaleVars['--text-body-size'],
+    lineHeight: typeScaleVars['--text-body-leading'],
+    color: colorVars['--color-text-primary'],
+    backgroundColor: 'transparent',
+    outline: 'none',
+    resize: 'vertical',
+    '::placeholder': {
+      color: colorVars['--color-text-secondary'],
+    },
+  },
+  textareaDisabled: {
+    cursor: 'not-allowed',
+  },
+})
+
+export const numberInputStyles = stylex.create({
+  units: {
+    flexShrink: 0,
+    color: colorVars['--color-text-secondary'],
+    fontSize: typeScaleVars['--text-body-size'],
+    lineHeight: typeScaleVars['--text-body-leading'],
+  },
+})
+
 export const separatorStyles = stylex.create({
   horizontal: {
     width: '100%',

@@ -85,6 +85,7 @@ export const folderSolid = (config: IconConfig = {}): Html =>
     children: [{ d: 'M3 6h7l2 2h9v10H3z' }],
   })
 export const chevronLeft = make([{ d: 'M15 6l-6 6 6 6' }])
+export const chevronRight = make([{ d: 'M9 6l6 6-6 6' }])
 export const help = make([
   { cx: '12', cy: '12', r: '9' },
   { d: 'M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1.9-1.1 1.8V14' },

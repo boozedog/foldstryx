@@ -80,10 +80,10 @@
       },
       {
         "files": ["packages/kitchen-sink/src/index.ts"],
-        "maxCrap": 200,
+        "maxCrap": 300,
         "maxUnitSize": 140,
         "maxCognitive": 30,
-        "maxCyclomatic": 30,
+        "maxCyclomatic": 35,
         "reason": "Kitchen-sink catalog view intentionally composes all primitive demonstrations in one vertical page."
       },
       {
@@ -92,6 +92,16 @@
         "maxCyclomatic": 30,
         "maxCrap": 140,
         "reason": "Grid keyboard navigation step keeps donor geometry together; covered by gridFocus unit and scene tests."
+      },
+      {
+        "files": ["packages/foldkit/src/treeList.ts"],
+        "maxCrap": 70,
+        "reason": "Recursive tree row renderer and keyboard step keep APG tree semantics together; covered by TreeList tests and scene story."
+      },
+      {
+        "files": ["packages/foldkit/src/progressBar.ts"],
+        "maxCognitive": 22,
+        "reason": "Progress bar view composes header, ARIA, and variant fill modes; covered by ProgressBar tests."
       },
       {
         "files": ["packages/docs/src/view.ts"],

@@ -1,5 +1,6 @@
 import { Option, Schema as S } from 'effect'
 import { Command, Runtime, Submodel } from 'foldkit'
+import * as Calendar from 'foldkit/calendar'
 
 import {
   Alert,
@@ -9,6 +10,9 @@ import {
   Button,
   Card,
   Checkbox,
+  ContextMenu,
+  DateInput,
+  DateRangeInput,
   Details,
   Dialog,
   DropdownMenu,
@@ -19,11 +23,15 @@ import {
   Input,
   ListRow,
   LoadingPanel,
+  NumberInput,
   Page,
   Pagination,
+  ProgressBar,
   Row,
   Selector,
   Separator,
+  Skeleton,
+  Spinner,
   Stack,
   Stat,
   Switch,
@@ -31,9 +39,12 @@ import {
   TableSelection,
   Tabs,
   Text,
+  TextArea,
   Toast,
   ToggleButton,
   Tooltip,
+  TreeList,
+  Typeahead,
   elAttrs,
   sxAttrs,
 } from '@foldstryx/foldkit'
@@ -45,11 +56,62 @@ type CatalogItem = 'edit' | 'duplicate' | 'delete'
 const DemoMenu = DropdownMenu.create<CatalogItem>()
 const DemoToast = Toast.create()
 type KindItem = 'all' | 'active'
+type FruitItem = 'apple' | 'banana' | 'cherry'
+type CatalogFruitItem = FruitItem | ReturnType<typeof Typeahead.noMatchesItem>
+type ContextItem = 'open' | 'rename'
 const KindSelector = Selector.create<KindItem>()
+const CatalogTypeahead = Typeahead.create<CatalogFruitItem>()
+const CatalogContextMenu = DropdownMenu.create<ContextItem>()
 const KIND_OPTIONS: ReadonlyArray<Selector.SelectorOption<KindItem>> = [
   { value: 'all', label: 'All kinds' },
   { value: 'active', label: 'Active' },
 ]
+
+const FRUIT_OPTIONS: ReadonlyArray<Typeahead.TypeaheadOption<FruitItem>> = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'cherry', label: 'Cherry' },
+]
+
+const filterTypeaheadItems = (
+  query: string,
+): ReadonlyArray<CatalogFruitItem> => {
+  const normalized = query.trim().toLowerCase()
+  if (normalized.length === 0) {
+    return FRUIT_OPTIONS.map(option => option.value)
+  }
+  const matches = FRUIT_OPTIONS.filter(
+    option =>
+      option.label.toLowerCase().includes(normalized) ||
+      option.value.includes(normalized),
+  ).map(option => option.value)
+  return matches.length === 0 ? [Typeahead.noMatchesItem()] : matches
+}
+
+const TREE_ITEMS: ReadonlyArray<TreeList.TreeListItem> = [
+  {
+    id: 'projects',
+    label: 'Projects',
+    children: [
+      { id: 'foldstryx', label: 'Foldstryx' },
+      { id: 'sidebar', label: 'Sidebar' },
+    ],
+  },
+  { id: 'archive', label: 'Archive' },
+]
+
+const catalogToday = Calendar.make(2026, 8, 19)
+
+const maybeIso = (iso: string | null): Option.Option<string> =>
+  iso === null ? Option.none() : Option.some(iso)
+
+const maybeFruit = (
+  value: FruitItem | null,
+): Option.Option<CatalogFruitItem> =>
+  value === null ? Option.none() : Option.some(value)
+
+const isCatalogFruit = (value: CatalogFruitItem): value is FruitItem =>
+  value !== Typeahead.noMatchesItem()
 
 export const Model = S.Struct({
   clicks: S.Finite,
@@ -72,10 +134,27 @@ export const Model = S.Struct({
   toggleMulti: S.Array(S.String),
   tableSelected: S.Array(S.String),
   matrixPressed: S.Array(S.Boolean),
+  notes: S.String,
+  quantity: S.String,
+  typeahead: Typeahead.Model,
+  typeaheadValue: S.NullOr(S.Literals(['apple', 'banana', 'cherry'])),
+  startDatePicker: DateInput.Model,
+  endDatePicker: DateInput.Model,
+  startIso: S.NullOr(S.String),
+  endIso: S.NullOr(S.String),
+  contextMenu: DropdownMenu.Model,
+  contextMenuAnchorX: S.Finite,
+  contextMenuAnchorY: S.Finite,
+  treeExpanded: S.Array(S.String),
+  treeSelected: S.NullOr(S.String),
+  treeFocused: S.NullOr(S.String),
 })
 export type Model = typeof Model.Type
 export const Clicked = () => ({ _tag: 'Clicked' as const })
-export const FieldChanged = (field: 'email' | 'filter', value: string) => ({
+export const FieldChanged = (
+  field: 'email' | 'filter' | 'notes' | 'quantity',
+  value: string,
+) => ({
   _tag: 'FieldChanged' as const,
   field,
   value,
@@ -116,6 +195,34 @@ export const GotMenuMessage = (message: DropdownMenu.Message) => ({
   _tag: 'GotMenuMessage' as const,
   message,
 })
+export const GotTypeaheadMessage = (message: Typeahead.Message) => ({
+  _tag: 'GotTypeaheadMessage' as const,
+  message,
+})
+export const GotStartDateMessage = (message: DateInput.Message) => ({
+  _tag: 'GotStartDateMessage' as const,
+  message,
+})
+export const GotEndDateMessage = (message: DateInput.Message) => ({
+  _tag: 'GotEndDateMessage' as const,
+  message,
+})
+export const GotContextMenuMessage = (message: DropdownMenu.Message) => ({
+  _tag: 'GotContextMenuMessage' as const,
+  message,
+})
+export const TreeToggled = (id: string) => ({
+  _tag: 'TreeToggled' as const,
+  id,
+})
+export const TreeSelected = (id: string) => ({
+  _tag: 'TreeSelected' as const,
+  id,
+})
+export const TreeFocused = (id: string) => ({
+  _tag: 'TreeFocused' as const,
+  id,
+})
 export const GotToastMessage = (message: typeof DemoToast.Message.Type) => ({
   _tag: 'GotToastMessage' as const,
   message,
@@ -154,7 +261,11 @@ export const MatrixCellPressed = (index: number, next: boolean) => ({
 })
 export type Message = Readonly<
   | { _tag: 'Clicked' }
-  | { _tag: 'FieldChanged'; field: 'email' | 'filter'; value: string }
+  | {
+      _tag: 'FieldChanged'
+      field: 'email' | 'filter' | 'notes' | 'quantity'
+      value: string
+    }
   | { _tag: 'IncludeInactiveChanged'; checked: boolean }
   | { _tag: 'NotificationsChanged'; checked: boolean }
   | { _tag: 'DetailsToggled'; isOpen: boolean }
@@ -164,6 +275,13 @@ export type Message = Readonly<
   | { _tag: 'GotTabsMessage'; message: Tabs.Message }
   | { _tag: 'GotKindSelectorMessage'; message: Selector.Message }
   | { _tag: 'GotMenuMessage'; message: DropdownMenu.Message }
+  | { _tag: 'GotTypeaheadMessage'; message: Typeahead.Message }
+  | { _tag: 'GotStartDateMessage'; message: DateInput.Message }
+  | { _tag: 'GotEndDateMessage'; message: DateInput.Message }
+  | { _tag: 'GotContextMenuMessage'; message: DropdownMenu.Message }
+  | { _tag: 'TreeToggled'; id: string }
+  | { _tag: 'TreeSelected'; id: string }
+  | { _tag: 'TreeFocused'; id: string }
   | { _tag: 'GotToastMessage'; message: typeof DemoToast.Message.Type }
   | { _tag: 'ShowToast'; variant: 'Info' | 'Success' | 'Warning' | 'Error' }
   | { _tag: 'ToggleBoldChanged'; pressed: boolean }
@@ -174,6 +292,8 @@ export type Message = Readonly<
   | { _tag: 'MatrixCellPressed'; index: number; next: boolean }
   | typeof GridFocus.CompletedGridFocus.Type
   | typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type
+  | typeof ContextMenu.ContextMenuOpened.Type
+  | typeof ContextMenu.CompletedAttachContextMenu.Type
 >
 
 const mapCompletedGridFocus = (
@@ -216,6 +336,26 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => [
       false,
       false,
     ],
+    notes: '',
+    quantity: '2',
+    typeahead: Typeahead.init({ id: 'catalog-typeahead' }),
+    typeaheadValue: null,
+    startDatePicker: DateInput.init({
+      id: 'catalog-start-date',
+      today: catalogToday,
+    }),
+    endDatePicker: DateInput.init({
+      id: 'catalog-end-date',
+      today: catalogToday,
+    }),
+    startIso: null,
+    endIso: null,
+    contextMenu: DropdownMenu.init({ id: 'catalog-context-menu' }),
+    contextMenuAnchorX: 0,
+    contextMenuAnchorY: 0,
+    treeExpanded: ['projects'],
+    treeSelected: 'foldstryx',
+    treeFocused: 'foldstryx',
   },
   [],
 ]
@@ -271,6 +411,98 @@ export const update = (
         Command.mapMessages(commands, m => GotMenuMessage(m)),
       ]
     }
+    case 'GotTypeaheadMessage': {
+      const [typeahead, commands, maybeOut] = CatalogTypeahead.update(
+        model.typeahead,
+        message.message,
+      )
+      const typeaheadValue = Option.match(maybeOut, {
+        onNone: () => model.typeaheadValue,
+        onSome: out => {
+          if (out._tag === 'Selected' && isCatalogFruit(out.value)) {
+            return out.value
+          }
+          if (out._tag === 'ClearedSelection') return null
+          return model.typeaheadValue
+        },
+      })
+      return [
+        { ...model, typeahead, typeaheadValue },
+        Command.mapMessages(commands, m => GotTypeaheadMessage(m)),
+      ]
+    }
+    case 'GotStartDateMessage': {
+      const [startDatePicker, commands, maybeOut] = DateInput.update(
+        model.startDatePicker,
+        message.message,
+      )
+      const startIso = Option.match(maybeOut, {
+        onNone: () => model.startIso,
+        onSome: out =>
+          out._tag === 'SelectedDate'
+            ? DateInput.isoFromCalendarDate(out.date)
+            : out._tag === 'ClearedDate'
+              ? null
+              : model.startIso,
+      })
+      return [
+        { ...model, startDatePicker, startIso },
+        Command.mapMessages(commands, m => GotStartDateMessage(m)),
+      ]
+    }
+    case 'GotEndDateMessage': {
+      const [endDatePicker, commands, maybeOut] = DateInput.update(
+        model.endDatePicker,
+        message.message,
+      )
+      const endIso = Option.match(maybeOut, {
+        onNone: () => model.endIso,
+        onSome: out =>
+          out._tag === 'SelectedDate'
+            ? DateInput.isoFromCalendarDate(out.date)
+            : out._tag === 'ClearedDate'
+              ? null
+              : model.endIso,
+      })
+      return [
+        { ...model, endDatePicker, endIso },
+        Command.mapMessages(commands, m => GotEndDateMessage(m)),
+      ]
+    }
+    case 'GotContextMenuMessage': {
+      const [contextMenu, commands] = CatalogContextMenu.update(
+        model.contextMenu,
+        message.message,
+      )
+      return [
+        { ...model, contextMenu },
+        Command.mapMessages(commands, m => GotContextMenuMessage(m)),
+      ]
+    }
+    case 'ContextMenuOpened': {
+      const [contextMenu, commands] = CatalogContextMenu.open(model.contextMenu)
+      return [
+        {
+          ...model,
+          contextMenu,
+          contextMenuAnchorX: message.offsetX,
+          contextMenuAnchorY: message.offsetY,
+        },
+        Command.mapMessages(commands, m => GotContextMenuMessage(m)),
+      ]
+    }
+    case 'CompletedAttachContextMenu':
+      return [model, []]
+    case 'TreeToggled': {
+      const expanded = model.treeExpanded.includes(message.id)
+        ? model.treeExpanded.filter(id => id !== message.id)
+        : [...model.treeExpanded, message.id]
+      return [{ ...model, treeExpanded: expanded }, []]
+    }
+    case 'TreeSelected':
+      return [{ ...model, treeSelected: message.id }, []]
+    case 'TreeFocused':
+      return [{ ...model, treeFocused: message.id }, []]
     case 'GotToastMessage': {
       const [toast, commands] = DemoToast.update(model.toast, message.message)
       return [
@@ -731,6 +963,104 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                   },
                   h,
                 ),
+                Typeahead.labeledField<Message>(
+                  {
+                    id: 'catalog-typeahead',
+                    label: 'Fruit',
+                    description:
+                      'Parent filters items from the combobox inputValue.',
+                    children: [
+                      h.submodel({
+                        slotId: 'catalog-typeahead',
+                        model: model.typeahead,
+                        view: CatalogTypeahead.view,
+                        viewInputs: Typeahead.styledViewInputs<
+                          CatalogFruitItem,
+                          Message
+                        >(
+                          {
+                            items: filterTypeaheadItems(
+                              model.typeahead.inputValue,
+                            ),
+                            options: FRUIT_OPTIONS,
+                            maybeSelectedValue: maybeFruit(
+                              model.typeaheadValue,
+                            ),
+                            inputValue: model.typeahead.inputValue,
+                            placeholder: 'Search fruit…',
+                            ariaLabel: 'Fruit',
+                            isOpen: model.typeahead.isOpen,
+                            width: 'full',
+                          },
+                          h,
+                        ),
+                        toParentMessage: message =>
+                          GotTypeaheadMessage(message),
+                      }),
+                    ],
+                  },
+                  h,
+                ),
+                DateRangeInput.view<Message>(
+                  {
+                    id: 'catalog-date-range',
+                    label: 'Date range',
+                    description:
+                      'Two DateInput fields; Foldkit Calendar is single-select per field (not one-calendar range mode).',
+                    startField: h.submodel({
+                      slotId: 'catalog-start-date',
+                      model: model.startDatePicker,
+                      view: DateInput.view,
+                      viewInputs: DateInput.styledViewInputs(
+                        {
+                          maybeIsoDate: maybeIso(model.startIso),
+                          width: 'full',
+                          placeholder: 'Start date',
+                        },
+                        h,
+                      ),
+                      toParentMessage: message => GotStartDateMessage(message),
+                    }),
+                    endField: h.submodel({
+                      slotId: 'catalog-end-date',
+                      model: model.endDatePicker,
+                      view: DateInput.view,
+                      viewInputs: DateInput.styledViewInputs(
+                        {
+                          maybeIsoDate: maybeIso(model.endIso),
+                          width: 'full',
+                          placeholder: 'End date',
+                        },
+                        h,
+                      ),
+                      toParentMessage: message => GotEndDateMessage(message),
+                    }),
+                  },
+                  h,
+                ),
+                NumberInput.view<Message>(
+                  {
+                    id: 'catalog-quantity',
+                    label: 'Quantity',
+                    value: model.quantity,
+                    onInput: value => FieldChanged('quantity', value),
+                    min: 0,
+                    description:
+                      'Native number input with parent-owned string.',
+                  },
+                  h,
+                ),
+                TextArea.view<Message>(
+                  {
+                    id: 'catalog-notes',
+                    label: 'Notes',
+                    value: model.notes,
+                    onInput: value => FieldChanged('notes', value),
+                    rows: 3,
+                    placeholder: 'Optional notes…',
+                  },
+                  h,
+                ),
                 Separator.view<Message>({}, h),
               ],
             },
@@ -897,6 +1227,53 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                   {
                     gap: 'sm',
                     children: [
+                      Row.view(
+                        {
+                          align: 'wrap',
+                          children: [
+                            Spinner.view(
+                              { size: 'md', ariaLabel: 'Loading' },
+                              h,
+                            ),
+                            Spinner.view({ size: 'sm', label: 'Saving…' }, h),
+                          ],
+                        },
+                        h,
+                      ),
+                      ProgressBar.view<Message>(
+                        {
+                          label: 'Upload progress',
+                          value: 62,
+                          variant: 'accent',
+                          hasValueLabel: true,
+                        },
+                        h,
+                      ),
+                      Row.view(
+                        {
+                          align: 'wrap',
+                          children: [
+                            Skeleton.view(
+                              { width: 120, height: 16, index: 0 },
+                              h,
+                            ),
+                            Skeleton.view(
+                              { width: 80, height: 16, index: 1 },
+                              h,
+                            ),
+                            Skeleton.view(
+                              {
+                                width: 48,
+                                height: 48,
+                                radius: 'rounded',
+                                index: 2,
+                              },
+                              h,
+                            ),
+                          ],
+                        },
+                        h,
+                      ),
                       LoadingPanel.view<Message>(
                         {
                           message: 'Loading panel…',
@@ -1289,6 +1666,19 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                         },
                         h,
                       ),
+                      TreeList.view(
+                        {
+                          items: TREE_ITEMS,
+                          expandedIds: new Set(model.treeExpanded),
+                          selectedId: model.treeSelected ?? 'foldstryx',
+                          focusedId: model.treeFocused ?? 'foldstryx',
+                          ariaLabel: 'Project tree',
+                          onToggle: id => TreeToggled(id),
+                          onSelect: id => TreeSelected(id),
+                          onFocus: id => TreeFocused(id),
+                        },
+                        h,
+                      ),
                     ],
                   },
                   h,
@@ -1412,6 +1802,51 @@ export const view = Submodel.defineView<Model, Message>((model, h) => {
                   ),
                   toParentMessage: message => GotMenuMessage(message),
                 }),
+              ],
+            },
+            h,
+          ),
+          Card.section(
+            {
+              title: 'Context menu',
+              description:
+                'Right-click trigger with cursor-anchored menu chrome (reuses DropdownMenu).',
+              padded: true,
+              children: [
+                ContextMenu.view<ContextItem, Message>(
+                  {
+                    menu: CatalogContextMenu,
+                    menuModel: model.contextMenu,
+                    menuSlotId: 'catalog-context-menu',
+                    items: ['open', 'rename'],
+                    itemSpec: item =>
+                      item === 'rename'
+                        ? { label: 'Rename' }
+                        : { label: 'Open' },
+                    anchor: {
+                      x: model.contextMenuAnchorX,
+                      y: model.contextMenuAnchorY,
+                    },
+                    toMenuMessage: GotContextMenuMessage,
+                    toContextMenuOpened: message => message,
+                    trigger: h.div(
+                      elAttrs<Message>(
+                        sxAttrs(h, layoutStyles.detailsBox),
+                        h.Tabindex(0),
+                      ),
+                      [
+                        Text.view(
+                          {
+                            variant: 'muted',
+                            children: 'Right-click this surface',
+                          },
+                          h,
+                        ),
+                      ],
+                    ),
+                  },
+                  h,
+                ),
               ],
             },
             h,

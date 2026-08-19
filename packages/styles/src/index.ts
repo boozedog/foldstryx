@@ -5,7 +5,7 @@ export { avatarStyles } from './avatar.stylex.js'
 export { buttonStyles } from './button.stylex.js'
 export { cardStyles } from './card.stylex.js'
 export { gridStyles, gridDynamicStyles } from './grid.stylex.js'
-export { layoutStyles } from './layout.stylex.js'
+export { layoutDynamicStyles, layoutStyles } from './layout.stylex.js'
 export { pageStyles } from './page.stylex.js'
 export { sidebarStyles } from './sidebar.stylex.js'
 export { badgeStyles } from './badge.stylex.js'
@@ -21,14 +21,27 @@ export {
   toggleButtonStyles,
 } from './toggleButton.stylex.js'
 export { selectorStyles } from './selector.stylex.js'
+export { typeaheadStyles } from './typeahead.stylex.js'
+export { calendarStyles } from './calendar.stylex.js'
+export { dateInputStyles } from './dateInput.stylex.js'
+export { treeListStyles, treeListDynamicStyles } from './treeList.stylex.js'
+export {
+  progressBarDynamicStyles,
+  progressBarStyles,
+  skeletonDynamicStyles,
+  skeletonStyles,
+  spinnerStyles,
+} from './feedback.stylex.js'
 export {
   checkboxStyles,
   fieldStyles,
   formDensityStyles,
   inputStyles,
   inputWrapperStyles,
+  numberInputStyles,
   separatorStyles,
   switchStyles,
+  textareaStyles,
 } from './form.stylex.js'
 
 /** Document-level styles shared by Foldstryx consumers. */

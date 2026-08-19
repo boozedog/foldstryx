@@ -20,6 +20,12 @@ export const gridDynamicStyles = {
   }),
 }
 export const layoutStyles = make
+export const layoutDynamicStyles = {
+  contextMenuOffset: (_x: number, _y: number) => ({
+    $$css: true,
+    contextMenuOffset: 'sx-contextMenuOffset',
+  }),
+}
 export const pageStyles = make
 export const cardStyles = make
 export const badgeStyles = make
@@ -41,3 +47,34 @@ export const dropdownMenuStyles = make
 export const toastStyles = make
 export const toggleButtonStyles = make
 export const toggleButtonGroupStyles = make
+export const progressBarDynamicStyles = {
+  fillWidth: (_percentage: number) => ({
+    $$css: true,
+    fillWidth: 'sx-fillWidth',
+  }),
+}
+export const progressBarStyles = make
+export const skeletonStyles = make
+export const skeletonDynamicStyles = {
+  animationDelay: (_index: number) => ({
+    $$css: true,
+    animationDelay: 'sx-animationDelay',
+  }),
+  dimensions: (_width: number | string, _height: number | string) => ({
+    $$css: true,
+    dimensions: 'sx-dimensions',
+  }),
+}
+export const spinnerStyles = make
+export const textareaStyles = make
+export const numberInputStyles = make
+export const typeaheadStyles = make
+export const calendarStyles = make
+export const dateInputStyles = make
+export const treeListStyles = make
+export const treeListDynamicStyles = {
+  indent: (_level: number) => ({
+    $$css: true,
+    indent: 'sx-indent',
+  }),
+}

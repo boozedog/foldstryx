@@ -3,22 +3,42 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import {
   Card,
   Checkbox,
+  ContextMenu,
+  DropdownMenu,
   ListRow,
   Stack,
   Stat,
   Table,
   Text,
+  TreeList,
+  elAttrs,
+  sxAttrs,
 } from '@foldstryx/foldkit'
+import { layoutStyles } from '@foldstryx/styles'
 
-import type { Message } from '../model.js'
+import type { Message, Model } from '../model.js'
+import { DataContextMenu } from '../model.js'
 
 const noop = (): Message => ({ _tag: 'Noop' })
+
+const GotDataContextMenuMessage = (message: DropdownMenu.Message): Message => ({
+  _tag: 'GotDataContextMenuMessage',
+  message,
+})
+
+const TREE_ITEMS: ReadonlyArray<TreeList.TreeListItem> = [
+  {
+    id: 'projects',
+    label: 'Projects',
+    children: [{ id: 'foldstryx', label: 'Foldstryx' }],
+  },
+]
 
 const mapSyncCheckbox = (
   message: typeof Checkbox.CompletedSyncCheckboxIndeterminate.Type,
 ): Message => message
 
-export const view = (h: HtmlBuilder<Message>): Html =>
+export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
   Stack.view(
     {
       gap: 'lg',
@@ -152,6 +172,73 @@ export const view = (h: HtmlBuilder<Message>): Html =>
                 {
                   title: 'Recent activity',
                   meta: ['Updated 2 min ago'],
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
+            title: 'Tree list',
+            description:
+              'Parent-owned expanded/selected/focused state with APG tree roles.',
+            padded: true,
+            children: [
+              TreeList.view(
+                {
+                  items: TREE_ITEMS,
+                  expandedIds: new Set(['projects']),
+                  selectedId: 'foldstryx',
+                  focusedId: 'foldstryx',
+                  ariaLabel: 'Project tree',
+                  onToggle: noop,
+                  onSelect: noop,
+                  onFocus: noop,
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
+            title: 'Context menu',
+            description:
+              'Right-click trigger with cursor-anchored menu chrome (reuses DropdownMenu).',
+            padded: true,
+            children: [
+              ContextMenu.view<'open' | 'rename', Message>(
+                {
+                  menu: DataContextMenu,
+                  menuModel: model.dataContextMenu,
+                  menuSlotId: 'docs-context-menu',
+                  items: ['open', 'rename'],
+                  itemSpec: item =>
+                    item === 'rename' ? { label: 'Rename' } : { label: 'Open' },
+                  anchor: {
+                    x: model.dataContextMenuAnchorX,
+                    y: model.dataContextMenuAnchorY,
+                  },
+                  toContextMenuOpened: message => message,
+                  toMenuMessage: GotDataContextMenuMessage,
+                  trigger: h.div(
+                    elAttrs<Message>(
+                      sxAttrs(h, layoutStyles.detailsBox),
+                      h.Tabindex(0),
+                    ),
+                    [
+                      Text.view(
+                        {
+                          variant: 'muted',
+                          children: 'Right-click this surface',
+                        },
+                        h,
+                      ),
+                    ],
+                  ),
                 },
                 h,
               ),

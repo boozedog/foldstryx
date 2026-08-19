@@ -12,7 +12,7 @@ import {
   PortalListboxBackdrop,
 } from '@foldkit/ui/listbox'
 import { AnchorTooltip, CompletedAnchorTooltip } from '@foldkit/ui/tooltip'
-import { Checkbox, GridFocus } from '@foldstryx/foldkit'
+import { Checkbox, ContextMenu, GridFocus } from '@foldstryx/foldkit'
 
 import { init, update } from './model.js'
 import { view } from './view.js'
@@ -49,6 +49,10 @@ const acknowledgeKitchenSinkMounts = Scene.Mount.resolveAll(
   [
     Checkbox.syncIndeterminateMount,
     Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    ContextMenu.attachMount,
+    ContextMenu.CompletedAttachContextMenu() as unknown as typeof ContextMenu.ContextMenuOpened.Type,
   ],
 )
 

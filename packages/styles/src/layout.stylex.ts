@@ -54,6 +54,15 @@ export const layoutStyles = stylex.create({
   panelPad: { padding: spacingVars['--spacing-4'] },
   selfStart: { alignSelf: 'flex-start' },
   selfCenter: { alignSelf: 'center' },
+  relative: {
+    position: 'relative',
+  },
+  contextMenuAnchor: {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    pointerEvents: 'none',
+  },
   loadingPanel: {
     color: colorVars['--color-text-secondary'],
     padding: spacingVars['--spacing-4'],
@@ -224,4 +233,11 @@ export const layoutStyles = stylex.create({
     fontSize: typeScaleVars['--text-heading-1-size'],
     fontWeight: typeScaleVars['--text-heading-1-weight'],
   },
+})
+
+export const layoutDynamicStyles = stylex.create({
+  contextMenuOffset: (x: number, y: number) => ({
+    left: `${x}px`,
+    top: `${y}px`,
+  }),
 })
