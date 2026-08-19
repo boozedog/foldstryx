@@ -75,7 +75,7 @@ const renderRoute = (model: Model, h: HtmlBuilder<Message>): Html => {
           case 'feedback':
             return FeedbackPage.view(h)
           case 'data':
-            return DataPage.view(h)
+            return DataPage.view(model, h)
           case 'media':
             return MediaPage.view(h)
           case 'gettingStarted':

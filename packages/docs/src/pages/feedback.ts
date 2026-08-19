@@ -7,7 +7,10 @@ import {
   Card,
   EmptyState,
   LoadingPanel,
+  ProgressBar,
   Row,
+  Skeleton,
+  Spinner,
   Stack,
   Text,
 } from '@foldstryx/foldkit'
@@ -78,6 +81,57 @@ export const view = (h: HtmlBuilder<Message>): Html =>
                       {
                         variant: 'success',
                         body: 'Import complete.',
+                      },
+                      h,
+                    ),
+                  ],
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
+            title: 'Inline loading',
+            description:
+              'Spinner, progress bar, and skeleton placeholders versus the LoadingPanel surface.',
+            padded: true,
+            children: [
+              Stack.view(
+                {
+                  gap: 'sm',
+                  children: [
+                    Row.view(
+                      {
+                        align: 'wrap',
+                        children: [
+                          Spinner.view({ size: 'md', ariaLabel: 'Loading' }, h),
+                          Spinner.view({ size: 'sm', label: 'Saving…' }, h),
+                        ],
+                      },
+                      h,
+                    ),
+                    ProgressBar.view(
+                      {
+                        label: 'Upload progress',
+                        value: 45,
+                        hasValueLabel: true,
+                        variant: 'accent',
+                      },
+                      h,
+                    ),
+                    Row.view(
+                      {
+                        align: 'wrap',
+                        children: [
+                          Skeleton.view(
+                            { width: 120, height: 16, index: 0 },
+                            h,
+                          ),
+                          Skeleton.view({ width: 80, height: 16, index: 1 }, h),
+                        ],
                       },
                       h,
                     ),

@@ -4,7 +4,7 @@ import * as Scene from 'foldkit/scene'
 
 import { describe, expect, it } from '@effect/vitest'
 import { AnchorTooltip, CompletedAnchorTooltip } from '@foldkit/ui/tooltip'
-import { Checkbox, GridFocus } from '@foldstryx/foldkit'
+import { Checkbox, ContextMenu, GridFocus } from '@foldstryx/foldkit'
 
 import { Message, init, update } from './model.js'
 import type { Model } from './model.js'
@@ -52,6 +52,11 @@ const acknowledgeFormsMounts = Scene.Mount.resolve(
   Checkbox.CompletedSyncCheckboxIndeterminate(),
 )
 
+const acknowledgeContextMenuAttach = Scene.Mount.resolve(
+  ContextMenu.attachMount,
+  ContextMenu.CompletedAttachContextMenu() as unknown as typeof ContextMenu.ContextMenuOpened.Type,
+)
+
 const acknowledgeDataMounts = Scene.Mount.resolveAll(
   [
     Checkbox.syncIndeterminateMount,
@@ -84,6 +89,10 @@ const acknowledgeKitchenSinkMounts = Scene.Mount.resolveAll(
   [
     Checkbox.syncIndeterminateMount,
     Checkbox.CompletedSyncCheckboxIndeterminate(),
+  ],
+  [
+    ContextMenu.attachMount,
+    ContextMenu.CompletedAttachContextMenu() as unknown as typeof ContextMenu.ContextMenuOpened.Type,
   ],
 )
 
@@ -160,7 +169,11 @@ describe('docs view', () => {
     expect(collectText(forms)).toContain('Selector')
     const feedback = render(withRoute(Route.feedback))
     expect(collectText(feedback)).toContain('Alerts')
-    const data = renderWithSteps(withRoute(Route.data), acknowledgeDataMounts)
+    const data = renderWithSteps(
+      withRoute(Route.data),
+      acknowledgeDataMounts,
+      acknowledgeContextMenuAttach,
+    )
     expect(collectText(data)).toContain('Data display')
     expect(collectText(data)).toContain('Table')
     const media = render(withRoute(Route.media))

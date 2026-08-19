@@ -661,17 +661,23 @@ const pageProbe = `async (negative) => {
   if (document.querySelector('[role="img"]') === null) {
     failures.push('missing role=img avatar')
   }
-  // Phase F catalog roles (issues #32–#35).
   if (document.querySelector('[aria-pressed]') === null) {
     failures.push('missing aria-pressed toggle button')
-  }
-  if (document.querySelector('table [aria-selected="true"]') === null) {
-    failures.push('missing table aria-selected row')
   }
   if (document.querySelector('[role="grid"]') === null) {
     failures.push('missing role=grid matrix')
   }
-  const phaseFSections = ['ToggleButton', 'Grid matrix']
+  // Phase F catalog sections and high-value roles (issues #40–#46).
+  if (document.querySelector('[role="progressbar"]') === null) {
+    failures.push('missing role=progressbar')
+  }
+  if (document.querySelector('[role="tree"]') === null) {
+    failures.push('missing role=tree')
+  }
+  if (document.querySelector('[role="combobox"]') === null) {
+    failures.push('missing role=combobox typeahead')
+  }
+  const phaseFSections = ['Context menu']
   for (const heading of phaseFSections) {
     if (!bodyText.includes(heading)) {
       failures.push('missing catalog section heading: ' + heading)

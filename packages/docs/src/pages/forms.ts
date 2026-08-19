@@ -1,21 +1,34 @@
+import { Option } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import {
   Card,
   Checkbox,
+  DateInput,
+  DateRangeInput,
   Field,
   Input,
+  NumberInput,
   Selector,
   Stack,
   Text,
+  TextArea,
+  Typeahead,
 } from '@foldstryx/foldkit'
 
-import type { Message, Model } from '../model.js'
-import { FormsKindSelector } from '../model.js'
+import type { FormsFruitItem, Message, Model } from '../model.js'
+import { FormsKindSelector, FormsTypeahead } from '../model.js'
 
 const KIND_OPTIONS: ReadonlyArray<Selector.SelectorOption<'all' | 'active'>> = [
   { value: 'all', label: 'All kinds' },
   { value: 'active', label: 'Active' },
+]
+
+const FRUIT_OPTIONS: ReadonlyArray<
+  Typeahead.TypeaheadOption<'apple' | 'banana'>
+> = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
 ]
 
 const mapSyncCheckbox = (
@@ -26,6 +39,24 @@ const GotFormsKindSelectorMessage = (message: Selector.Message): Message => ({
   _tag: 'GotFormsKindSelectorMessage',
   message,
 })
+
+const GotFormsTypeaheadMessage = (message: Typeahead.Message): Message => ({
+  _tag: 'GotFormsTypeaheadMessage',
+  message,
+})
+
+const filterFruitItems = (
+  inputValue: string,
+): ReadonlyArray<FormsFruitItem> => {
+  const query = inputValue.trim().toLowerCase()
+  if (query === '') return ['apple', 'banana']
+  const matches = FRUIT_OPTIONS.filter(option =>
+    option.label.toLowerCase().includes(query),
+  )
+  return matches.length === 0
+    ? [Typeahead.noMatchesItem()]
+    : matches.map(option => option.value)
+}
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
   Stack.view(
@@ -53,6 +84,124 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
                   value: '',
                   placeholder: 'name@example.com',
                   description: 'We will never share your email.',
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
+            title: 'Typeahead',
+            description:
+              'Single-select combobox with parent-filtered items and Astryx typeahead chrome.',
+            padded: true,
+            children: [
+              Typeahead.labeledField(
+                {
+                  id: 'docs-typeahead',
+                  label: 'Fruit',
+                  children: [
+                    h.submodel({
+                      slotId: 'docs-typeahead',
+                      model: model.formsTypeahead,
+                      view: FormsTypeahead.view,
+                      viewInputs: Typeahead.styledViewInputs<
+                        FormsFruitItem,
+                        Message
+                      >(
+                        {
+                          items: filterFruitItems(
+                            model.formsTypeahead.inputValue,
+                          ),
+                          options: FRUIT_OPTIONS,
+                          maybeSelectedValue: Option.none(),
+                          inputValue: model.formsTypeahead.inputValue,
+                          ariaLabel: 'Fruit',
+                          placeholder: 'Search fruit…',
+                          emptyLabel: 'No matches',
+                        },
+                        h,
+                      ),
+                      toParentMessage: GotFormsTypeaheadMessage,
+                    }),
+                  ],
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
+            title: 'Date range',
+            description:
+              'DateRangeInput composes two DateInput submodels. Foldkit Calendar is single-select per field, not Astryx one-calendar range mode.',
+            padded: true,
+            children: [
+              DateRangeInput.view(
+                {
+                  id: 'docs-date-range',
+                  label: 'Stay dates',
+                  startField: h.submodel({
+                    slotId: 'docs-start-date',
+                    model: model.formsStartDate,
+                    view: DateInput.view,
+                    viewInputs: DateInput.styledViewInputs(
+                      {
+                        maybeIsoDate: Option.none(),
+                        placeholder: 'Start',
+                        width: 'full',
+                      },
+                      h,
+                    ),
+                    toParentMessage: () => ({ _tag: 'Noop' }),
+                  }),
+                  endField: h.submodel({
+                    slotId: 'docs-end-date',
+                    model: model.formsEndDate,
+                    view: DateInput.view,
+                    viewInputs: DateInput.styledViewInputs(
+                      {
+                        maybeIsoDate: Option.none(),
+                        placeholder: 'End',
+                        width: 'full',
+                      },
+                      h,
+                    ),
+                    toParentMessage: () => ({ _tag: 'Noop' }),
+                  }),
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
+            title: 'Number and textarea',
+            description:
+              'Native number input and Foldkit Textarea with shared field chrome.',
+            padded: true,
+            children: [
+              NumberInput.view(
+                {
+                  id: 'docs-quantity',
+                  label: 'Quantity',
+                  value: '1',
+                  min: 0,
+                },
+                h,
+              ),
+              TextArea.view(
+                {
+                  id: 'docs-notes',
+                  label: 'Notes',
+                  rows: 3,
+                  placeholder: 'Optional notes…',
                 },
                 h,
               ),
