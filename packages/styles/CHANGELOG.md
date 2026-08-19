@@ -1,5 +1,15 @@
 # @foldstryx/styles
 
+## 0.3.0
+
+### Minor Changes
+
+- 5e0e314: Add Phase F primitives: typeahead, dates, number/textarea, tree list, context menu, and inline loading feedback.
+
+### Patch Changes
+
+- 9e4661e: Fix Phase F review findings: NumberInput borderless inner control, TreeList keyboard focus, docs date picker wiring, and ContextMenu hidden menu trigger.
+
 ## 0.2.2
 
 ### Patch Changes

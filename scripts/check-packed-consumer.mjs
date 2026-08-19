@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url'
 
 import { assertTarballManifest } from './normalize-tarball-manifest.mjs'
 import { packNormalized } from './nub-pack.mjs'
+import { resolveRealNpm } from './resolve-real-npm.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '..')
@@ -507,8 +508,14 @@ const main = async () => {
       JSON.stringify(consumerPackageJson(tarballs), null, 2) + '\n',
     )
 
-    // 3. Install packed artifacts (no workspace links).
-    await run('nub', ['install', '--no-frozen-lockfile'], { cwd: consumerDir })
+    // 3. Install packed artifacts (no workspace links). Real npm honors
+    //    `overrides` for sibling semver inside file: tarballs; Nub resolves
+    //    those ranges against the registry before overrides apply, which breaks
+    //    the post-version gate when the bumped versions are not published yet.
+    const npm = resolveRealNpm()
+    await run(npm, ['install', '--userconfig', '/dev/null'], {
+      cwd: consumerDir,
+    })
 
     // 4. Typecheck + build the consumer against the packed artifacts.
     await run('nub', ['run', 'typecheck'], { cwd: consumerDir })
