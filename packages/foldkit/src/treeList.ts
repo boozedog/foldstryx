@@ -72,15 +72,6 @@ const rowIndex = <Id extends string>(
   id: Id | undefined,
 ): number => (id === undefined ? -1 : rows.findIndex(row => row.id === id))
 
-const focusRow = <Id extends string, ParentMessage>(
-  rows: ReadonlyArray<VisibleRow<Id>>,
-  index: number,
-  onFocus: (id: Id) => ParentMessage,
-): ParentMessage | undefined => {
-  const row = rows[index]
-  return row === undefined ? undefined : onFocus(row.id)
-}
-
 const parentRowIndex = <Id extends string>(
   rows: ReadonlyArray<VisibleRow<Id>>,
   currentIndex: number,
@@ -95,36 +86,25 @@ const parentRowIndex = <Id extends string>(
   return -1
 }
 
-const arrowRightMessage = <Id extends string, ParentMessage>(
+export type TreeListKeyStep<Id extends string, ParentMessage> = Readonly<{
+  message: ParentMessage
+  focusId?: Id
+}>
+
+const focusStep = <Id extends string, ParentMessage>(
   rows: ReadonlyArray<VisibleRow<Id>>,
-  currentIndex: number,
-  current: VisibleRow<Id>,
-  handlers: TreeListKeyHandlers<Id, ParentMessage>,
-): ParentMessage | undefined => {
-  if (current.hasChildren && !current.isExpanded) {
-    return handlers.onToggle(current.id)
-  }
-  if (current.hasChildren && current.isExpanded) {
-    return focusRow(rows, currentIndex + 1, handlers.onFocus)
-  }
-  return undefined
+  index: number,
+  onFocus: (id: Id) => ParentMessage,
+): TreeListKeyStep<Id, ParentMessage> | undefined => {
+  const row = rows[index]
+  return row === undefined
+    ? undefined
+    : { message: onFocus(row.id), focusId: row.id }
 }
 
-const arrowLeftMessage = <Id extends string, ParentMessage>(
-  rows: ReadonlyArray<VisibleRow<Id>>,
-  currentIndex: number,
-  current: VisibleRow<Id>,
-  handlers: TreeListKeyHandlers<Id, ParentMessage>,
-): ParentMessage | undefined => {
-  if (current.hasChildren && current.isExpanded) {
-    return handlers.onToggle(current.id)
-  }
-  if (current.level > 0) {
-    const parentIndex = parentRowIndex(rows, currentIndex, current.level)
-    return focusRow(rows, parentIndex, handlers.onFocus)
-  }
-  return undefined
-}
+/** Stable DOM id for roving treeitem focus. */
+export const treeListItemDomId = <Id extends string>(id: Id): string =>
+  `foldstryx-treeitem-${id}`
 
 /** Pure APG tree keyboard step for parent-owned TreeList state. */
 export const treeListKeyDown = <Id extends string, ParentMessage>(
@@ -132,7 +112,7 @@ export const treeListKeyDown = <Id extends string, ParentMessage>(
   focusedIndex: number,
   key: string,
   handlers: TreeListKeyHandlers<Id, ParentMessage>,
-): ParentMessage | undefined => {
+): TreeListKeyStep<Id, ParentMessage> | undefined => {
   if (rows.length === 0) return undefined
   const currentIndex = focusedIndex >= 0 ? focusedIndex : 0
   const current = rows[currentIndex]
@@ -140,24 +120,37 @@ export const treeListKeyDown = <Id extends string, ParentMessage>(
 
   switch (key) {
     case 'ArrowDown':
-      return focusRow(
+      return focusStep(
         rows,
         Math.min(currentIndex + 1, rows.length - 1),
         handlers.onFocus,
       )
     case 'ArrowUp':
-      return focusRow(rows, Math.max(currentIndex - 1, 0), handlers.onFocus)
+      return focusStep(rows, Math.max(currentIndex - 1, 0), handlers.onFocus)
     case 'ArrowRight':
-      return arrowRightMessage(rows, currentIndex, current, handlers)
+      if (current.hasChildren && !current.isExpanded) {
+        return { message: handlers.onToggle(current.id) }
+      }
+      if (current.hasChildren && current.isExpanded) {
+        return focusStep(rows, currentIndex + 1, handlers.onFocus)
+      }
+      return undefined
     case 'ArrowLeft':
-      return arrowLeftMessage(rows, currentIndex, current, handlers)
+      if (current.hasChildren && current.isExpanded) {
+        return { message: handlers.onToggle(current.id) }
+      }
+      if (current.level > 0) {
+        const parentIndex = parentRowIndex(rows, currentIndex, current.level)
+        return focusStep(rows, parentIndex, handlers.onFocus)
+      }
+      return undefined
     case 'Home':
-      return focusRow(rows, 0, handlers.onFocus)
+      return focusStep(rows, 0, handlers.onFocus)
     case 'End':
-      return focusRow(rows, rows.length - 1, handlers.onFocus)
+      return focusStep(rows, rows.length - 1, handlers.onFocus)
     case 'Enter':
     case ' ':
-      return handlers.onSelect(current.id)
+      return { message: handlers.onSelect(current.id) }
     default:
       return undefined
   }
@@ -183,6 +176,7 @@ const renderTreeItem = <Id extends string, ParentMessage>(
   return h.li(
     elAttrs<ParentMessage>(
       sxAttrs(h, treeListStyles.item),
+      h.Id(treeListItemDomId(item.id)),
       h.Role('treeitem'),
       ...(hasChildren ? [h.AriaExpanded(isExpanded)] : []),
       h.AriaSelected(isSelected),
@@ -277,13 +271,20 @@ export const view = <Id extends string, ParentMessage>(
     onFocus: config.onFocus,
   }
 
-  const handleKey = (key: string): ParentMessage | undefined => {
+  const keyStep = (
+    key: string,
+  ): TreeListKeyStep<Id, ParentMessage> | undefined => {
     if (config.onKeyDown !== undefined) {
       const custom = config.onKeyDown(key)
-      if (custom !== undefined) return custom
+      if (custom !== undefined) {
+        return { message: custom }
+      }
     }
     return treeListKeyDown(rows, focusedIndex, key, handlers)
   }
+
+  const focusTargetId = (step: TreeListKeyStep<Id, ParentMessage>) =>
+    step.focusId ?? (focusedIndex >= 0 ? rows[focusedIndex]?.id : rows[0]?.id)
 
   return h.div(elAttrs<ParentMessage>(sxAttrs(h, treeListStyles.root)), [
     h.ul(
@@ -293,9 +294,15 @@ export const view = <Id extends string, ParentMessage>(
         ...(config.ariaLabel !== undefined
           ? [h.AriaLabel(config.ariaLabel)]
           : []),
-        h.OnKeyDownPreventDefault((key, _modifiers) => {
-          const message = handleKey(key)
-          return message === undefined ? Option.none() : Option.some(message)
+        h.OnKeyDownFocus((key, _modifiers) => {
+          const step = keyStep(key)
+          if (step === undefined) return Option.none()
+          const focusId = focusTargetId(step)
+          if (focusId === undefined) return Option.none()
+          return Option.some({
+            focusSelector: `#${treeListItemDomId(focusId)}`,
+            message: step.message,
+          })
         }),
       ),
       renderTreeRows(config.items, config, config.selectedId, 0, h),

@@ -45,6 +45,24 @@ const GotFormsTypeaheadMessage = (message: Typeahead.Message): Message => ({
   message,
 })
 
+const GotFormsStartDateMessage = (message: DateInput.Message): Message => ({
+  _tag: 'GotFormsStartDateMessage',
+  message,
+})
+
+const GotFormsEndDateMessage = (message: DateInput.Message): Message => ({
+  _tag: 'GotFormsEndDateMessage',
+  message,
+})
+
+const GotFormsCalendarDateMessage = (message: DateInput.Message): Message => ({
+  _tag: 'GotFormsCalendarDateMessage',
+  message,
+})
+
+const maybeIso = (iso: string | null): Option.Option<string> =>
+  iso === null ? Option.none() : Option.some(iso)
+
 const filterFruitItems = (
   inputValue: string,
 ): ReadonlyArray<FormsFruitItem> => {
@@ -136,6 +154,41 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
         ),
         Card.section(
           {
+            title: 'Date input',
+            description:
+              'Single DateInput with Foldkit Calendar popover. DateRangeInput below composes two of these fields.',
+            padded: true,
+            children: [
+              DateInput.labeledField(
+                {
+                  id: 'docs-calendar-date',
+                  label: 'Event date',
+                  description: 'Opens the styled month grid in a popover.',
+                  children: [
+                    h.submodel({
+                      slotId: 'docs-calendar-date',
+                      model: model.formsCalendarDate,
+                      view: DateInput.view,
+                      viewInputs: DateInput.styledViewInputs(
+                        {
+                          maybeIsoDate: maybeIso(model.formsCalendarIso),
+                          placeholder: 'Select date…',
+                          width: 'md',
+                        },
+                        h,
+                      ),
+                      toParentMessage: GotFormsCalendarDateMessage,
+                    }),
+                  ],
+                },
+                h,
+              ),
+            ],
+          },
+          h,
+        ),
+        Card.section(
+          {
             title: 'Date range',
             description:
               'DateRangeInput composes two DateInput submodels. Foldkit Calendar is single-select per field, not Astryx one-calendar range mode.',
@@ -151,13 +204,13 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
                     view: DateInput.view,
                     viewInputs: DateInput.styledViewInputs(
                       {
-                        maybeIsoDate: Option.none(),
+                        maybeIsoDate: maybeIso(model.formsStartIso),
                         placeholder: 'Start',
                         width: 'full',
                       },
                       h,
                     ),
-                    toParentMessage: () => ({ _tag: 'Noop' }),
+                    toParentMessage: GotFormsStartDateMessage,
                   }),
                   endField: h.submodel({
                     slotId: 'docs-end-date',
@@ -165,13 +218,13 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
                     view: DateInput.view,
                     viewInputs: DateInput.styledViewInputs(
                       {
-                        maybeIsoDate: Option.none(),
+                        maybeIsoDate: maybeIso(model.formsEndIso),
                         placeholder: 'End',
                         width: 'full',
                       },
                       h,
                     ),
-                    toParentMessage: () => ({ _tag: 'Noop' }),
+                    toParentMessage: GotFormsEndDateMessage,
                   }),
                 },
                 h,

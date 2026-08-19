@@ -110,6 +110,14 @@ describe('ContextMenu scene', () => {
         ContextMenu.ContextMenuOpened({ offsetX: 12, offsetY: 34 }),
       ),
       ...resolveOpen,
+      Scene.expect(Scene.selector('#ctx-menu-button')).toHaveAttr(
+        'aria-hidden',
+        'true',
+      ),
+      Scene.expect(Scene.selector('#ctx-menu-button')).toHaveAttr(
+        'tabIndex',
+        '-1',
+      ),
       Scene.expect(openItem).toExist(),
     )
   })

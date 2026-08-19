@@ -68,6 +68,7 @@ const sceneView = (model: Model, h: HtmlBuilder<Message>) =>
 
 const expandChevron = Scene.role('button', { name: 'Expand' })
 const foldstryxItem = Scene.role('treeitem', { name: 'Foldstryx' })
+const projectsItem = Scene.selector('#foldstryx-treeitem-projects')
 const tree = Scene.role('tree', { name: 'Projects' })
 
 describe('TreeList scene', () => {
@@ -110,6 +111,8 @@ describe('TreeList scene', () => {
       Scene.expect(tree).toHaveHandler('keydown'),
       Scene.keydown(tree, 'ArrowDown'),
       Scene.expectHandled(),
+      Scene.expect(foldstryxItem).toHaveAttr('tabIndex', '0'),
+      Scene.expect(projectsItem).toHaveAttr('tabIndex', '-1'),
     )
   })
 })

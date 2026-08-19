@@ -47,7 +47,40 @@ const findDescendant = (
 const attr = (node: Node, name: string): string | undefined =>
   node.data?.attrs?.[name] ?? (node.data?.props?.[name] as string | undefined)
 
+const classKeys = (node: Node): ReadonlyArray<string> =>
+  Object.keys(node.data?.class ?? {}).filter(
+    k => node.data?.class?.[k] === true,
+  )
+
+const hasSx = (node: Node, key: string): boolean =>
+  classKeys(node).includes(`sx-${key}`)
+
 describe('NumberInput', () => {
+  it('keeps the field border on the wrapper and the inner control borderless', () => {
+    const root = asNode(
+      renderWithBuilder(h =>
+        view(
+          {
+            id: 'qty',
+            label: 'Quantity',
+            value: '1',
+            units: 'kg',
+          },
+          h,
+        ),
+      ),
+    )
+    const input = findDescendant(root, n => n.sel === 'input')!
+    const wrapper = findDescendant(
+      root,
+      n => n.sel === 'div' && hasSx(n, 'base'),
+    )!
+    expect(hasSx(wrapper, 'base')).toBe(true)
+    expect(hasSx(input, 'input')).toBe(true)
+    expect(hasSx(input, 'inputDisabled')).toBe(false)
+    expect(input).toBe(wrapper.children?.[0])
+  })
+
   it('renders native number input with min, max, and step', () => {
     const root = asNode(
       renderWithBuilder(h =>

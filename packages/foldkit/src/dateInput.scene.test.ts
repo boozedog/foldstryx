@@ -63,7 +63,7 @@ describe('DateInput scene', () => {
     )
   })
 
-  it('emits SelectedDate as ISO at the boundary', () => {
+  it('emits SelectedDate from DatePicker update', () => {
     Story.story(
       DateInput.update,
       Story.given(DateInput.init({ id: 'picker', today })),
