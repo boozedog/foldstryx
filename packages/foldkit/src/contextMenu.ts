@@ -118,6 +118,7 @@ export const view = <Item extends string, ParentMessage>(
               items: config.items,
               itemSpec: config.itemSpec,
               buttonContent: h.span([]),
+              buttonAttributes: [h.AriaHidden(true), h.Tabindex(-1)],
               anchor: { placement: 'bottom-start', gap: 0, padding: 8 },
               ...(config.isItemDisabled !== undefined
                 ? { isItemDisabled: config.isItemDisabled }

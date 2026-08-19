@@ -117,14 +117,65 @@ describe('TreeList', () => {
       onFocus: (id: string) => Focused({ id }),
     }
 
-    expect(treeListKeyDown(rows, 0, 'ArrowDown', handlers)).toEqual(
-      Focused({ id: 'foldstryx' }),
-    )
-    expect(treeListKeyDown(rows, 0, 'End', handlers)).toEqual(
-      Focused({ id: 'astryx' }),
-    )
-    expect(treeListKeyDown(rows, 2, 'Home', handlers)).toEqual(
-      Focused({ id: 'projects' }),
-    )
+    expect(treeListKeyDown(rows, 0, 'ArrowDown', handlers)).toEqual({
+      message: Focused({ id: 'foldstryx' }),
+      focusId: 'foldstryx',
+    })
+    expect(treeListKeyDown(rows, 0, 'End', handlers)).toEqual({
+      message: Focused({ id: 'astryx' }),
+      focusId: 'astryx',
+    })
+    expect(treeListKeyDown(rows, 2, 'Home', handlers)).toEqual({
+      message: Focused({ id: 'projects' }),
+      focusId: 'projects',
+    })
+  })
+
+  it('steps focus with ArrowRight and ArrowLeft', () => {
+    const rows = [
+      {
+        id: 'projects',
+        label: 'Projects',
+        level: 0,
+        hasChildren: true,
+        isExpanded: false,
+      },
+      {
+        id: 'foldstryx',
+        label: 'Foldstryx',
+        level: 1,
+        hasChildren: false,
+        isExpanded: false,
+      },
+      {
+        id: 'astryx',
+        label: 'Astryx',
+        level: 1,
+        hasChildren: false,
+        isExpanded: false,
+      },
+    ] as const
+    const handlers = {
+      onToggle: () => Focused({ id: 'projects' }),
+      onSelect: () => Focused({ id: 'foldstryx' }),
+      onFocus: (id: string) => Focused({ id }),
+    }
+    const expandedRows = [
+      { ...rows[0], isExpanded: true },
+      rows[1],
+      rows[2],
+    ] as const
+
+    expect(treeListKeyDown(expandedRows, 0, 'ArrowRight', handlers)).toEqual({
+      message: Focused({ id: 'foldstryx' }),
+      focusId: 'foldstryx',
+    })
+    expect(treeListKeyDown(expandedRows, 1, 'ArrowLeft', handlers)).toEqual({
+      message: Focused({ id: 'projects' }),
+      focusId: 'projects',
+    })
+    expect(treeListKeyDown(rows, 0, 'ArrowRight', handlers)).toEqual({
+      message: Focused({ id: 'projects' }),
+    })
   })
 })

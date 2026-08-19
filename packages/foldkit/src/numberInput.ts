@@ -4,7 +4,6 @@ import { Input as UiInput } from '@foldkit/ui'
 import {
   fieldStyles,
   formDensityStyles,
-  inputStyles,
   inputWrapperStyles,
   numberInputStyles,
 } from '@foldstryx/styles'
@@ -44,12 +43,48 @@ const widthStyle = (width: InputWidth | undefined) => {
   }
 }
 
-const axis = (d: InputDensity, w?: InputWidth) =>
-  [
-    inputStyles.input,
-    d === 'compact' ? formDensityStyles.inputCompact : undefined,
-    widthStyle(w),
-  ] as const
+const numberInputControl = <M>(
+  config: NumberInputViewConfig<M>,
+  a: Readonly<{ input: ReadonlyArray<unknown> }>,
+  h: HtmlBuilder<M>,
+): Html =>
+  h.div(
+    elAttrs<M>(
+      sxAttrs(
+        h,
+        inputWrapperStyles.base,
+        config.density === 'compact'
+          ? formDensityStyles.inputCompact
+          : undefined,
+        config.isDisabled === true ? inputWrapperStyles.disabled : undefined,
+      ),
+    ),
+    [
+      h.input(
+        elAttrs<M>(
+          a.input,
+          sxAttrs(
+            h,
+            numberInputStyles.input,
+            config.isDisabled === true
+              ? numberInputStyles.inputDisabled
+              : undefined,
+          ),
+          h.Type('number'),
+          ...(config.min !== undefined ? [h.Min(String(config.min))] : []),
+          ...(config.max !== undefined ? [h.Max(String(config.max))] : []),
+          ...(config.step !== undefined ? [h.Step(String(config.step))] : []),
+        ),
+      ),
+      ...(config.units
+        ? [
+            h.span(elAttrs<M>(sxAttrs(h, numberInputStyles.units)), [
+              config.units,
+            ]),
+          ]
+        : []),
+    ],
+  )
 
 /** Labeled native number field with optional units suffix. */
 export const view = <M>(
@@ -71,45 +106,7 @@ export const view = <M>(
             h.label(elAttrs<M>(a.label, sxAttrs(h, fieldStyles.label)), [
               config.label,
             ]),
-            h.div(
-              elAttrs<M>(
-                sxAttrs(
-                  h,
-                  inputWrapperStyles.base,
-                  config.isDisabled === true
-                    ? inputWrapperStyles.disabled
-                    : undefined,
-                ),
-              ),
-              [
-                h.input(
-                  elAttrs<M>(
-                    a.input,
-                    sxAttrs(
-                      h,
-                      ...axis(config.density ?? 'default', config.width),
-                    ),
-                    h.Type('number'),
-                    ...(config.min !== undefined
-                      ? [h.Min(String(config.min))]
-                      : []),
-                    ...(config.max !== undefined
-                      ? [h.Max(String(config.max))]
-                      : []),
-                    ...(config.step !== undefined
-                      ? [h.Step(String(config.step))]
-                      : []),
-                  ),
-                ),
-                ...(config.units
-                  ? [
-                      h.span(elAttrs<M>(sxAttrs(h, numberInputStyles.units)), [
-                        config.units,
-                      ]),
-                    ]
-                  : []),
-              ],
-            ),
+            numberInputControl(config, a, h),
             ...(config.description
               ? [
                   h.p(

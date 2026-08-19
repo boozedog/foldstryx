@@ -4,7 +4,13 @@ import type { Html } from 'foldkit/html'
 
 import { describe, expect, it } from '@effect/vitest'
 
-import { labeledField, styledViewInputs, triggerId } from './dateInput.js'
+import {
+  isoFromCalendarDate,
+  labeledField,
+  selectedIso,
+  styledViewInputs,
+  triggerId,
+} from './dateInput.js'
 import { renderWithBuilder } from './renderHelper.js'
 
 type Node = Readonly<{
@@ -34,6 +40,15 @@ const hasSx = (node: Node, key: string): boolean =>
   node.data?.class?.[`sx-${key}`] === true
 
 describe('DateInput', () => {
+  it('encodes selected dates as ISO at the chrome boundary', () => {
+    const date = Calendar.make(2026, 8, 19)
+    expect(isoFromCalendarDate(date)).toBe('2026-08-19')
+    expect(Option.getOrNull(selectedIso({ _tag: 'SelectedDate', date }))).toBe(
+      '2026-08-19',
+    )
+    expect(Option.isNone(selectedIso({ _tag: 'ClearedDate' }))).toBe(true)
+  })
+
   it('styledViewInputs wires ISO selection into the date picker', () => {
     let inputs!: ReturnType<typeof styledViewInputs>
     renderWithBuilder<never>(h => {

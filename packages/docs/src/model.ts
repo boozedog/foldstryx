@@ -37,6 +37,10 @@ export const Model = S.Struct({
   formsTypeahead: Typeahead.Model,
   formsStartDate: DateInput.Model,
   formsEndDate: DateInput.Model,
+  formsStartIso: S.NullOr(S.String),
+  formsEndIso: S.NullOr(S.String),
+  formsCalendarDate: DateInput.Model,
+  formsCalendarIso: S.NullOr(S.String),
   dataContextMenu: DropdownMenu.Model,
   dataContextMenuAnchorX: S.Number,
   dataContextMenuAnchorY: S.Number,
@@ -81,6 +85,18 @@ export const Message = S.Union([
     message: S.Any,
   }),
   S.Struct({
+    _tag: S.Literal('GotFormsStartDateMessage'),
+    message: S.Any,
+  }),
+  S.Struct({
+    _tag: S.Literal('GotFormsEndDateMessage'),
+    message: S.Any,
+  }),
+  S.Struct({
+    _tag: S.Literal('GotFormsCalendarDateMessage'),
+    message: S.Any,
+  }),
+  S.Struct({
     _tag: S.Literal('ContextMenuOpened'),
     offsetX: S.Number,
     offsetY: S.Number,
@@ -97,11 +113,17 @@ export type Message =
       | { _tag: 'Sink' }
       | { _tag: 'GotFormsKindSelectorMessage' }
       | { _tag: 'GotFormsTypeaheadMessage' }
+      | { _tag: 'GotFormsStartDateMessage' }
+      | { _tag: 'GotFormsEndDateMessage' }
+      | { _tag: 'GotFormsCalendarDateMessage' }
       | { _tag: 'GotDataContextMenuMessage' }
     >
   | { _tag: 'Sink'; message: SinkMessage }
   | { _tag: 'GotFormsKindSelectorMessage'; message: Selector.Message }
   | { _tag: 'GotFormsTypeaheadMessage'; message: Typeahead.Message }
+  | { _tag: 'GotFormsStartDateMessage'; message: DateInput.Message }
+  | { _tag: 'GotFormsEndDateMessage'; message: DateInput.Message }
+  | { _tag: 'GotFormsCalendarDateMessage'; message: DateInput.Message }
   | { _tag: 'GotDataContextMenuMessage'; message: DropdownMenu.Message }
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => {
@@ -118,6 +140,10 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => {
       formsTypeahead: Typeahead.init({ id: 'docs-typeahead' }),
       formsStartDate: DateInput.init({ id: 'docs-start-date', today }),
       formsEndDate: DateInput.init({ id: 'docs-end-date', today }),
+      formsStartIso: null,
+      formsEndIso: null,
+      formsCalendarDate: DateInput.init({ id: 'docs-calendar-date', today }),
+      formsCalendarIso: null,
       dataContextMenu: DropdownMenu.init({ id: 'docs-context-menu' }),
       dataContextMenuAnchorX: 0,
       dataContextMenuAnchorY: 0,
@@ -186,6 +212,72 @@ export const update = (
         { ...model, formsTypeahead },
         Command.mapMessages(commands, m => ({
           _tag: 'GotFormsTypeaheadMessage' as const,
+          message: m,
+        })),
+      ]
+    }
+    case 'GotFormsStartDateMessage': {
+      const [formsStartDate, commands, maybeOut] = DateInput.update(
+        model.formsStartDate,
+        message.message,
+      )
+      const formsStartIso = Option.match(maybeOut, {
+        onNone: () => model.formsStartIso,
+        onSome: out =>
+          out._tag === 'SelectedDate'
+            ? DateInput.isoFromCalendarDate(out.date)
+            : out._tag === 'ClearedDate'
+              ? null
+              : model.formsStartIso,
+      })
+      return [
+        { ...model, formsStartDate, formsStartIso },
+        Command.mapMessages(commands, m => ({
+          _tag: 'GotFormsStartDateMessage' as const,
+          message: m,
+        })),
+      ]
+    }
+    case 'GotFormsEndDateMessage': {
+      const [formsEndDate, commands, maybeOut] = DateInput.update(
+        model.formsEndDate,
+        message.message,
+      )
+      const formsEndIso = Option.match(maybeOut, {
+        onNone: () => model.formsEndIso,
+        onSome: out =>
+          out._tag === 'SelectedDate'
+            ? DateInput.isoFromCalendarDate(out.date)
+            : out._tag === 'ClearedDate'
+              ? null
+              : model.formsEndIso,
+      })
+      return [
+        { ...model, formsEndDate, formsEndIso },
+        Command.mapMessages(commands, m => ({
+          _tag: 'GotFormsEndDateMessage' as const,
+          message: m,
+        })),
+      ]
+    }
+    case 'GotFormsCalendarDateMessage': {
+      const [formsCalendarDate, commands, maybeOut] = DateInput.update(
+        model.formsCalendarDate,
+        message.message,
+      )
+      const formsCalendarIso = Option.match(maybeOut, {
+        onNone: () => model.formsCalendarIso,
+        onSome: out =>
+          out._tag === 'SelectedDate'
+            ? DateInput.isoFromCalendarDate(out.date)
+            : out._tag === 'ClearedDate'
+              ? null
+              : model.formsCalendarIso,
+      })
+      return [
+        { ...model, formsCalendarDate, formsCalendarIso },
+        Command.mapMessages(commands, m => ({
+          _tag: 'GotFormsCalendarDateMessage' as const,
           message: m,
         })),
       ]
