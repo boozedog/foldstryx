@@ -1,5 +1,18 @@
 # @foldstryx/kitchen-sink
 
+## 0.4.0
+
+### Minor Changes
+
+- 5e0e314: Add Phase F primitives: typeahead, dates, number/textarea, tree list, context menu, and inline loading feedback.
+
+### Patch Changes
+
+- Updated dependencies [5e0e314]
+- Updated dependencies [9e4661e]
+  - @foldstryx/styles@0.3.0
+  - @foldstryx/foldkit@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes
